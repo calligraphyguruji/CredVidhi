@@ -109,7 +109,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const [activeApplicationId, setActiveApplicationId] = useState<string>('app-001');
   const [selectedDocId, setSelectedDocId] = useState<string | null>('doc-002');
-  const [activeView, setActiveView] = useState<string>('officer-queue');
+  const [activeView, setActiveView] = useState<string>('landing');
 
   // Sync to localStorage
   useEffect(() => {

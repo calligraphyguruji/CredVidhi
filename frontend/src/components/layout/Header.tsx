@@ -1,10 +1,9 @@
-import React from 'react';
-import { Lock, Bell, User as UserIcon } from 'lucide-react';
+import { Lock, Bell, User as UserIcon, Home, LogOut } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import type { UserRole } from '../../types';
 
 export const Header: React.FC = () => {
-  const { currentUser, currentRole, switchRole, applications, activeApplicationId } = useApp();
+  const { currentUser, currentRole, switchRole, applications, activeApplicationId, setActiveView } = useApp();
 
   const activeApp = applications.find((a) => a.id === activeApplicationId) || applications[0];
 
@@ -62,6 +61,15 @@ export const Header: React.FC = () => {
         </div>
 
         <button
+          onClick={() => setActiveView('landing')}
+          className="flex items-center gap-1 text-xs text-slate-600 hover:text-blue-700 px-2 py-1 rounded hover:bg-slate-100 transition-colors"
+          title="Return to Public Landing Page"
+        >
+          <Home className="w-3.5 h-3.5" />
+          <span className="hidden xl:inline">Public Site</span>
+        </button>
+
+        <button
           aria-label="System Notifications"
           className="relative p-1.5 text-slate-500 hover:text-slate-800 rounded hover:bg-slate-100 transition-colors"
         >
@@ -84,6 +92,13 @@ export const Header: React.FC = () => {
           <div className="w-8 h-8 rounded-full bg-blue-700 text-white flex items-center justify-center font-medium shadow-xs">
             <UserIcon className="w-4 h-4" />
           </div>
+          <button
+            onClick={() => setActiveView('login')}
+            className="p-1.5 text-slate-400 hover:text-rose-600 rounded hover:bg-slate-100 transition-colors"
+            title="Sign Out / Switch Account"
+          >
+            <LogOut className="w-4 h-4" />
+          </button>
         </div>
       </div>
     </header>

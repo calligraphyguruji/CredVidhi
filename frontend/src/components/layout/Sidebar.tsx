@@ -8,6 +8,8 @@ import {
   Building2,
   FileCheck2,
   RefreshCw,
+  Home,
+  LogIn,
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { formatCurrency } from '../../utils/financial';
@@ -32,6 +34,13 @@ export const Sidebar: React.FC = () => {
       items: [
         { id: 'compliance-audit', label: 'Compliance Audit', icon: Shield },
         { id: 'loan-products', label: 'Loan Products', icon: Layers },
+      ],
+    },
+    {
+      group: 'Public Portals',
+      items: [
+        { id: 'landing', label: 'Landing Page', icon: Home },
+        { id: 'login', label: 'Sign In / Switch', icon: LogIn },
       ],
     },
   ];

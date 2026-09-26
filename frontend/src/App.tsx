@@ -2,6 +2,8 @@ import React from 'react';
 import { AppProvider, useApp } from './context/AppContext';
 import { Sidebar } from './components/layout/Sidebar';
 import { Header } from './components/layout/Header';
+import { LandingPage } from './pages/public/LandingPage';
+import { LoginPage } from './pages/public/LoginPage';
 import { OfficerQueue } from './pages/staff/OfficerQueue';
 import { DocumentWorkbench } from './pages/staff/DocumentWorkbench';
 import { UnderwritingCockpit } from './pages/staff/UnderwritingCockpit';
@@ -11,6 +13,14 @@ import { LoanProducts } from './pages/admin/LoanProducts';
 
 const MainContent: React.FC = () => {
   const { activeView } = useApp();
+
+  if (activeView === 'landing') {
+    return <LandingPage />;
+  }
+
+  if (activeView === 'login') {
+    return <LoginPage />;
+  }
 
   return (
     <div className="min-h-screen bg-slate-50 flex">
