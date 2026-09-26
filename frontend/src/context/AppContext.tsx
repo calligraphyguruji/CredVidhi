@@ -16,6 +16,7 @@ import {
   INITIAL_AUDIT_LOGS,
 } from '../services/mockData';
 import { calculateEmi, calculateDti, calculateDisposableIncome } from '../utils/financial';
+import { ToastContainer, type ToastMessage } from '../components/ui/Toast';
 
 interface AppContextType {
   currentUser: User;
@@ -30,6 +31,10 @@ interface AppContextType {
   setActiveView: (view: string) => void;
   selectedDocId: string | null;
   setSelectedDocId: (id: string | null) => void;
+  // Notifications / Toasts
+  toasts: ToastMessage[];
+  addToast: (toast: Omit<ToastMessage, 'id'>) => void;
+  dismissToast: (id: string) => void;
   // Lifecycle Actions
   submitNewApplication: (data: {
     productId: string;
@@ -110,6 +115,21 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [activeApplicationId, setActiveApplicationId] = useState<string>('app-001');
   const [selectedDocId, setSelectedDocId] = useState<string | null>('doc-002');
   const [activeView, setActiveView] = useState<string>('landing');
+  const [toasts, setToasts] = useState<ToastMessage[]>([]);
+
+  const addToast = (toast: Omit<ToastMessage, 'id'>) => {
+    const id = `toast-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+    const newToast: ToastMessage = { id, ...toast };
+    setToasts((prev) => [...prev.slice(-3), newToast]);
+
+    setTimeout(() => {
+      setToasts((prev) => prev.filter((t) => t.id !== id));
+    }, 4500);
+  };
+
+  const dismissToast = (id: string) => {
+    setToasts((prev) => prev.filter((t) => t.id !== id));
+  };
 
   // Sync to localStorage
   useEffect(() => {
@@ -209,8 +229,24 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         let nextStatus = app.status;
         if (status === 'DEFICIENT') {
           nextStatus = 'DOCUMENTS_PENDING';
+          addToast({
+            type: 'warning',
+            title: 'Deficiency Flagged',
+            message: `${targetDoc?.documentType || 'Document'} marked deficient: ${remarks}`,
+          });
         } else if (allMandatoryVerified && app.status === 'UNDER_REVIEW') {
           nextStatus = 'DOCUMENTS_VERIFIED';
+          addToast({
+            type: 'success',
+            title: 'All Documents Verified',
+            message: `Docket ${app.referenceNumber} is ready for risk assessment.`,
+          });
+        } else {
+          addToast({
+            type: 'success',
+            title: 'Document Verified',
+            message: `${targetDoc?.documentType || 'Document'} verified by ${currentUser.fullName}.`,
+          });
         }
 
         return {
@@ -320,6 +356,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           notes: `Computed Risk Score: ${score} (${tier} RISK). DTI: ${dti}%. Recommended: ${recommendation}`,
         });
 
+        addToast({
+          type: 'info',
+          title: 'Risk Evaluation Complete',
+          message: `Calculated score: ${score}/1000 (${tier} Tier), DTI: ${dti}%.`,
+        });
+
         return {
           ...app,
           status: 'RISK_ASSESSED',
@@ -355,6 +397,20 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           afterState: nextStatus,
           notes: `${decision}: ${payload.underwriterNotes} (Approved Amount: ₹${(payload.approvedAmount ?? app.requestedAmount).toLocaleString('en-IN')})`,
         });
+
+        if (decision === 'REJECTED') {
+          addToast({
+            type: 'error',
+            title: 'Application Rejected',
+            message: `Docket ${app.referenceNumber} rejected (${payload.rejectionReasonCode || 'Credit Policy'}).`,
+          });
+        } else {
+          addToast({
+            type: 'success',
+            title: 'Application Approved',
+            message: `Docket ${app.referenceNumber} approved for ₹${(payload.approvedAmount ?? app.requestedAmount).toLocaleString('en-IN')}.`,
+          });
+        }
 
         return {
           ...app,
@@ -448,6 +504,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       notes: `New application submitted by ${data.personal.fullName} for ₹${data.requestedAmount.toLocaleString('en-IN')} (${selectedProd.name})`,
     });
 
+    addToast({
+      type: 'success',
+      title: 'Application Submitted',
+      message: `Docket ${refNumber} created for ₹${data.requestedAmount.toLocaleString('en-IN')}.`,
+    });
+
     return newId;
   };
 
@@ -460,6 +522,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setCurrentRole('LOAN_OFFICER');
     setActiveApplicationId('app-001');
     setActiveView('officer-queue');
+    addToast({
+      type: 'info',
+      title: 'Data Reset',
+      message: 'Platform state restored to default seeds.',
+    });
   };
 
   return (
@@ -477,6 +544,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setActiveView,
         selectedDocId,
         setSelectedDocId,
+        toasts,
+        addToast,
+        dismissToast,
         submitNewApplication,
         verifyDocument,
         transitionApplicationStatus,
@@ -486,6 +556,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       }}
     >
       {children}
+      <ToastContainer toasts={toasts} onDismiss={dismissToast} />
     </AppContext.Provider>
   );
 };

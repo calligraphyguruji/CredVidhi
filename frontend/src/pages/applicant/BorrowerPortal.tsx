@@ -20,9 +20,11 @@ import {
   formatCurrency,
   formatDateTime,
 } from '../../utils/financial';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 
 export const BorrowerPortal: React.FC = () => {
   const { applications, products, submitNewApplication } = useApp();
+  const shouldReduceMotion = useReducedMotion();
 
   // Find applicant's current active application
   const [selectedAppId, setSelectedAppId] = useState<string>(applications[0]?.id || '');
@@ -371,39 +373,57 @@ export const BorrowerPortal: React.FC = () => {
                 disabled={!declarationConsent}
                 onClick={handleFinishWizard}
               >
-                Submit Application to CredVidhi
+                Submit Application to Dhanexa
               </Button>
             )}
           </div>
         }
       >
         <div className="space-y-5 text-xs">
-          {/* Stepper Progress Bar */}
-          <div className="grid grid-cols-4 gap-2 text-center select-none">
-            {[
-              { num: 1, label: 'Specifications' },
-              { num: 2, label: 'Personal' },
-              { num: 3, label: 'Financials' },
-              { num: 4, label: 'Documents' },
-            ].map((st) => (
-              <div
-                key={st.num}
-                className={`py-1.5 px-2 rounded border text-xs font-semibold ${
-                  step === st.num
-                    ? 'bg-orange-50 text-orange-700 border-orange-300'
-                    : step > st.num
-                    ? 'bg-slate-100 text-slate-700 border-slate-200'
-                    : 'text-slate-400 border-slate-100'
-                }`}
-              >
-                {st.num}. {st.label}
-              </div>
-            ))}
+          {/* Stepper Progress Bar with animated track */}
+          <div className="space-y-1.5">
+            <div className="grid grid-cols-4 gap-2 text-center select-none">
+              {[
+                { num: 1, label: 'Specifications' },
+                { num: 2, label: 'Personal' },
+                { num: 3, label: 'Financials' },
+                { num: 4, label: 'Documents' },
+              ].map((st) => (
+                <div
+                  key={st.num}
+                  className={`py-1.5 px-2 rounded border text-xs font-semibold transition-colors ${
+                    step === st.num
+                      ? 'bg-orange-50 text-orange-700 border-orange-300'
+                      : step > st.num
+                      ? 'bg-slate-100 text-slate-700 border-slate-200'
+                      : 'text-slate-400 border-slate-100'
+                  }`}
+                >
+                  {st.num}. {st.label}
+                </div>
+              ))}
+            </div>
+            <div className="h-1 w-full bg-slate-100 rounded-full overflow-hidden">
+              <motion.div
+                initial={false}
+                animate={{ width: `${(step / 4) * 100}%` }}
+                transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+                className="h-full bg-orange-600 rounded-full"
+              />
+            </div>
           </div>
 
-          {/* STEP 1: Loan Specifications & Calculator */}
-          {step === 1 && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={step}
+              initial={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, x: 8 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, x: -8 }}
+              transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
+            >
+              {/* STEP 1: Loan Specifications & Calculator */}
+              {step === 1 && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-4">
                 <div>
                   <label className="block text-[10px] font-mono font-semibold text-slate-500 uppercase tracking-wider mb-1.5">
@@ -707,6 +727,8 @@ export const BorrowerPortal: React.FC = () => {
               </div>
             </div>
           )}
+          </motion.div>
+        </AnimatePresence>
         </div>
       </Modal>
     </div>

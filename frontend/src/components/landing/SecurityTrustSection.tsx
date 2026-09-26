@@ -1,9 +1,11 @@
 import React from 'react';
+import { motion, useReducedMotion } from 'framer-motion';
 import { ShieldCheck, Lock, EyeOff, FileText, Database, Key } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 
 export const SecurityTrustSection: React.FC = () => {
   const { setActiveView, switchRole } = useApp();
+  const shouldReduceMotion = useReducedMotion();
 
   const trustPillars = [
     {
@@ -45,11 +47,17 @@ export const SecurityTrustSection: React.FC = () => {
   ];
 
   return (
-    <section id="security" className="py-16 md:py-24 bg-white border-b border-slate-200">
+    <section id="security" className="py-16 md:py-24 bg-white border-b border-slate-200 overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Section Heading */}
-        <div className="max-w-3xl mb-12">
+        <motion.div
+          initial={shouldReduceMotion ? undefined : { opacity: 0, y: 12 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: '-60px' }}
+          transition={{ duration: 0.3 }}
+          className="max-w-3xl mb-12"
+        >
           <div className="inline-flex items-center gap-2 text-xs font-mono font-semibold uppercase text-orange-700 bg-orange-50 px-2.5 py-1 rounded border border-orange-200 mb-3">
             <span>FINANCIAL GOVERNANCE & PRIVACY</span>
           </div>
@@ -57,19 +65,24 @@ export const SecurityTrustSection: React.FC = () => {
             Security & audit safeguards built-in.
           </h2>
           <p className="mt-3 text-sm sm:text-base text-slate-600 leading-relaxed">
-            CredVidhi enforces institutional banking standards from the database transaction boundary
+            Dhanexa enforces institutional banking standards from the database transaction boundary
             to the front-end user experience.
           </p>
-        </div>
+        </motion.div>
 
         {/* 6-Pillar Security Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {trustPillars.map((pillar, i) => {
             const Icon = pillar.icon;
             return (
-              <div
+              <motion.div
                 key={i}
-                className="p-6 bg-slate-50/70 rounded-xl border border-slate-200 hover:border-slate-300 transition-all"
+                initial={shouldReduceMotion ? undefined : { opacity: 0, y: 16 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: '-40px' }}
+                transition={{ duration: 0.28, delay: shouldReduceMotion ? 0 : i * 0.06 }}
+                whileHover={!shouldReduceMotion ? { y: -2, transition: { duration: 0.2 } } : undefined}
+                className="p-6 bg-slate-50/70 rounded-xl border border-slate-200 hover:border-slate-300 transition-colors"
               >
                 <div className="w-9 h-9 rounded-lg bg-orange-100/80 text-orange-700 flex items-center justify-center font-bold mb-4">
                   <Icon className="w-5 h-5" />
@@ -80,13 +93,19 @@ export const SecurityTrustSection: React.FC = () => {
                 <p className="text-xs text-slate-600 leading-relaxed">
                   {pillar.description}
                 </p>
-              </div>
+              </motion.div>
             );
           })}
         </div>
 
         {/* Live Audit Log Stream Callout */}
-        <div className="mt-10 p-6 bg-slate-900 text-white rounded-xl border border-slate-800 flex flex-col md:flex-row items-center justify-between gap-6">
+        <motion.div
+          initial={shouldReduceMotion ? undefined : { opacity: 0, scale: 0.98 }}
+          whileInView={{ opacity: 1, scale: 1 }}
+          viewport={{ once: true, margin: '-40px' }}
+          transition={{ duration: 0.3 }}
+          className="mt-10 p-6 bg-slate-900 text-white rounded-xl border border-slate-800 flex flex-col md:flex-row items-center justify-between gap-6"
+        >
           <div className="space-y-1 text-left">
             <div className="flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
@@ -99,7 +118,9 @@ export const SecurityTrustSection: React.FC = () => {
             </p>
           </div>
 
-          <button
+          <motion.button
+            whileHover={!shouldReduceMotion ? { scale: 1.02 } : undefined}
+            whileTap={!shouldReduceMotion ? { scale: 0.98 } : undefined}
             onClick={() => {
               switchRole('ADMIN');
               setActiveView('compliance-audit');
@@ -107,8 +128,8 @@ export const SecurityTrustSection: React.FC = () => {
             className="shrink-0 px-4 py-2 bg-orange-600 hover:bg-orange-500 text-white text-xs font-semibold rounded-md transition-colors cursor-pointer"
           >
             Open Compliance Audit Stream
-          </button>
-        </div>
+          </motion.button>
+        </motion.div>
 
       </div>
     </section>

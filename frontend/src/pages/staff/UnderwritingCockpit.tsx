@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import {
   Activity,
   CheckCircle,
@@ -11,6 +12,7 @@ import { Badge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
 import { Input } from '../../components/ui/Input';
+import { AnimatedCounter } from '../../components/ui/AnimatedCounter';
 import { formatCurrency } from '../../utils/financial';
 
 export const UnderwritingCockpit: React.FC = () => {
@@ -21,8 +23,8 @@ export const UnderwritingCockpit: React.FC = () => {
     recordUnderwritingDecision,
   } = useApp();
 
+  const shouldReduceMotion = useReducedMotion();
   const application = applications.find((a) => a.id === activeApplicationId) || applications[0];
-
   const assessment = application.riskAssessment;
 
   // Underwriter Decision Form State
@@ -68,7 +70,7 @@ export const UnderwritingCockpit: React.FC = () => {
     }, 400);
   };
 
-  const isHighValue = approvedAmount > 50000;
+  const isHighValue = approvedAmount > 500000;
 
   return (
     <div className="space-y-5">
@@ -109,72 +111,112 @@ export const UnderwritingCockpit: React.FC = () => {
         </div>
       </div>
 
-      {showSuccessBanner && (
-        <div className="bg-emerald-50 border border-emerald-300 p-4 rounded-md flex items-center justify-between animate-in fade-in">
-          <div className="flex items-center gap-2.5 text-emerald-800 text-xs font-medium">
-            <CheckCircle className="w-4 h-4 text-emerald-600 shrink-0" />
-            <span>
-              Decision officially codified and recorded into immutable regulatory audit trail.
-            </span>
-          </div>
-          <button
-            onClick={() => setShowSuccessBanner(false)}
-            className="text-xs text-emerald-700 font-semibold hover:underline"
+      {/* Decision Success Banner */}
+      <AnimatePresence>
+        {showSuccessBanner && (
+          <motion.div
+            initial={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, y: -8 }}
+            className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-md text-xs flex items-center justify-between shadow-xs"
           >
-            Dismiss
-          </button>
-        </div>
-      )}
+            <div className="flex items-center gap-2 font-medium">
+              <CheckCircle className="w-4 h-4 text-emerald-600" />
+              <span>
+                Decision successfully recorded and signed into the immutable audit trail.
+              </span>
+            </div>
+            <button
+              onClick={() => setShowSuccessBanner(false)}
+              className="text-emerald-700 hover:text-emerald-900 font-bold"
+            >
+              ✕
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-      {/* Top Metrics Strip (KPI Cards in JetBrains Mono) */}
+      {/* Top 4 KPI Metrics with Animated Counters */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-white p-4 rounded-md border border-slate-200 shadow-xs">
+        <motion.div
+          whileHover={!shouldReduceMotion ? { y: -2 } : undefined}
+          className="bg-white p-4 rounded-md border border-slate-200 shadow-xs transition-shadow hover:shadow-md"
+        >
           <div className="text-[10px] font-mono text-slate-500 uppercase tracking-wider">
             Credit Score
           </div>
           <div className="text-2xl font-bold font-mono text-slate-900 mt-1">
-            {application.financial.creditScoreDeclared}
+            <AnimatedCounter value={application.financial.creditScoreDeclared} duration={0.6} />
           </div>
           <div className="mt-1">
             <Badge status={application.financial.creditScoreDeclared >= 750 ? 'LOW' : 'MEDIUM'} size="sm">
               {application.financial.creditScoreDeclared >= 750 ? 'PRIME (750+)' : 'STANDARD'}
             </Badge>
           </div>
-        </div>
+        </motion.div>
 
-        <div className="bg-white p-4 rounded-md border border-slate-200 shadow-xs">
+        <motion.div
+          whileHover={!shouldReduceMotion ? { y: -2 } : undefined}
+          className="bg-white p-4 rounded-md border border-slate-200 shadow-xs transition-shadow hover:shadow-md"
+        >
           <div className="text-[10px] font-mono text-slate-500 uppercase tracking-wider">
             Calculated DTI Ratio
           </div>
           <div className="text-2xl font-bold font-mono text-slate-900 mt-1">
-            {assessment ? `${assessment.calculatedDti}%` : 'Pending'}
+            {assessment ? (
+              <AnimatedCounter value={assessment.calculatedDti} duration={0.6} suffix="%" decimals={1} />
+            ) : (
+              'Pending'
+            )}
           </div>
           <div className="text-[11px] text-slate-500 font-mono mt-1">
             Cap: {application.product.maxDtiRatio}% (Safe &lt; 45%)
           </div>
-        </div>
+        </motion.div>
 
-        <div className="bg-white p-4 rounded-md border border-slate-200 shadow-xs">
+        <motion.div
+          whileHover={!shouldReduceMotion ? { y: -2 } : undefined}
+          className="bg-white p-4 rounded-md border border-slate-200 shadow-xs transition-shadow hover:shadow-md"
+        >
           <div className="text-[10px] font-mono text-slate-500 uppercase tracking-wider">
             Disposable Income Cushion
           </div>
           <div className="text-2xl font-bold font-mono text-emerald-700 mt-1">
-            {assessment ? formatCurrency(assessment.disposableIncome) : 'Pending'}
+            {assessment ? (
+              <AnimatedCounter
+                value={assessment.disposableIncome}
+                duration={0.6}
+                formatter={(val) => formatCurrency(val)}
+              />
+            ) : (
+              'Pending'
+            )}
           </div>
           <div className="text-[11px] text-slate-500 font-mono mt-1">Net Monthly Surplus</div>
-        </div>
+        </motion.div>
 
-        <div className="bg-white p-4 rounded-md border border-slate-200 shadow-xs">
+        <motion.div
+          whileHover={!shouldReduceMotion ? { y: -2 } : undefined}
+          className="bg-white p-4 rounded-md border border-slate-200 shadow-xs transition-shadow hover:shadow-md"
+        >
           <div className="text-[10px] font-mono text-slate-500 uppercase tracking-wider">
             Estimated Monthly EMI
           </div>
           <div className="text-2xl font-bold font-mono text-orange-600 mt-1">
-            {assessment ? formatCurrency(assessment.calculatedEmi) : 'Pending'}
+            {assessment ? (
+              <AnimatedCounter
+                value={assessment.calculatedEmi}
+                duration={0.6}
+                formatter={(val) => formatCurrency(val)}
+              />
+            ) : (
+              'Pending'
+            )}
           </div>
           <div className="text-[11px] text-slate-500 font-mono mt-1">
             At {application.product.baseApr}% Fixed APR
           </div>
-        </div>
+        </motion.div>
       </div>
 
       {/* Main Underwriting 3-Column Grid */}
@@ -190,8 +232,9 @@ export const UnderwritingCockpit: React.FC = () => {
                   <span>100%</span>
                 </div>
                 <div className="h-3 w-full bg-slate-100 rounded-full overflow-hidden flex">
-                  <div
-                    style={{
+                  <motion.div
+                    initial={shouldReduceMotion ? undefined : { width: 0 }}
+                    animate={{
                       width: `${Math.min(
                         100,
                         (application.financial.existingMonthlyDebt /
@@ -199,11 +242,13 @@ export const UnderwritingCockpit: React.FC = () => {
                           100
                       )}%`,
                     }}
+                    transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
                     className="bg-amber-500"
                     title="Existing Debt"
-                  ></div>
-                  <div
-                    style={{
+                  />
+                  <motion.div
+                    initial={shouldReduceMotion ? undefined : { width: 0 }}
+                    animate={{
                       width: `${Math.min(
                         100,
                         (application.financial.housingExpense /
@@ -211,11 +256,13 @@ export const UnderwritingCockpit: React.FC = () => {
                           100
                       )}%`,
                     }}
+                    transition={{ duration: 0.5, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
                     className="bg-slate-400"
                     title="Housing Expense"
-                  ></div>
-                  <div
-                    style={{
+                  />
+                  <motion.div
+                    initial={shouldReduceMotion ? undefined : { width: 0 }}
+                    animate={{
                       width: `${Math.min(
                         100,
                         ((assessment?.calculatedEmi || 0) /
@@ -223,10 +270,11 @@ export const UnderwritingCockpit: React.FC = () => {
                           100
                       )}%`,
                     }}
+                    transition={{ duration: 0.5, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
                     className="bg-orange-600"
                     title="Proposed Loan EMI"
-                  ></div>
-                  <div className="flex-1 bg-emerald-500" title="Disposable Surplus"></div>
+                  />
+                  <div className="flex-1 bg-emerald-500" title="Disposable Surplus" />
                 </div>
 
                 <div className="grid grid-cols-2 gap-2 mt-3 text-[10px] font-mono text-slate-600">
@@ -287,7 +335,7 @@ export const UnderwritingCockpit: React.FC = () => {
                       Risk Score Rating
                     </div>
                     <div className="text-xl font-bold font-mono text-slate-900 mt-0.5">
-                      {assessment.internalRiskScore} / 1000
+                      <AnimatedCounter value={assessment.internalRiskScore} duration={0.8} /> / 1000
                     </div>
                   </div>
                   <Badge status={assessment.riskTier} size="md">
@@ -354,7 +402,7 @@ export const UnderwritingCockpit: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setSelectedDecision('APPROVED')}
-                    className={`py-1.5 rounded text-xs font-semibold transition-all ${
+                    className={`py-1.5 rounded text-xs font-semibold transition-all cursor-pointer ${
                       selectedDecision === 'APPROVED'
                         ? 'bg-emerald-600 text-white shadow-xs'
                         : 'text-slate-600 hover:text-slate-900'
@@ -365,7 +413,7 @@ export const UnderwritingCockpit: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setSelectedDecision('CONDITIONAL')}
-                    className={`py-1.5 rounded text-xs font-semibold transition-all ${
+                    className={`py-1.5 rounded text-xs font-semibold transition-all cursor-pointer ${
                       selectedDecision === 'CONDITIONAL'
                         ? 'bg-amber-600 text-white shadow-xs'
                         : 'text-slate-600 hover:text-slate-900'
@@ -376,7 +424,7 @@ export const UnderwritingCockpit: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setSelectedDecision('REJECTED')}
-                    className={`py-1.5 rounded text-xs font-semibold transition-all ${
+                    className={`py-1.5 rounded text-xs font-semibold transition-all cursor-pointer ${
                       selectedDecision === 'REJECTED'
                         ? 'bg-rose-600 text-white shadow-xs'
                         : 'text-slate-600 hover:text-slate-900'
@@ -447,7 +495,7 @@ export const UnderwritingCockpit: React.FC = () => {
                   value={underwriterNotes}
                   onChange={(e) => setUnderwriterNotes(e.target.value)}
                   placeholder="Mandatory rationale for credit committee and regulatory audit..."
-                  className="w-full text-xs p-2.5 bg-slate-50 border border-slate-300 rounded focus:outline-none focus:ring-1 focus:ring-orange-500"
+                  className="w-full text-xs p-2.5 bg-slate-50 border border-slate-300 rounded focus:outline-none focus:ring-1 focus:ring-orange-500 transition-colors"
                 ></textarea>
               </div>
 

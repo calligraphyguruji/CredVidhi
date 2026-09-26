@@ -1,4 +1,5 @@
 import React from 'react';
+import { motion, useReducedMotion } from 'framer-motion';
 import {
   Cpu,
   FileCheck,
@@ -12,6 +13,7 @@ import { useApp } from '../../context/AppContext';
 
 export const KeyCapabilities: React.FC = () => {
   const { setActiveView, switchRole } = useApp();
+  const shouldReduceMotion = useReducedMotion();
 
   const capabilities = [
     {
@@ -71,11 +73,17 @@ export const KeyCapabilities: React.FC = () => {
   ];
 
   return (
-    <section id="engine" className="py-16 md:py-24 bg-slate-50 border-b border-slate-200">
+    <section id="engine" className="py-16 md:py-24 bg-slate-50 border-b border-slate-200 overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Section Heading */}
-        <div className="max-w-3xl mb-12">
+        <motion.div
+          initial={shouldReduceMotion ? undefined : { opacity: 0, y: 12 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: '-60px' }}
+          transition={{ duration: 0.3 }}
+          className="max-w-3xl mb-12"
+        >
           <div className="inline-flex items-center gap-2 text-xs font-mono font-semibold uppercase text-orange-700 bg-orange-50 px-2.5 py-1 rounded border border-orange-200 mb-3">
             <span>ENGINEERED FOR BANK-GRADE OPERATIONS</span>
           </div>
@@ -86,20 +94,25 @@ export const KeyCapabilities: React.FC = () => {
             Built from first principles to satisfy credit committee rigor, risk underwriting policies,
             and strict institutional compliance mandates.
           </p>
-        </div>
+        </motion.div>
 
-        {/* Bento Grid Layout (Taste-Skill compliant: Asymmetric, clean cards with micro-borders) */}
+        {/* Bento Grid Layout */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {capabilities.map((cap, i) => {
             const Icon = cap.icon;
             return (
-              <div
+              <motion.div
                 key={i}
-                className="bg-white rounded-xl border border-slate-200/90 p-6 flex flex-col justify-between hover:shadow-card hover:border-slate-300 transition-all group"
+                initial={shouldReduceMotion ? undefined : { opacity: 0, y: 16 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: '-40px' }}
+                transition={{ duration: 0.28, delay: shouldReduceMotion ? 0 : i * 0.05 }}
+                whileHover={!shouldReduceMotion ? { y: -3, transition: { duration: 0.2 } } : undefined}
+                className="bg-white rounded-xl border border-slate-200/90 p-6 flex flex-col justify-between hover:shadow-card hover:border-slate-300 transition-colors group cursor-pointer"
               >
                 <div>
                   <div className="flex items-center justify-between mb-4">
-                    <div className="w-10 h-10 rounded-lg bg-orange-50 text-orange-600 flex items-center justify-center font-bold group-hover:bg-orange-600 group-hover:text-white transition-colors">
+                    <div className="w-10 h-10 rounded-lg bg-orange-50 text-orange-600 flex items-center justify-center font-bold group-hover:bg-orange-600 group-hover:text-white transition-colors duration-200">
                       <Icon className="w-5 h-5" />
                     </div>
                     <span className="text-[10px] font-mono font-semibold uppercase tracking-wider text-slate-600 bg-slate-100 px-2 py-0.5 rounded">
@@ -127,9 +140,9 @@ export const KeyCapabilities: React.FC = () => {
                     <span>Inspect Capability</span>
                     <ArrowRight className="w-3.5 h-3.5" />
                   </button>
-                  <span className="text-[10px] font-mono text-slate-600">CredVidhi v2.4</span>
+                  <span className="text-[10px] font-mono text-slate-600">Dhanexa v2.4</span>
                 </div>
-              </div>
+              </motion.div>
             );
           })}
         </div>

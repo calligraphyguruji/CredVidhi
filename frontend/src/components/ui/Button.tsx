@@ -1,6 +1,8 @@
 import React from 'react';
+import { motion, type HTMLMotionProps, useReducedMotion } from 'framer-motion';
 
-interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+export interface ButtonProps extends Omit<HTMLMotionProps<'button'>, 'children'> {
+  children?: React.ReactNode;
   variant?: 'primary' | 'secondary' | 'outline' | 'danger' | 'success' | 'ghost';
   size?: 'sm' | 'md' | 'lg';
   isLoading?: boolean;
@@ -17,8 +19,10 @@ export const Button: React.FC<ButtonProps> = ({
   disabled,
   ...props
 }) => {
+  const shouldReduceMotion = useReducedMotion();
+
   const baseClasses =
-    'inline-flex items-center justify-center font-medium transition-all duration-150 rounded cursor-pointer select-none disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98]';
+    'inline-flex items-center justify-center font-medium rounded cursor-pointer select-none disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-150';
 
   const sizeClasses = {
     sm: 'text-xs px-2.5 py-1.5 gap-1.5',
@@ -41,8 +45,13 @@ export const Button: React.FC<ButtonProps> = ({
       'text-slate-600 hover:text-slate-900 hover:bg-slate-100',
   }[variant];
 
+  const isInteractive = !disabled && !isLoading;
+
   return (
-    <button
+    <motion.button
+      whileHover={!shouldReduceMotion && isInteractive ? { scale: 1.01 } : undefined}
+      whileTap={!shouldReduceMotion && isInteractive ? { scale: 0.98 } : undefined}
+      transition={{ duration: 0.15, ease: [0.2, 0, 0, 1] }}
       className={`${baseClasses} ${sizeClasses} ${variantClasses} ${className}`}
       disabled={disabled || isLoading}
       {...props}
@@ -72,6 +81,6 @@ export const Button: React.FC<ButtonProps> = ({
         <span className="shrink-0">{icon}</span>
       ) : null}
       {children}
-    </button>
+    </motion.button>
   );
 };

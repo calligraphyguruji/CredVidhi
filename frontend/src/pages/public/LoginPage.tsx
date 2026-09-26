@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import {
   ShieldCheck,
   Lock,
@@ -11,16 +12,19 @@ import {
 import { useApp } from '../../context/AppContext';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
+import { Modal } from '../../components/ui/Modal';
 import { INITIAL_USERS } from '../../services/mockData';
 import type { UserRole } from '../../types';
+import { scaleInVariants, formErrorVariants } from '../../utils/motion';
 
 export const LoginPage: React.FC = () => {
   const { setActiveView, switchRole } = useApp();
+  const shouldReduceMotion = useReducedMotion();
 
   const [activeTab, setActiveTab] = useState<'staff' | 'borrower'>('staff');
 
   // Form states
-  const [email, setEmail] = useState('d.vance@credvidhi.com');
+  const [email, setEmail] = useState('d.vance@dhanexa.com');
   const [password, setPassword] = useState('••••••••••••');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
@@ -49,7 +53,7 @@ export const LoginPage: React.FC = () => {
 
     setTimeout(() => {
       setIsLoading(false);
-      console.info(`[CredVidhi Gateway] Authenticated ${userEmail} as ${role}`);
+      console.info(`[Dhanexa Gateway] Authenticated ${userEmail} as ${role}`);
       switchRole(role);
 
       // Route based on role
@@ -62,7 +66,7 @@ export const LoginPage: React.FC = () => {
       } else {
         setActiveView('borrower-portal');
       }
-    }, 600);
+    }, 500);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -94,18 +98,20 @@ export const LoginPage: React.FC = () => {
     <div className="min-h-screen bg-slate-50 flex flex-col justify-between font-sans">
       {/* Top Header with Back Link */}
       <header className="px-6 py-4 flex items-center justify-between border-b border-slate-200 bg-white">
-        <button
+        <motion.button
+          whileHover={!shouldReduceMotion ? { x: -2 } : undefined}
+          whileTap={!shouldReduceMotion ? { scale: 0.98 } : undefined}
           onClick={() => setActiveView('landing')}
           className="inline-flex items-center gap-2 text-xs font-semibold text-slate-600 hover:text-orange-600 transition-colors cursor-pointer"
         >
           <ArrowLeft className="w-4 h-4" />
-          <span>Back to CredVidhi Home</span>
-        </button>
+          <span>Back to Dhanexa Home</span>
+        </motion.button>
 
         <div className="flex items-center gap-2">
           <ShieldCheck className="w-5 h-5 text-orange-600" />
           <span className="font-extrabold text-sm tracking-tight text-slate-900 font-sans">
-            CREDIVIDHI GATEWAY
+            DHANEXA GATEWAY
           </span>
           <span className="text-[10px] font-mono bg-orange-50 text-orange-700 px-1.5 py-0.5 rounded border border-orange-200">
             PORT 443
@@ -118,10 +124,14 @@ export const LoginPage: React.FC = () => {
         </div>
       </header>
 
-      {/* Main Split-Screen Container */}
+      {/* Main Split-Screen Container with smooth entrance */}
       <div className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 flex items-center justify-center">
-        <div className="w-full grid grid-cols-1 lg:grid-cols-12 rounded-2xl border border-slate-200/90 shadow-elevated overflow-hidden bg-white">
-          
+        <motion.div
+          variants={shouldReduceMotion ? undefined : scaleInVariants}
+          initial="initial"
+          animate="animate"
+          className="w-full grid grid-cols-1 lg:grid-cols-12 rounded-2xl border border-slate-200/90 shadow-elevated overflow-hidden bg-white"
+        >
           {/* LEFT PANEL: Security Telemetry & System Status (5 Cols) */}
           <div className="lg:col-span-5 bg-slate-950 text-slate-100 p-8 flex flex-col justify-between border-b lg:border-b-0 lg:border-r border-slate-800 relative overflow-hidden">
             {/* Background grid accent */}
@@ -174,7 +184,7 @@ export const LoginPage: React.FC = () => {
                 </div>
                 <div className="bg-black/60 rounded p-3 font-mono text-[10px] text-slate-400 space-y-1.5 border border-slate-800/80">
                   <div className="truncate">
-                    <span className="text-orange-400">[03:14:02]</span> AUTH_SUCCESS: d.vance@credvidhi.com
+                    <span className="text-orange-400">[03:14:02]</span> AUTH_SUCCESS: d.vance@dhanexa.com
                   </div>
                   <div className="truncate">
                     <span className="text-emerald-400">[03:12:45]</span> SANCTION_ISSUED: Ref APP-2026-0891 (₹45,000)
@@ -199,29 +209,36 @@ export const LoginPage: React.FC = () => {
               {/* Header Title */}
               <div className="mb-6">
                 <h3 className="text-xl font-bold text-slate-900">
-                  Sign In to CredVidhi
+                  Sign In to Dhanexa
                 </h3>
                 <p className="text-xs text-slate-500 mt-1">
                   Select your portal and enter your credentials to access your active queue.
                 </p>
               </div>
 
-              {/* Segmented Tab Switcher */}
-              <div className="grid grid-cols-2 p-1 bg-slate-100 rounded-lg border border-slate-200 mb-6 font-mono text-xs">
+              {/* Segmented Tab Switcher with gliding pill */}
+              <div className="grid grid-cols-2 p-1 bg-slate-100 rounded-lg border border-slate-200 mb-6 font-mono text-xs relative">
                 <button
                   type="button"
                   onClick={() => {
                     setActiveTab('staff');
-                    setEmail('d.vance@credvidhi.com');
+                    setEmail('d.vance@dhanexa.com');
                     setErrorMessage(null);
                   }}
-                  className={`py-2 rounded-md font-semibold transition-all cursor-pointer ${
+                  className={`relative py-2 rounded-md font-semibold transition-colors cursor-pointer z-10 ${
                     activeTab === 'staff'
-                      ? 'bg-white text-orange-600 shadow-xs'
+                      ? 'text-orange-600'
                       : 'text-slate-600 hover:text-slate-900'
                   }`}
                 >
-                  Staff SSO Portal
+                  {activeTab === 'staff' && (
+                    <motion.div
+                      layoutId={shouldReduceMotion ? undefined : 'auth-tab-pill'}
+                      className="absolute inset-0 bg-white rounded-md shadow-xs -z-10"
+                      transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+                    />
+                  )}
+                  <span>Staff SSO Portal</span>
                 </button>
                 <button
                   type="button"
@@ -230,23 +247,38 @@ export const LoginPage: React.FC = () => {
                     setApplicantRef('APP-2026-0891');
                     setErrorMessage(null);
                   }}
-                  className={`py-2 rounded-md font-semibold transition-all cursor-pointer ${
+                  className={`relative py-2 rounded-md font-semibold transition-colors cursor-pointer z-10 ${
                     activeTab === 'borrower'
-                      ? 'bg-white text-orange-600 shadow-xs'
+                      ? 'text-orange-600'
                       : 'text-slate-600 hover:text-slate-900'
                   }`}
                 >
-                  Borrower Portal
+                  {activeTab === 'borrower' && (
+                    <motion.div
+                      layoutId={shouldReduceMotion ? undefined : 'auth-tab-pill'}
+                      className="absolute inset-0 bg-white rounded-md shadow-xs -z-10"
+                      transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+                    />
+                  )}
+                  <span>Borrower Portal</span>
                 </button>
               </div>
 
-              {/* Error Message Display */}
-              {errorMessage && (
-                <div className="mb-4 p-3 rounded-md bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-center gap-2">
-                  <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
-                  <span>{errorMessage}</span>
-                </div>
-              )}
+              {/* Error Message Display with fluid animation */}
+              <AnimatePresence>
+                {errorMessage && (
+                  <motion.div
+                    variants={shouldReduceMotion ? undefined : formErrorVariants}
+                    initial="initial"
+                    animate="animate"
+                    exit="exit"
+                    className="mb-4 p-3 rounded-md bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-center gap-2 overflow-hidden"
+                  >
+                    <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+                    <span>{errorMessage}</span>
+                  </motion.div>
+                )}
+              </AnimatePresence>
 
               {/* FORM */}
               <form onSubmit={handleSubmit} className="space-y-4">
@@ -257,7 +289,7 @@ export const LoginPage: React.FC = () => {
                       type="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      placeholder="e.g. d.vance@credvidhi.com"
+                      placeholder="e.g. d.vance@dhanexa.com"
                       autoComplete="username"
                       required
                     />
@@ -283,12 +315,12 @@ export const LoginPage: React.FC = () => {
                           placeholder="Enter your security password"
                           autoComplete="current-password"
                           required
-                          className="w-full text-xs p-2.5 bg-slate-50 border border-slate-300 rounded focus:outline-none focus:ring-2 focus:ring-orange-500 focus:bg-white pr-10 font-mono"
+                          className="w-full text-xs p-2.5 bg-slate-50 border border-slate-300 rounded focus:outline-none focus:ring-2 focus:ring-orange-500 focus:bg-white pr-10 font-mono transition-colors"
                         />
                         <button
                           type="button"
                           onClick={() => setShowPassword(!showPassword)}
-                          className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600 focus:outline-none"
+                          className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600 focus:outline-none cursor-pointer"
                           aria-label="Toggle password visibility"
                         >
                           {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -302,7 +334,7 @@ export const LoginPage: React.FC = () => {
                           type="checkbox"
                           checked={rememberMe}
                           onChange={(e) => setRememberMe(e.target.checked)}
-                          className="rounded border-slate-300 text-orange-600 focus:ring-orange-500"
+                          className="rounded border-slate-300 text-orange-600 focus:ring-orange-500 accent-orange-600"
                         />
                         <span>Remember workstation session</span>
                       </label>
@@ -360,7 +392,7 @@ export const LoginPage: React.FC = () => {
                 )}
               </form>
 
-              {/* QUICK DEMO CREDENTIAL SELECTOR (Evaluator Convenience) */}
+              {/* QUICK DEMO CREDENTIAL SELECTOR */}
               <div className="mt-8 pt-6 border-t border-slate-200">
                 <div className="flex items-center justify-between mb-3">
                   <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-500">
@@ -372,8 +404,10 @@ export const LoginPage: React.FC = () => {
                 </div>
 
                 <div className="grid grid-cols-2 gap-2">
-                  <button
+                  <motion.button
                     type="button"
+                    whileHover={!shouldReduceMotion ? { y: -2, scale: 1.01 } : undefined}
+                    whileTap={!shouldReduceMotion ? { scale: 0.98 } : undefined}
                     onClick={() => handleQuickLogin('LOAN_OFFICER')}
                     className="p-2.5 bg-slate-50 hover:bg-orange-50/60 border border-slate-200 hover:border-orange-300 rounded text-left transition-all cursor-pointer group"
                   >
@@ -386,10 +420,12 @@ export const LoginPage: React.FC = () => {
                     <div className="text-[10px] text-slate-500 font-mono mt-0.5">
                       Officer Queue & Docs
                     </div>
-                  </button>
+                  </motion.button>
 
-                  <button
+                  <motion.button
                     type="button"
+                    whileHover={!shouldReduceMotion ? { y: -2, scale: 1.01 } : undefined}
+                    whileTap={!shouldReduceMotion ? { scale: 0.98 } : undefined}
                     onClick={() => handleQuickLogin('RISK_ANALYST')}
                     className="p-2.5 bg-slate-50 hover:bg-orange-50/60 border border-slate-200 hover:border-orange-300 rounded text-left transition-all cursor-pointer group"
                   >
@@ -402,10 +438,12 @@ export const LoginPage: React.FC = () => {
                     <div className="text-[10px] text-slate-500 font-mono mt-0.5">
                       Underwriting Cockpit
                     </div>
-                  </button>
+                  </motion.button>
 
-                  <button
+                  <motion.button
                     type="button"
+                    whileHover={!shouldReduceMotion ? { y: -2, scale: 1.01 } : undefined}
+                    whileTap={!shouldReduceMotion ? { scale: 0.98 } : undefined}
                     onClick={() => handleQuickLogin('ADMIN')}
                     className="p-2.5 bg-slate-50 hover:bg-orange-50/60 border border-slate-200 hover:border-orange-300 rounded text-left transition-all cursor-pointer group"
                   >
@@ -418,10 +456,12 @@ export const LoginPage: React.FC = () => {
                     <div className="text-[10px] text-slate-500 font-mono mt-0.5">
                       Audit Logs & Matrix
                     </div>
-                  </button>
+                  </motion.button>
 
-                  <button
+                  <motion.button
                     type="button"
+                    whileHover={!shouldReduceMotion ? { y: -2, scale: 1.01 } : undefined}
+                    whileTap={!shouldReduceMotion ? { scale: 0.98 } : undefined}
                     onClick={() => handleQuickLogin('APPLICANT')}
                     className="p-2.5 bg-slate-50 hover:bg-orange-50/60 border border-slate-200 hover:border-orange-300 rounded text-left transition-all cursor-pointer group"
                   >
@@ -434,7 +474,7 @@ export const LoginPage: React.FC = () => {
                     <div className="text-[10px] text-slate-500 font-mono mt-0.5">
                       Loan Tracker Portal
                     </div>
-                  </button>
+                  </motion.button>
                 </div>
               </div>
             </div>
@@ -445,36 +485,35 @@ export const LoginPage: React.FC = () => {
               <span>All authentication events are logged</span>
             </div>
           </div>
-
-        </div>
+        </motion.div>
       </div>
 
       {/* Simplified Footer */}
       <footer className="px-6 py-4 text-center text-xs text-slate-400 border-t border-slate-200 bg-white">
-        © 2026 CredVidhi Architecture. Deterministic Underwriting & Loan Management Platform.
+        © 2026 Dhanexa Architecture. Deterministic Underwriting & Loan Management Platform.
       </footer>
 
-      {/* Forgot Password Modal */}
-      {forgotModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-xs p-4">
-          <div className="bg-white rounded-lg border border-slate-200 p-6 max-w-sm w-full space-y-4 shadow-elevated">
-            <h4 className="text-sm font-bold text-slate-900">
-              Institutional Password Recovery
-            </h4>
-            <p className="text-xs text-slate-600 leading-relaxed">
-              Staff passwords are managed via your institution's LDAP / Active Directory service.
-              Please reach out to the IT Security Administrator or click below to use the 1-click evaluation personas.
-            </p>
-            <Button
-              variant="primary"
-              className="w-full justify-center"
-              onClick={() => setForgotModalOpen(false)}
-            >
-              Understood
-            </Button>
-          </div>
-        </div>
-      )}
+      {/* Forgot Password Modal with Framer Motion AnimatePresence */}
+      <Modal
+        isOpen={forgotModalOpen}
+        onClose={() => setForgotModalOpen(false)}
+        title="Institutional Password Recovery"
+        maxWidth="sm"
+        footer={
+          <Button
+            variant="primary"
+            className="w-full justify-center"
+            onClick={() => setForgotModalOpen(false)}
+          >
+            Understood
+          </Button>
+        }
+      >
+        <p className="text-xs text-slate-600 leading-relaxed">
+          Staff passwords are managed via your institution's LDAP / Active Directory service.
+          Please reach out to the IT Security Administrator or click below to use the 1-click evaluation personas.
+        </p>
+      </Modal>
     </div>
   );
 };

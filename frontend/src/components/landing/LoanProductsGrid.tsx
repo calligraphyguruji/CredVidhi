@@ -1,4 +1,5 @@
 import React from 'react';
+import { motion, useReducedMotion } from 'framer-motion';
 import { ArrowRight, Check } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { Button } from '../ui/Button';
@@ -6,13 +7,20 @@ import { formatCurrency } from '../../utils/financial';
 
 export const LoanProductsGrid: React.FC = () => {
   const { products, setActiveView, switchRole } = useApp();
+  const shouldReduceMotion = useReducedMotion();
 
   return (
-    <section id="products" className="py-16 md:py-24 bg-slate-50 border-b border-slate-200">
+    <section id="products" className="py-16 md:py-24 bg-slate-50 border-b border-slate-200 overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Section Heading */}
-        <div className="max-w-3xl mb-12">
+        <motion.div
+          initial={shouldReduceMotion ? undefined : { opacity: 0, y: 12 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: '-60px' }}
+          transition={{ duration: 0.3 }}
+          className="max-w-3xl mb-12"
+        >
           <div className="inline-flex items-center gap-2 text-xs font-mono font-semibold uppercase text-orange-700 bg-orange-50 px-2.5 py-1 rounded border border-orange-200 mb-3">
             <span>TRANSPARENT INSTITUTIONAL FINANCING</span>
           </div>
@@ -23,14 +31,19 @@ export const LoanProductsGrid: React.FC = () => {
             Every loan product enforces explicit eligibility thresholds, maximum Debt-to-Income (DTI)
             ceilings, and mandatory document verification checklists.
           </p>
-        </div>
+        </motion.div>
 
         {/* 3-Column Product Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {products.map((product) => (
-            <div
+          {products.map((product, i) => (
+            <motion.div
               key={product.id}
-              className="bg-white rounded-xl border border-slate-200 shadow-xs p-6 flex flex-col justify-between hover:shadow-card hover:border-slate-300 transition-all"
+              initial={shouldReduceMotion ? undefined : { opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-40px' }}
+              transition={{ duration: 0.3, delay: shouldReduceMotion ? 0 : i * 0.08 }}
+              whileHover={!shouldReduceMotion ? { y: -3, transition: { duration: 0.2 } } : undefined}
+              className="bg-white rounded-xl border border-slate-200 shadow-xs p-6 flex flex-col justify-between hover:shadow-card hover:border-slate-300 transition-colors"
             >
               <div>
                 {/* Product Badge */}
@@ -99,7 +112,7 @@ export const LoanProductsGrid: React.FC = () => {
               >
                 Apply for {product.name.replace(' Loan', '').replace(' Unsecured', '')}
               </Button>
-            </div>
+            </motion.div>
           ))}
         </div>
 

@@ -1,4 +1,5 @@
 import React from 'react';
+import { motion, useReducedMotion, type HTMLMotionProps } from 'framer-motion';
 
 interface CardProps {
   children: React.ReactNode;
@@ -7,6 +8,8 @@ interface CardProps {
   subtitle?: React.ReactNode;
   headerAction?: React.ReactNode;
   footer?: React.ReactNode;
+  interactive?: boolean;
+  onClick?: () => void;
 }
 
 export const Card: React.FC<CardProps> = ({
@@ -16,11 +19,25 @@ export const Card: React.FC<CardProps> = ({
   subtitle,
   headerAction,
   footer,
+  interactive = false,
+  onClick,
 }) => {
-  return (
-    <div
-      className={`bg-white rounded-md border border-slate-200 shadow-sm transition-all overflow-hidden ${className}`}
-    >
+  const shouldReduceMotion = useReducedMotion();
+
+  const motionProps: HTMLMotionProps<'div'> =
+    interactive && !shouldReduceMotion
+      ? {
+          whileHover: { y: -2, transition: { duration: 0.2, ease: [0.16, 1, 0.3, 1] } },
+          whileTap: onClick ? { scale: 0.995 } : undefined,
+        }
+      : {};
+
+  const commonClasses = `bg-white rounded-md border border-slate-200 shadow-xs transition-[border-color,box-shadow] duration-200 overflow-hidden ${
+    interactive ? 'hover:border-slate-300 hover:shadow-md cursor-pointer' : ''
+  } ${className}`;
+
+  const content = (
+    <>
       {(title || subtitle || headerAction) && (
         <div className="px-4 py-3 border-b border-slate-200 flex items-center justify-between gap-3 bg-slate-50/50">
           <div>
@@ -32,6 +49,24 @@ export const Card: React.FC<CardProps> = ({
       )}
       <div className="p-4">{children}</div>
       {footer && <div className="px-4 py-3 bg-slate-50 border-t border-slate-200">{footer}</div>}
+    </>
+  );
+
+  if (interactive) {
+    return (
+      <motion.div
+        onClick={onClick}
+        {...motionProps}
+        className={commonClasses}
+      >
+        {content}
+      </motion.div>
+    );
+  }
+
+  return (
+    <div onClick={onClick} className={commonClasses}>
+      {content}
     </div>
   );
 };

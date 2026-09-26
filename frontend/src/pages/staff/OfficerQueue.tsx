@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { motion, useReducedMotion } from 'framer-motion';
 import {
   Search,
   ExternalLink,
@@ -10,7 +11,9 @@ import {
 import { useApp } from '../../context/AppContext';
 import { Badge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
+import { AnimatedCounter } from '../../components/ui/AnimatedCounter';
 import { formatCurrency, formatDateTime } from '../../utils/financial';
+import { tableRowVariants } from '../../utils/motion';
 
 export const OfficerQueue: React.FC = () => {
   const {
@@ -22,6 +25,7 @@ export const OfficerQueue: React.FC = () => {
 
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
+  const shouldReduceMotion = useReducedMotion();
 
   // KPI Metrics
   const totalCount = applications.length;
@@ -87,43 +91,63 @@ export const OfficerQueue: React.FC = () => {
         </div>
       </div>
 
-      {/* KPI Summary Cards */}
+      {/* KPI Summary Cards with Animated Counters */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white p-4 rounded-md border border-slate-200 shadow-xs">
+        <motion.div
+          whileHover={!shouldReduceMotion ? { y: -2 } : undefined}
+          className="bg-white p-4 rounded-md border border-slate-200 shadow-xs transition-shadow hover:shadow-md"
+        >
           <div className="flex items-center justify-between text-slate-500 text-xs">
             <span>Total Inbound Docket</span>
             <TrendingUp className="w-4 h-4 text-orange-600" />
           </div>
-          <div className="text-2xl font-bold font-mono text-slate-900 mt-2">{totalCount}</div>
+          <div className="text-2xl font-bold font-mono text-slate-900 mt-2">
+            <AnimatedCounter value={totalCount} duration={0.6} />
+          </div>
           <div className="text-[11px] text-slate-500 mt-1">Active institutional portfolio</div>
-        </div>
+        </motion.div>
 
-        <div className="bg-white p-4 rounded-md border border-slate-200 shadow-xs">
+        <motion.div
+          whileHover={!shouldReduceMotion ? { y: -2 } : undefined}
+          className="bg-white p-4 rounded-md border border-slate-200 shadow-xs transition-shadow hover:shadow-md"
+        >
           <div className="flex items-center justify-between text-slate-500 text-xs">
             <span>Pending Document Triage</span>
             <Clock className="w-4 h-4 text-amber-600" />
           </div>
-          <div className="text-2xl font-bold font-mono text-amber-700 mt-2">{underReviewCount}</div>
+          <div className="text-2xl font-bold font-mono text-amber-700 mt-2">
+            <AnimatedCounter value={underReviewCount} duration={0.6} />
+          </div>
           <div className="text-[11px] text-amber-600/80 mt-1">Awaiting KYC checklist signoff</div>
-        </div>
+        </motion.div>
 
-        <div className="bg-white p-4 rounded-md border border-slate-200 shadow-xs">
+        <motion.div
+          whileHover={!shouldReduceMotion ? { y: -2 } : undefined}
+          className="bg-white p-4 rounded-md border border-slate-200 shadow-xs transition-shadow hover:shadow-md"
+        >
           <div className="flex items-center justify-between text-slate-500 text-xs">
             <span>Ready for Underwriting</span>
             <FileCheck2 className="w-4 h-4 text-orange-600" />
           </div>
-          <div className="text-2xl font-bold font-mono text-orange-600 mt-2">{readyForRiskCount}</div>
+          <div className="text-2xl font-bold font-mono text-orange-600 mt-2">
+            <AnimatedCounter value={readyForRiskCount} duration={0.6} />
+          </div>
           <div className="text-[11px] text-orange-600/80 mt-1">Documents 100% certified</div>
-        </div>
+        </motion.div>
 
-        <div className="bg-white p-4 rounded-md border border-slate-200 shadow-xs">
+        <motion.div
+          whileHover={!shouldReduceMotion ? { y: -2 } : undefined}
+          className="bg-white p-4 rounded-md border border-slate-200 shadow-xs transition-shadow hover:shadow-md"
+        >
           <div className="flex items-center justify-between text-slate-500 text-xs">
             <span>Sanctioned / Approved</span>
             <CheckCircle2 className="w-4 h-4 text-emerald-600" />
           </div>
-          <div className="text-2xl font-bold font-mono text-emerald-700 mt-2">{approvedCount}</div>
+          <div className="text-2xl font-bold font-mono text-emerald-700 mt-2">
+            <AnimatedCounter value={approvedCount} duration={0.6} />
+          </div>
           <div className="text-[11px] text-emerald-600/80 mt-1">Decisions completed</div>
-        </div>
+        </motion.div>
       </div>
 
       {/* Filter and Search Bar */}
@@ -140,8 +164,8 @@ export const OfficerQueue: React.FC = () => {
           />
         </div>
 
-        {/* Filter Pills */}
-        <div className="flex items-center gap-1 overflow-x-auto text-xs">
+        {/* Filter Pills with gliding indicator */}
+        <div className="flex items-center gap-1 overflow-x-auto text-xs relative">
           <span className="text-slate-400 mr-1 text-[11px] font-mono">STATUS:</span>
           {[
             { id: 'ALL', label: 'All Files' },
@@ -149,19 +173,29 @@ export const OfficerQueue: React.FC = () => {
             { id: 'DOCUMENTS_VERIFIED', label: 'Docs Verified' },
             { id: 'RISK_ASSESSED', label: 'Risk Evaluated' },
             { id: 'APPROVED', label: 'Approved' },
-          ].map((pill) => (
-            <button
-              key={pill.id}
-              onClick={() => setStatusFilter(pill.id)}
-              className={`px-2.5 py-1 rounded text-xs font-medium transition-all ${
-                statusFilter === pill.id
-                  ? 'bg-orange-600 text-white shadow-xs'
-                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200/70'
-              }`}
-            >
-              {pill.label}
-            </button>
-          ))}
+          ].map((pill) => {
+            const isSelected = statusFilter === pill.id;
+            return (
+              <button
+                key={pill.id}
+                onClick={() => setStatusFilter(pill.id)}
+                className={`relative px-2.5 py-1 rounded text-xs font-medium transition-colors cursor-pointer ${
+                  isSelected
+                    ? 'text-white'
+                    : 'text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200/70'
+                }`}
+              >
+                {isSelected && (
+                  <motion.div
+                    layoutId={shouldReduceMotion ? undefined : 'queue-filter-pill'}
+                    className="absolute inset-0 bg-orange-600 rounded shadow-xs"
+                    transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+                  />
+                )}
+                <span className="relative z-10">{pill.label}</span>
+              </button>
+            );
+          })}
         </div>
       </div>
 
@@ -191,8 +225,11 @@ export const OfficerQueue: React.FC = () => {
                 </tr>
               ) : (
                 filteredApplications.map((app) => (
-                  <tr
+                  <motion.tr
                     key={app.id}
+                    variants={shouldReduceMotion ? undefined : tableRowVariants}
+                    initial="initial"
+                    animate="animate"
                     className="hover:bg-orange-50/40 transition-colors group cursor-pointer"
                     onClick={() => handleOpenWorkbench(app.id)}
                   >
@@ -269,7 +306,7 @@ export const OfficerQueue: React.FC = () => {
                         </Button>
                       )}
                     </td>
-                  </tr>
+                  </motion.tr>
                 ))
               )}
             </tbody>
