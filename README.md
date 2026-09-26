@@ -2,84 +2,120 @@
 
 # 🏛️ CredVidhi
 
-### Enterprise-Grade Loan Origination, Risk Underwriting & Processing System
+### Enterprise-Grade Loan Origination, Risk Underwriting & Lifecycle Governance System
 
 [![React](https://img.shields.io/badge/React-19.2-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Vite](https://img.shields.io/badge/Vite-6.x-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vite.dev/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.4-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
 [![Framer Motion](https://img.shields.io/badge/Framer_Motion-12.x-EA580C?style=for-the-badge&logo=framer&logoColor=white)](https://www.framer.com/motion/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
 [![Build Status](https://img.shields.io/badge/Build-Passing-brightgreen?style=for-the-badge)](https://github.com/calligraphyguruji/CredVidhi)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
 
 <p align="center">
-  <b>A deterministic, auditable, and secure financial platform designed for banks, NBFCs, and fintech lenders to automate the end-to-end credit origination lifecycle.</b>
+  <b>A deterministic, auditable, and secure financial platform designed for banks, NBFCs, and digital lenders to automate the end-to-end retail and commercial credit origination lifecycle.</b>
 </p>
 
-[Key Features](#-key-capabilities) •
+[System Overview](#-system-overview) •
+[Why CredVidhi](#-why-credvidhi) •
+[Core Workspaces](#-core-workspaces--ui-walkthrough) •
 [Architecture](#-system-architecture) •
-[Workflow & Lifecycle](#-loan-lifecycle-finite-state-machine) •
+[FSM Lifecycle](#-loan-lifecycle-finite-state-machine) •
+[Financial Engine](#-underwriting--financial-engine) •
 [Role Matrix](#-role-based-access-control-rbac) •
-[Mathematical Engine](#-underwriting--financial-engine) •
+[API Specification](#-standardized-api--error-envelope) •
 [Quickstart](#-getting-started) •
-[Documentation](#-governance--documentation)
+[Design System](#-design-system--motion-principles)
 
 ---
+
+<img src="frontend/src/assets/hero.png" alt="CredVidhi Platform Preview" width="100%" style="border-radius: 12px; border: 1px solid #e2e8f0; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05);" />
 
 </div>
 
-## 📌 Executive Summary
+---
 
-Modern lending organizations suffer from fragmented communication between loan officers and underwriters, opaque risk models, document management bottlenecks, and high regulatory audit risk.
+## 📌 System Overview
 
-**CredVidhi** bridges this gap by replacing manual handoffs with a **deterministic, rule-driven, and immutable credit processing platform**. From digital borrower intake to rigorous document verification, real-time debt-to-income (DTI) computation, and underwriting governance, CredVidhi enforces zero floating-point drift, end-to-end traceability, and institutional security.
+Modern lending institutions struggle with disconnected handoffs between sales officers, document clerks, and risk underwriters. Traditional manual pipelines result in high turnaround times (TAT), human-prone calculation errors, compliance vulnerabilities during audits, and opaque rejection rationales.
+
+**CredVidhi** delivers a unified, high-trust digital origination platform that enforces **mathematical determinism, non-negotiable state machines, and immutable audit logging**.
+
+Every calculation—from Debt-to-Income (DTI) and monthly compounding EMI amortization to risk scoring—is computed using fixed-point precision with strict zero-drift guarantees in **Indian Rupees (`₹`)**.
 
 ---
 
-## ⚡ Key Capabilities
+## ⚖️ Why CredVidhi?
 
-### 1. 🚀 Borrower Origination Portal
-- **Guided Multi-Step Application Wizard:** Streamlined intake for Personal, Home, and Business loans.
-- **Dynamic EMI & Loan Estimator:** Instant amortization and monthly payment preview calibrated in Indian Rupees (`₹`).
-- **Secure Document Upload:** Support for identity, income proof, and bank statements with immediate file-type and size validation.
-- **Real-Time Status Tracking:** Transparent borrower timeline tracking review stages, approval conditions, and disbursement milestones.
+| Strategic Dimension | Traditional Manual Operations | CredVidhi Automated Platform |
+| :--- | :--- | :--- |
+| **Turnaround Time (TAT)** | 5 to 14 business days | **Under 24 hours** (Instant pre-qualification) |
+| **Financial Calculations** | Manual spreadsheets (prone to IEEE 754 float drift) | **Deterministic fixed-point arithmetic** (`NUMERIC(14,2)`) |
+| **Document Verification** | Disjointed email threads & physical paper folders | **Structured checklists & status-flagged queues** |
+| **Risk Scoring** | Undocumented ad-hoc heuristics | **Reproducible mathematical scorecards** |
+| **Audit Compliance** | Fragmented paper records & retrospective logs | **Cryptographic, append-only immutable event ledger** |
+| **Security & Privacy** | Plaintext PII in email chains | **Masked PII (`***-**-1234`), encrypted document storage** |
 
-### 2. 📋 Officer Verification Cockpit
-- **Unified Application Triage:** Filterable queues by status, loan category, risk grade, and date.
-- **Interactive Document Verification Checklist:** Structured inspection for KYC, PAN, Aadhaar, salary slips, and ITR documents with discrepancy flagging.
-- **Verification History & Notes:** Full reviewer notes trail appended to the application ledger.
+---
 
-### 3. ⚖️ Underwriting & Risk Cockpit
-- **Deterministic Risk Scoring:** Mathematical assessment evaluating borrower liquidity, credit history, disposable income, and collateral.
-- **Live Financial Breakdown:** Real-time Debt-to-Income (DTI) ratio tracking with visual warning thresholds.
-- **Decision Engine with Guardrails:** One-click Approve, Reject, or Request Additional Information with mandatory justification logs.
+## 🖥️ Core Workspaces & UI Walkthrough
 
-### 4. 🛡️ Enterprise Audit & Compliance
-- **Immutable Audit Logging:** Every status change, document verification, and underwriting decision creates an append-only audit log entry.
-- **Role-Based Access Control (RBAC):** Strict boundaries separating Applicants, Loan Officers, Risk Analysts, and Administrators.
-- **FinTech Motion System:** Restrained, accessible animations powered by Framer Motion (`prefers-reduced-motion` compliant).
+CredVidhi provides dedicated, purpose-built workspaces tailored to each key stakeholder in the lending lifecycle:
+
+```text
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                             CREDVIDHI ECOSYSTEM                             │
+├──────────────────────┬──────────────────────┬───────────────────────────────┤
+│   Borrower Portal    │  Officer Workbench   │      Underwriting Cockpit     │
+│  • Digital Wizard    │  • Queue Management  │  • Real-Time DTI Assessment   │
+│  • EMI Calculator    │  • KYC Checklist     │  • Disposable Income Analysis │
+│  • Document Upload   │  • Discrepancy Flags │  • One-Click Decision Engine  │
+│  • Status Timeline   │  • Application Notes │  • Policy Exception Audit     │
+└──────────────────────┴──────────────────────┴───────────────────────────────┘
+```
+
+### 1. 🚀 Borrower Digital Intake Portal
+- **Guided Multi-Step Application Wizard:** Contextual inputs for Personal, Home, and Business loans with inline validation.
+- **Dynamic EMI & Loan Estimator:** Immediate payment preview calibrated to loan tenure, principal, and interest rate.
+- **Secure Document Upload:** Instant client-side validation for KYC documents (PAN, Aadhaar, salary slips, ITR) with size and MIME-type restrictions.
+- **Live Lifecycle Tracker:** Transparent, real-time visual progress tracker keeping applicants informed at every review gate.
+
+### 2. 📋 Loan Officer Verification Cockpit
+- **Unified Processing Queue:** Instant status filters (`SUBMITTED`, `UNDER_REVIEW`, `DOCUMENTS_PENDING`) with multi-column sorting.
+- **Document Verification Workbench:** Side-by-side inspection checklist allowing officers to approve, reject, or request re-upload of specific documents with reviewer notes.
+- **Discrepancy Triage:** Prevents applications from proceeding to credit assessment until mandatory verification criteria are met.
+
+### 3. 📊 Quantitative Underwriting Cockpit
+- **Live Financial Breakdown:** Real-time Debt-to-Income (DTI) ratio tracking against configurable policy limits ($\le 45\%$).
+- **Disposable Income Surplus:** Computes net uncommitted monthly income to guarantee debt servicing cushion.
+- **Deterministic Risk Scoring:** Mathematical grading evaluating liquidity, repayment history, income stability, and collateral coverage.
+- **Guarded Decision Actions:** Direct approval/rejection actions requiring mandatory written justifications logged into the immutable audit trail.
+
+### 4. 🛡️ Compliance & Immutable Audit Stream
+- **Event-Driven Audit Stream:** Chronological event feed capturing actor ID, timestamp, prior state, subsequent state, and IP context.
+- **Non-Destructive Data Retention:** Strictly prohibits hard deletes; superseded applications and cancelled workflows are archived immutably.
 
 ---
 
 ## 🏗️ System Architecture
 
-CredVidhi is architected with clear domain-driven boundaries, isolating client UI, application orchestration, financial calculations, and secure data persistence.
+CredVidhi enforces clear domain-driven separation between the user interface, orchestration engine, financial calculations, and persistent storage:
 
 ```mermaid
 graph TB
-    subgraph Client ["Client Layer (React 19 + TypeScript + Vite)"]
-        UI_Borrower["Borrower Portal<br/>(Wizard & Application Tracker)"]
-        UI_Officer["Loan Officer Cockpit<br/>(Triage & Doc Verification)"]
+    subgraph Client ["Client Presentation Layer (React 19 + TypeScript + Vite)"]
+        UI_Borrower["Borrower Application Portal<br/>(Wizard & Real-Time Tracker)"]
+        UI_Officer["Loan Officer Workbench<br/>(Queue Triage & Doc Verification)"]
         UI_Underwriter["Underwriting Cockpit<br/>(Risk Assessment & DTI Engine)"]
-        UI_Admin["Compliance & Audit View<br/>(Event Stream & User Admin)"]
+        UI_Admin["Compliance & Audit View<br/>(Immutable Event Ledger)"]
     end
 
-    subgraph API ["Application Layer (FastAPI Core Engine)"]
-        AuthService["Auth & RBAC Service<br/>(JWT & Session Guard)"]
+    subgraph Core ["Application Orchestration Layer (FastAPI Core Engine)"]
+        AuthService["Auth & RBAC Service<br/>(JWT Tokens & Role Guard)"]
         WorkflowEngine["FSM Workflow Engine<br/>(State Transition Guardrails)"]
         UnderwritingEngine["Deterministic Scoring Engine<br/>(Fixed-Point Math in ₹)"]
-        DocService["Document & Storage Manager<br/>(UUID Obfuscation & S3 Storage)"]
-        AuditService["Audit Trail Logger<br/>(Immutable Event Envelope)"]
+        DocService["Document Storage Service<br/>(UUID Obfuscation & S3 Storage)"]
+        AuditService["Audit Trail Service<br/>(Append-Only Event Ledger)"]
     end
 
     subgraph Data ["Persistence & Cache Layer"]
@@ -88,7 +124,7 @@ graph TB
         S3Storage[("Secure Object Storage<br/>(Encrypted Loan Documents)")]
     end
 
-    Client -->|REST / JSON Envelope| API
+    Client -->|REST API / JSON Envelopes| Core
     AuthService --> DB
     WorkflowEngine --> DB
     UnderwritingEngine --> DB
@@ -101,119 +137,165 @@ graph TB
 
 ## 🔄 Loan Lifecycle (Finite State Machine)
 
-Every loan application follows a non-reversible, deterministic state progression with strict rollback protections and atomic audit logging.
+Every loan application transitions through a strictly non-reversible sequence governed by database ACID transaction envelopes:
 
 ```mermaid
 stateDiagram-v2
-    [*] --> DRAFT: Applicant begins draft
-    DRAFT --> SUBMITTED: Application submitted
+    [*] --> DRAFT: Applicant initiates draft
+    DRAFT --> SUBMITTED: Application submitted with baseline info
     
-    SUBMITTED --> UNDER_REVIEW: Loan Officer claims queue item
-    UNDER_REVIEW --> DOCUMENTS_PENDING: Discrepancy or missing docs
-    DOCUMENTS_PENDING --> UNDER_REVIEW: Additional docs uploaded
+    SUBMITTED --> UNDER_REVIEW: Loan Officer assigns to queue
+    UNDER_REVIEW --> DOCUMENTS_PENDING: Document rejected / missing
+    DOCUMENTS_PENDING --> UNDER_REVIEW: Corrected document re-uploaded
     
-    UNDER_REVIEW --> DOCUMENTS_VERIFIED: All KYC & income proofs verified
-    DOCUMENTS_VERIFIED --> RISK_ASSESSED: Automated DTI & risk scoring computed
+    UNDER_REVIEW --> DOCUMENTS_VERIFIED: All KYC & income proofs approved
+    DOCUMENTS_VERIFIED --> RISK_ASSESSED: Deterministic DTI & risk scoring calculated
     
-    RISK_ASSESSED --> APPROVED: Underwriter approves with terms
-    RISK_ASSESSED --> REJECTED: Failed risk score / DTI threshold
+    RISK_ASSESSED --> APPROVED: Underwriter approves with final terms
+    RISK_ASSESSED --> REJECTED: Disqualified (DTI > threshold or risk failure)
     
-    APPROVED --> DISBURSED: Disbursement milestone recorded
+    APPROVED --> DISBURSED: Operational disbursement recorded
     REJECTED --> [*]
     DISBURSED --> [*]
 ```
 
----
-
-## 👥 Role-Based Access Control (RBAC)
-
-CredVidhi strictly enforces privilege boundaries at both the route and API dependency layers:
-
-| Capability / Resource | Applicant | Loan Officer | Risk Analyst | Administrator |
-| :--- | :---: | :---: | :---: | :---: |
-| **Create & Submit Application** | ✅ | ❌ | ❌ | ❌ |
-| **View Personal Applications** | ✅ | ❌ | ❌ | ❌ |
-| **View Assigned Processing Queue** | ❌ | ✅ | ✅ | ✅ |
-| **Verify / Reject Uploaded Documents** | ❌ | ✅ | ❌ | ✅ |
-| **Execute Financial Underwriting** | ❌ | ❌ | ✅ | ✅ |
-| **Approve / Reject Loans** | ❌ | ❌ | ✅ | ✅ |
-| **Record Disbursement** | ❌ | ❌ | ❌ | ✅ |
-| **Inspect Immutable Audit Trail** | ❌ | ❌ | ❌ | ✅ |
-| **Configure System Products & Limits** | ❌ | ❌ | ❌ | ✅ |
+### State Transition Validation Invariants:
+1. **No Forward Skipping:** An application cannot transition from `SUBMITTED` directly to `APPROVED`.
+2. **Document Prerequisite:** An application cannot move to `RISK_ASSESSED` unless status is `DOCUMENTS_VERIFIED`.
+3. **Atomic Audit Logging:** State change and audit log record must be committed within the same database transaction; failure to persist audit rolls back the state change.
 
 ---
 
 ## 🧮 Underwriting & Financial Engine
 
-### 1. Debt-to-Income (DTI) Ratio Formula
+### 1. Debt-to-Income (DTI) Ratio
 
-The Debt-to-Income ratio evaluates an applicant's capacity to service the proposed loan:
+The Debt-to-Income ratio evaluates an applicant's capacity to service proposed debt obligations against verified monthly income:
 
 $$\text{DTI} = \left( \frac{\text{Total Existing Monthly Debts} + \text{Proposed Loan EMI}}{\text{Gross Monthly Income}} \right) \times 100$$
 
-- **Default Approval Threshold:** $\le 45\%$
-- **Conditional / Escalated Review:** $> 45\% \text{ and } \le 55\%$
-- **Automatic Disqualification:** $> 55\%$
+#### Regulatory & Policy Thresholds:
+- **Prime Tier ($\text{DTI} \le 45\%$):** Standard automated eligibility.
+- **Conditional Tier ($45\% < \text{DTI} \le 55\%$):** Requires senior underwriter signoff or additional collateral.
+- **Disqualified Tier ($\text{DTI} > 55\%$):** Automated rejection due to excessive debt burden.
 
-### 2. Equated Monthly Installment (EMI) Calculation
+---
+
+### 2. Equated Monthly Installment (EMI) Formula
 
 Fixed monthly repayment is calculated using standard compounding amortization:
 
 $$\text{EMI} = P \times r \times \frac{(1 + r)^n}{(1 + r)^n - 1}$$
 
 Where:
-- $P$ = Principal loan amount
-- $r$ = Monthly interest rate ($\frac{\text{Annual Interest Rate}}{12 \times 100}$)
+- $P$ = Principal loan amount in Rupees (`₹`)
+- $r$ = Periodic monthly interest rate ($\frac{\text{Annual Interest Rate}}{12 \times 100}$)
 - $n$ = Loan tenure in months
 
-> **Financial Precision Invariant:** All calculations avoid IEEE 754 floating-point drift by utilizing fixed-point `Decimal` (Python) and scaled integers/BigNumber on the client side, formatted in Indian Rupees (`₹`).
+---
+
+### 3. Disposable Monthly Income Surplus
+
+Evaluates net buffer remaining after all living expenses and total debt commitments:
+
+$$\text{Disposable Income} = \text{Gross Monthly Income} - (\text{Existing Debts} + \text{Proposed EMI} + \text{Living Expenses})$$
+
+> **Zero Floating-Point Drift Invariant:** All calculations avoid IEEE 754 precision issues by utilizing fixed-point `Decimal` (Python) and scaled integer arithmetic on the client, standardizing on Indian Rupees (`₹`).
 
 ---
 
-## 💻 Tech Stack & Dependencies
+## 👥 Role-Based Access Control (RBAC)
 
-| Area | Technology | Purpose |
-| :--- | :--- | :--- |
-| **Client UI** | [React 19](https://react.dev/) + [TypeScript](https://www.typescriptlang.org/) | Type-safe declarative frontend interface |
-| **Build Tool** | [Vite 6](https://vite.dev/) | Sub-second HMR and optimized asset bundling |
-| **Styling** | [Tailwind CSS 3.4](https://tailwindcss.com/) | Utility-first styling with custom Saffron design tokens |
-| **Motion** | [Framer Motion 12](https://www.framer.com/motion/) | Restrained, enterprise-grade physics and micro-interactions |
-| **Icons** | [Lucide React](https://lucide.dev/) | Clean, accessible vector UI icons |
-| **Linter** | [oxlint](https://oxc-project.github.io/) | Ultra-fast static analysis and style verification |
-| **Backend (Target)** | [FastAPI](https://fastapi.tiangolo.com/) (Python 3.11+) | Async REST API framework with Pydantic v2 validation |
-| **ORM & Migrations** | [SQLAlchemy 2.0](https://www.sqlalchemy.org/) + [Alembic](https://alembic.sqlalchemy.org/) | Async database abstraction and version-controlled migrations |
-| **Database** | [PostgreSQL 16](https://www.postgresql.org/) | Strict ACID storage with row-level locking and JSONB |
-| **Cache & Sessions** | [Redis 7](https://redis.io/) | High-throughput session management & rate limiting |
+CredVidhi implements granular, defense-in-depth role authorization:
+
+| Capability / Operational Action | Applicant | Loan Officer | Risk Underwriter | Compliance Admin |
+| :--- | :---: | :---: | :---: | :---: |
+| **Initiate & Edit Draft Application** | ✅ | ❌ | ❌ | ❌ |
+| **Submit Application & Upload KYC** | ✅ | ❌ | ❌ | ❌ |
+| **Track Personal Application Status** | ✅ | ❌ | ❌ | ❌ |
+| **Triage Application Processing Queue** | ❌ | ✅ | ✅ | ✅ |
+| **Inspect & Verify Uploaded Documents** | ❌ | ✅ | ❌ | ✅ |
+| **Flag Document Discrepancy** | ❌ | ✅ | ❌ | ✅ |
+| **Trigger Deterministic Risk Assessment** | ❌ | ❌ | ✅ | ✅ |
+| **Issue Final Approval / Rejection** | ❌ | ❌ | ✅ | ✅ |
+| **Record Disbursement Milestone** | ❌ | ❌ | ❌ | ✅ |
+| **Inspect Immutable Audit Trail** | ❌ | ❌ | ❌ | ✅ |
+| **Configure Loan Products & Limits** | ❌ | ❌ | ❌ | ✅ |
 
 ---
 
-## 📁 Repository Directory Structure
+## 📡 Standardized API & Error Envelope
 
-```text
-CredVidhi/
-├── README.md                  # Project overview, architecture & setup
-├── .gitignore                 # Environment & dependency ignore rules
-└── frontend/                  # React client application
-    ├── src/
-    │   ├── components/
-    │   │   ├── landing/       # High-conversion FinTech landing page sections
-    │   │   │   ├── HeroSection.tsx
-    │   │   │   ├── LoanProductsGrid.tsx
-    │   │   │   ├── WorkflowSection.tsx
-    │   │   │   ├── ProductPreview.tsx
-    │   │   │   └── SecurityTrustSection.tsx
-    │   │   ├── layout/        # Header, Sidebar, and App Shell
-    │   │   └── ui/            # Button, Input, Modal, Card, Toast, AnimatedCounter
-    │   ├── context/           # AppState & Global Notification Toast Context
-    │   ├── pages/
-    │   │   ├── applicant/     # Borrower application portal & multi-step wizard
-    │   │   ├── public/        # Landing page & Authentication portal
-    │   │   └── staff/         # Officer Queue & Underwriting Cockpit
-    │   └── utils/             # Motion tokens, easing curves, and currency helpers
-    ├── package.json
-    ├── tailwind.config.js
-    └── vite.config.ts
+All client-server communication utilizes predictable HTTP response codes and a strict response envelope:
+
+### Success Response Envelope
+```json
+{
+  "success": true,
+  "data": {
+    "application_id": "app_9f8d1c7e",
+    "status": "DOCUMENTS_VERIFIED",
+    "calculated_dti": 38.5,
+    "max_eligible_amount": 750000,
+    "evaluated_at": "2026-09-27T04:10:00Z"
+  },
+  "error": null
+}
 ```
+
+### Standardized Error Envelope
+```json
+{
+  "success": false,
+  "data": null,
+  "error": {
+    "code": "DTI_THRESHOLD_EXCEEDED",
+    "message": "Calculated Debt-to-Income ratio (58.2%) exceeds maximum allowable threshold (45.0%).",
+    "details": {
+      "calculated_dti": 58.2,
+      "max_threshold": 45.0,
+      "gross_monthly_income": 85000,
+      "total_monthly_debt": 49500
+    }
+  }
+}
+```
+
+---
+
+## 🎨 Design System & Motion Principles
+
+CredVidhi's design language combines institutional banking reliability with high-efficiency SaaS ergonomics:
+
+### 1. Color Palette
+- **Primary / Brand Saffron:** `#EA580C` (`orange-600`) — Represents trust, dynamism, and authentic financial identity.
+- **Dark Neutral / Charcoal:** `#0F172A` (`slate-900`) — High-contrast typography and deep framing.
+- **Surface & Backgrounds:** `#F8FAFC` (`slate-50`) & `#FFFFFF` — Clean, distraction-free work surfaces.
+- **Success / Approval:** `#059669` (`emerald-600`) — Verified KYC and approved underwriting.
+- **Warning / Pending:** `#D97706` (`amber-600`) — Incomplete documentation and escalated review.
+- **Destructive / Rejection:** `#DC2626` (`red-600`) — Failed credit assessment and rejected applications.
+
+### 2. Motion System (Framer Motion)
+- **Fast, Restrained Transitions:** 200–350ms with custom easing curves (`[0.16, 1, 0.3, 1]`) to provide immediate feedback without visual latency.
+- **Micro-Interactions:** Subtle button tap feedback (`scale: 0.98`), card hover lift (`y: -2px`), and sliding active menu indicators (`layoutId`).
+- **Full Accessibility:** Strict adherence to `prefers-reduced-motion` across all components; disables transforms while maintaining subtle opacity transitions.
+
+---
+
+## 💻 Tech Stack & Tooling
+
+| Domain | Technology | Justification & Architecture Role |
+| :--- | :--- | :--- |
+| **Frontend Framework** | [React 19](https://react.dev/) | High-performance component rendering with concurrent features |
+| **Language** | [TypeScript 5.x](https://www.typescriptlang.org/) | End-to-end static type safety and contract enforcement |
+| **Bundler & Tooling** | [Vite 6](https://vite.dev/) | Instant Hot Module Replacement (HMR) and optimized rollup bundle |
+| **Styling** | [Tailwind CSS 3.4](https://tailwindcss.com/) | Atomic CSS engine with custom Saffron design tokens |
+| **Motion** | [Framer Motion 12](https://www.framer.com/motion/) | Production-grade physics and accessible animations |
+| **Icons** | [Lucide React](https://lucide.dev/) | Consistent, accessible fintech vector icons |
+| **Linter** | [oxlint](https://oxc-project.github.io/) | Ultra-fast Rust-based static analyzer with 116 active rules |
+| **Target Backend** | [FastAPI](https://fastapi.tiangolo.com/) | High-throughput asynchronous Python 3.11+ web framework |
+| **Database** | [PostgreSQL 16](https://www.postgresql.org/) | Strict ACID guarantees, row-level locking, and JSONB auditing |
+| **Cache & Queue** | [Redis 7](https://redis.io/) | High-speed session invalidation and rate limiting |
 
 ---
 
@@ -225,32 +307,29 @@ CredVidhi/
 - **npm** or **pnpm**
 - **Git**
 
-### 1. Clone & Setup
+### Installation & Local Setup
 
 ```bash
-# Clone the repository
+# 1. Clone the repository
 git clone https://github.com/calligraphyguruji/CredVidhi.git
 cd CredVidhi
 
-# Navigate to the frontend directory
+# 2. Enter the frontend directory
 cd frontend
 
-# Install dependencies
+# 3. Install dependencies
 npm install
-```
 
-### 2. Run Development Server
-
-```bash
+# 4. Start local development server
 npm run dev
 ```
 
-The application will be accessible at `http://localhost:5173`.
+Open [http://localhost:5173](http://localhost:5173) in your browser.
 
-### 3. Build & Verification
+### Quality & Build Verification
 
 ```bash
-# Typecheck and production bundle build
+# Run production build and TypeScript compilation
 npm run build
 
 # Run fast code quality linter
@@ -262,35 +341,64 @@ npm run preview
 
 ---
 
-## 🔒 Security & Compliance Principles
+## 📁 Repository Structure
 
-- **Zero Secrets in Code:** All credentials, keys, and tokens are validated through environment variables.
-- **PII Data Masking:** Government identification numbers (PAN, Aadhaar, SSN) are masked in responses and logs (`***-**-1234`).
-- **Cryptographic Storage:** Loan documents are stored using non-guessable UUID keys; original filenames are sanitized.
-- **Append-Only Immutability:** Audit trail records cannot be updated or hard-deleted under any circumstance.
-- **No Mock Integrity Compromises:** Deterministic score evaluators and local test harnesses are explicitly designated as internal engines and never misrepresented as live external credit bureaus.
+```text
+CredVidhi/
+├── README.md                      # Comprehensive project documentation & architecture
+├── .gitignore                     # Git ignore rules for dependencies & environments
+└── frontend/                      # Production React client application
+    ├── public/                    # Static vector assets & favicons
+    ├── src/
+    │   ├── assets/                # Platform previews & images
+    │   ├── components/
+    │   │   ├── landing/           # High-conversion landing page sections
+    │   │   │   ├── HeroSection.tsx
+    │   │   │   ├── LoanProductsGrid.tsx
+    │   │   │   ├── WorkflowSection.tsx
+    │   │   │   ├── ProductPreview.tsx
+    │   │   │   ├── KeyCapabilities.tsx
+    │   │   │   ├── SecurityTrustSection.tsx
+    │   │   │   ├── Navbar.tsx
+    │   │   │   └── Footer.tsx
+    │   │   ├── layout/            # Navigation Header & Sidebar Shell
+    │   │   └── ui/                # Button, Input, Modal, Card, Toast, AnimatedCounter
+    │   ├── context/               # Global AppState & Toast Notification Context
+    │   ├── pages/
+    │   │   ├── applicant/         # Borrower Portal & Multi-Step Wizard
+    │   │   ├── staff/             # Officer Queue, Document Workbench & Underwriting Cockpit
+    │   │   ├── admin/             # Compliance Audit Log & Product Management
+    │   │   └── public/            # Landing Page & Role-Based Login Portal
+    │   ├── services/              # Mock Data & Deterministic Evaluation Engines
+    │   ├── types/                 # Application TypeScript Interfaces & Domain Models
+    │   └── utils/                 # Motion tokens, easing curves, and currency math
+    ├── package.json
+    ├── tailwind.config.js
+    └── vite.config.ts
+```
 
 ---
 
-## 📚 Governance & Standards
+## 🔒 Security & Institutional Compliance
 
-CredVidhi adheres to institutional-grade financial and operational specifications:
-
-- **Deterministic Underwriting:** Reproducible mathematical risk assessment with zero IEEE 754 floating-point drift.
-- **Strict Role-Based Access Control:** Hard boundaries separating Borrower, Officer, Underwriter, and Admin operations.
-- **Audit Immutability:** Append-only transaction envelopes recording every lifecycle transition and reviewer note.
-- **Non-Destructive Evolution:** Version-controlled database migrations with ACID transaction envelopes.
-- **Quality Verification Gates:** Comprehensive type-checking, fast static linting (`oxlint`), and frontend build checks.
+- **Zero Hardcoded Secrets:** All credentials, keys, and tokens are injected via environment variables.
+- **PII Masking by Default:** National identifiers (PAN, Aadhaar) are masked in responses and logs (`***-**-1234`).
+- **File Obfuscation:** Stored loan documents use secure, non-guessable UUID keys; original filenames are sanitized.
+- **Append-Only Immutability:** Audit records and state logs cannot be altered or deleted.
+- **Truth in Simulation:** Deterministic internal score evaluators are explicitly designated as internal engines and never misrepresented as live external credit bureaus.
 
 ---
 
 ## 🤝 Contributing
 
 1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/underwriting-matrix`)
-3. Commit your changes using [Conventional Commits](https://www.conventionalcommits.org/) (`git commit -m 'feat(underwriter): add debt service coverage ratio calculation'`)
-4. Verify all tests and lints pass (`npm run build && npm run lint`)
-5. Push to the branch (`git push origin feature/underwriting-matrix`)
+2. Create your feature branch (`git checkout -b feat/credit-bureau-simulator`)
+3. Commit your changes following [Conventional Commits](https://www.conventionalcommits.org/):
+   ```bash
+   git commit -m 'feat(underwriting): add loan-to-value (LTV) calculation support'
+   ```
+4. Run verification gates (`npm run build && npm run lint`)
+5. Push to the branch (`git push origin feat/credit-bureau-simulator`)
 6. Open a Pull Request
 
 ---
@@ -300,5 +408,5 @@ CredVidhi adheres to institutional-grade financial and operational specification
 This project is licensed under the **MIT License** — see the [LICENSE](LICENSE) file for details.
 
 <div align="center">
-  <sub>Built with precision for modern financial institutions by <a href="https://github.com/calligraphyguruji">calligraphyguruji</a>.</sub>
+  <sub>Engineered with precision for modern financial institutions by <a href="https://github.com/calligraphyguruji">calligraphyguruji</a>.</sub>
 </div>
