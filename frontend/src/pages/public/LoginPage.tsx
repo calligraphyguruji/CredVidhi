@@ -24,7 +24,7 @@ export const LoginPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'staff' | 'borrower'>('staff');
 
   // Form states
-  const [email, setEmail] = useState('d.vance@dhanexa.com');
+  const [email, setEmail] = useState('d.vance@credvidhi.com');
   const [password, setPassword] = useState('••••••••••••');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
@@ -53,7 +53,7 @@ export const LoginPage: React.FC = () => {
 
     setTimeout(() => {
       setIsLoading(false);
-      console.info(`[Dhanexa Gateway] Authenticated ${userEmail} as ${role}`);
+      console.info(`[CredVidhi Gateway] Authenticated ${userEmail} as ${role}`);
       switchRole(role);
 
       // Route based on role
@@ -105,13 +105,13 @@ export const LoginPage: React.FC = () => {
           className="inline-flex items-center gap-2 text-xs font-semibold text-slate-600 hover:text-orange-600 transition-colors cursor-pointer"
         >
           <ArrowLeft className="w-4 h-4" />
-          <span>Back to Dhanexa Home</span>
+          <span>Back to CredVidhi Home</span>
         </motion.button>
 
         <div className="flex items-center gap-2">
           <ShieldCheck className="w-5 h-5 text-orange-600" />
           <span className="font-extrabold text-sm tracking-tight text-slate-900 font-sans">
-            DHANEXA GATEWAY
+            CREDVIDHI GATEWAY
           </span>
           <span className="text-[10px] font-mono bg-orange-50 text-orange-700 px-1.5 py-0.5 rounded border border-orange-200">
             PORT 443
@@ -184,7 +184,7 @@ export const LoginPage: React.FC = () => {
                 </div>
                 <div className="bg-black/60 rounded p-3 font-mono text-[10px] text-slate-400 space-y-1.5 border border-slate-800/80">
                   <div className="truncate">
-                    <span className="text-orange-400">[03:14:02]</span> AUTH_SUCCESS: d.vance@dhanexa.com
+                    <span className="text-orange-400">[03:14:02]</span> AUTH_SUCCESS: d.vance@credvidhi.com
                   </div>
                   <div className="truncate">
                     <span className="text-emerald-400">[03:12:45]</span> SANCTION_ISSUED: Ref APP-2026-0891 (₹45,000)
@@ -209,7 +209,7 @@ export const LoginPage: React.FC = () => {
               {/* Header Title */}
               <div className="mb-6">
                 <h3 className="text-xl font-bold text-slate-900">
-                  Sign In to Dhanexa
+                  Sign In to CredVidhi
                 </h3>
                 <p className="text-xs text-slate-500 mt-1">
                   Select your portal and enter your credentials to access your active queue.
@@ -222,7 +222,7 @@ export const LoginPage: React.FC = () => {
                   type="button"
                   onClick={() => {
                     setActiveTab('staff');
-                    setEmail('d.vance@dhanexa.com');
+                    setEmail('d.vance@credvidhi.com');
                     setErrorMessage(null);
                   }}
                   className={`relative py-2 rounded-md font-semibold transition-colors cursor-pointer z-10 ${
@@ -289,7 +289,7 @@ export const LoginPage: React.FC = () => {
                       type="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      placeholder="e.g. d.vance@dhanexa.com"
+                      placeholder="e.g. d.vance@credvidhi.com"
                       autoComplete="username"
                       required
                     />
@@ -490,7 +490,7 @@ export const LoginPage: React.FC = () => {
 
       {/* Simplified Footer */}
       <footer className="px-6 py-4 text-center text-xs text-slate-400 border-t border-slate-200 bg-white">
-        © 2026 Dhanexa Architecture. Deterministic Underwriting & Loan Management Platform.
+        © 2026 CredVidhi Architecture. Deterministic Underwriting & Loan Management Platform.
       </footer>
 
       {/* Forgot Password Modal with Framer Motion AnimatePresence */}

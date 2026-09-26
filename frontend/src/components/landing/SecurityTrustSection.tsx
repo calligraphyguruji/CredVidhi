@@ -65,7 +65,7 @@ export const SecurityTrustSection: React.FC = () => {
             Security & audit safeguards built-in.
           </h2>
           <p className="mt-3 text-sm sm:text-base text-slate-600 leading-relaxed">
-            Dhanexa enforces institutional banking standards from the database transaction boundary
+            CredVidhi enforces institutional banking standards from the database transaction boundary
             to the front-end user experience.
           </p>
         </motion.div>

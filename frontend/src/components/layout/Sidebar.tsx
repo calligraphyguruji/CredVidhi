@@ -56,7 +56,7 @@ export const Sidebar: React.FC = () => {
             <Building2 className="w-4 h-4" />
           </div>
           <div>
-            <div className="text-sm font-bold tracking-tight text-slate-900 leading-none">Dhanexa</div>
+            <div className="text-sm font-bold tracking-tight text-slate-900 leading-none">CredVidhi</div>
             <div className="text-[10px] font-mono tracking-wider text-slate-500 uppercase mt-0.5">
               Adjudication Hub
             </div>

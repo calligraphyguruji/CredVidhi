@@ -140,7 +140,7 @@ export const KeyCapabilities: React.FC = () => {
                     <span>Inspect Capability</span>
                     <ArrowRight className="w-3.5 h-3.5" />
                   </button>
-                  <span className="text-[10px] font-mono text-slate-600">Dhanexa v2.4</span>
+                  <span className="text-[10px] font-mono text-slate-600">CredVidhi v2.4</span>
                 </div>
               </motion.div>
             );

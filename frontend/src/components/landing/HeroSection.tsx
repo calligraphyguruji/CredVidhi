@@ -65,7 +65,7 @@ export const HeroSection: React.FC = () => {
             <motion.div variants={fadeUpVariants}>
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-50 border border-orange-200/90 text-orange-800 text-[11px] font-mono font-medium shadow-2xs">
                 <span className="w-2 h-2 rounded-full bg-orange-600 animate-pulse"></span>
-                <span>DHANEXA CORE V2.4 • DETERMINISTIC UNDERWRITING</span>
+                <span>CREDVIDHI CORE V2.4 • DETERMINISTIC UNDERWRITING</span>
               </div>
             </motion.div>
 

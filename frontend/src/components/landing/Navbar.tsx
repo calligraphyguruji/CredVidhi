@@ -52,7 +52,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onNavigateSection }) => {
             <div>
               <div className="flex items-center gap-1.5">
                 <span className="font-extrabold text-base tracking-tight text-slate-900 font-sans">
-                  Dhanexa
+                  CredVidhi
                 </span>
                 <span className="text-[10px] font-mono font-semibold px-1.5 py-0.5 rounded bg-orange-50 text-orange-700 border border-orange-200/80">
                   ENTERPRISE
