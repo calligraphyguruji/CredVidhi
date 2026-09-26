@@ -10,6 +10,7 @@ import {
   RefreshCw,
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
+import { formatCurrency } from '../../utils/financial';
 
 export const Sidebar: React.FC = () => {
   const { activeView, setActiveView, applications, activeApplicationId, resetAllData } = useApp();
@@ -68,7 +69,7 @@ export const Sidebar: React.FC = () => {
           {activeApp.personal.fullName}
         </div>
         <div className="text-[11px] text-slate-500 font-mono mt-0.5">
-          ${activeApp.requestedAmount.toLocaleString()} • {activeApp.product.name}
+          {formatCurrency(activeApp.requestedAmount)} • {activeApp.product.name}
         </div>
       </div>
 

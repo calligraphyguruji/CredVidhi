@@ -303,10 +303,10 @@ export const DocumentWorkbench: React.FC = () => {
                       1. Wages, tips, other compensation
                     </span>
                     <span className="text-base font-bold font-mono text-blue-900">
-                      ${(application.financial.grossMonthlyIncome * 12).toLocaleString()}.00
+                      ₹{(application.financial.grossMonthlyIncome * 12).toLocaleString('en-IN')}.00
                     </span>
                     <span className="block text-[10px] text-blue-600 mt-0.5">
-                      = ${application.financial.grossMonthlyIncome.toLocaleString()} / mo
+                      = ₹{application.financial.grossMonthlyIncome.toLocaleString('en-IN')} / mo
                     </span>
                   </div>
                   <div className="border border-slate-300 p-2.5 rounded-xs">
@@ -314,7 +314,7 @@ export const DocumentWorkbench: React.FC = () => {
                       2. Federal income tax withheld
                     </span>
                     <span className="text-base font-bold font-mono text-slate-800">
-                      ${Math.round(application.financial.grossMonthlyIncome * 12 * 0.22).toLocaleString()}.00
+                      ₹{Math.round(application.financial.grossMonthlyIncome * 12 * 0.22).toLocaleString('en-IN')}.00
                     </span>
                   </div>
                 </div>
@@ -326,7 +326,7 @@ export const DocumentWorkbench: React.FC = () => {
               <div className="flex items-center gap-3">
                 <span className="text-slate-400">Detected Wages:</span>
                 <span className="text-emerald-400 font-bold">
-                  ${application.financial.grossMonthlyIncome.toLocaleString()}/mo
+                  ₹{application.financial.grossMonthlyIncome.toLocaleString('en-IN')}/mo
                 </span>
                 <span className="text-slate-600">•</span>
                 <span className="text-slate-400">Employer:</span>
@@ -383,7 +383,7 @@ export const DocumentWorkbench: React.FC = () => {
                     2. Income Proof & Tax Alignment
                   </div>
                   <div className="text-[11px] text-slate-500 mt-0.5">
-                    W-2 earnings of ${application.financial.grossMonthlyIncome * 12}/yr align with declared income.
+                    Salary earnings of ₹{(application.financial.grossMonthlyIncome * 12).toLocaleString('en-IN')}/yr align with declared income.
                   </div>
                 </div>
                 <Button

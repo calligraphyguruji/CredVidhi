@@ -70,9 +70,9 @@ interface AppContextType {
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 const STORAGE_KEYS = {
-  APPLICATIONS: 'laps_applications_v1',
-  AUDIT_LOGS: 'laps_audit_logs_v1',
-  CURRENT_ROLE: 'laps_current_role_v1',
+  APPLICATIONS: 'laps_applications_v2',
+  AUDIT_LOGS: 'laps_audit_logs_v2',
+  CURRENT_ROLE: 'laps_current_role_v2',
 };
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -293,8 +293,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           },
           {
             name: 'Disposable Income Buffer',
-            evaluated: `$${disposable.toLocaleString()} / mo`,
-            threshold: '>= $1,500.00',
+            evaluated: `₹${disposable.toLocaleString('en-IN')} / mo`,
+            threshold: '>= ₹1,500.00',
             status: disposable >= 1500 ? 'PASS' : 'FAIL',
           },
         ];
@@ -353,7 +353,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           eventType: 'DECISION_RECORDED',
           beforeState: app.status,
           afterState: nextStatus,
-          notes: `${decision}: ${payload.underwriterNotes} (Approved Amount: $${payload.approvedAmount ?? app.requestedAmount})`,
+          notes: `${decision}: ${payload.underwriterNotes} (Approved Amount: ₹${(payload.approvedAmount ?? app.requestedAmount).toLocaleString('en-IN')})`,
         });
 
         return {
@@ -445,7 +445,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       applicationId: newId,
       eventType: 'APPLICATION_SUBMITTED',
       afterState: 'SUBMITTED',
-      notes: `New application submitted by ${data.personal.fullName} for $${data.requestedAmount} (${selectedProd.name})`,
+      notes: `New application submitted by ${data.personal.fullName} for ₹${data.requestedAmount.toLocaleString('en-IN')} (${selectedProd.name})`,
     });
 
     return newId;

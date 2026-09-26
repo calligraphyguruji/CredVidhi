@@ -52,13 +52,12 @@ export function calculateDisposableIncome(
 }
 
 /**
- * Formats a numeric currency value to standard USD format ($XX,XXX.XX)
+ * Formats a numeric currency value to standard Indian Rupee format (₹XX,XXX.XX)
  */
 export function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat('en-US', {
+  return new Intl.NumberFormat('en-IN', {
     style: 'currency',
-    currency: 'USD',
-    minimumFractionDigits: 2,
+    currency: 'INR',
     maximumFractionDigits: 2,
   }).format(amount);
 }

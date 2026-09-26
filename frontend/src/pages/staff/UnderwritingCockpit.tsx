@@ -395,7 +395,7 @@ export const UnderwritingCockpit: React.FC = () => {
                     type="number"
                     value={approvedAmount}
                     onChange={(e) => setApprovedAmount(Number(e.target.value))}
-                    prefixText="$"
+                    prefixText="₹"
                     isMono
                   />
 
@@ -456,7 +456,7 @@ export const UnderwritingCockpit: React.FC = () => {
                 <div className="p-2.5 bg-amber-50 border border-amber-300 rounded flex items-center gap-2 text-[11px] text-amber-800">
                   <ShieldAlert className="w-4 h-4 text-amber-600 shrink-0" />
                   <span>
-                    High-Value Loan (&gt; $50k) flagged for mandatory Senior Committee cosign.
+                    High-Value Loan (&gt; ₹5,00,000) flagged for mandatory Senior Committee cosign.
                   </span>
                 </div>
               )}

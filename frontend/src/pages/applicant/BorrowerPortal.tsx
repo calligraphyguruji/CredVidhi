@@ -639,7 +639,7 @@ export const BorrowerPortal: React.FC = () => {
                     grossMonthlyIncome: Number(e.target.value),
                   })
                 }
-                prefixText="$"
+                prefixText="₹"
                 isMono
               />
 
@@ -653,7 +653,7 @@ export const BorrowerPortal: React.FC = () => {
                     existingMonthlyDebt: Number(e.target.value),
                   })
                 }
-                prefixText="$"
+                prefixText="₹"
                 isMono
               />
             </div>
