@@ -20,7 +20,7 @@ export const HeroSection: React.FC = () => {
   const liveDti = calculateDti(assumedMonthlyIncome, 15000, liveEmi);
 
   return (
-    <section className="relative overflow-hidden pt-8 pb-16 md:pt-14 md:pb-24 border-b border-slate-200 bg-linear-to-b from-white via-slate-50/60 to-slate-100/40">
+    <section className="relative overflow-hidden pt-8 pb-16 md:pt-14 md:pb-24 border-b border-slate-200 bg-slate-50 bg-gradient-to-b from-white via-slate-50/60 to-slate-100/40">
       {/* Background Decorative FinTech Grid (Taste-Skill compliant subtle geometric rhythm) */}
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#e2e8f01f_1px,transparent_1px),linear-gradient(to_bottom,#e2e8f01f_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] pointer-events-none" />
 

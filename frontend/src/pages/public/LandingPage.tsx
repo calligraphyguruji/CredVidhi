@@ -40,7 +40,7 @@ export const LandingPage: React.FC = () => {
         <SecurityTrustSection />
 
         {/* 7. Strategic Conversion CTA Section */}
-        <section className="py-16 md:py-20 bg-linear-to-b from-slate-900 to-slate-950 text-white relative overflow-hidden">
+        <section className="py-16 md:py-24 bg-slate-950 bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 text-white relative overflow-hidden">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(37,99,235,0.15),transparent_50%)] pointer-events-none" />
 
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center space-y-6">
