@@ -1,0 +1,92 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "CredVidhi Platform Architecture",
+    "output": "credvidhi-architecture.html",
+    "quality_profile": "showcase",
+    "views": [
+      {
+        "id": "origination-flow",
+        "label": "Origination Request Flow",
+        "focus": ["users", "web-app", "api-gateway", "underwriter", "audit-ledger"],
+        "note": "Trace loan application submission through deterministic underwriting and durable audit persistence."
+      },
+      {
+        "id": "security-and-fsm",
+        "label": "RBAC & State Machine Lifecycle",
+        "focus": ["auth-guard", "workflow-fsm", "audit-ledger"],
+        "note": "Inspect role-based session validation and non-reversible FSM lifecycle state transitions."
+      },
+      {
+        "id": "document-management",
+        "label": "KYC Document Verification",
+        "focus": ["web-app", "api-gateway", "doc-storage"],
+        "note": "Follow secure, UUID-obfuscated KYC document uploads to encrypted storage."
+      }
+    ]
+  },
+  "components": [
+    { "id": "users", "type": "external", "label": "Borrowers & Staff", "sublabel": "Browser / Mobile", "pos": [40, 300], "size": [120, 60] },
+    { "id": "web-app", "type": "frontend", "label": "CredVidhi Client", "sublabel": "React 19 + Vite", "brand": "react", "pos": [260, 300], "size": [150, 64], "tag": "Tailwind" },
+    { "id": "auth-guard", "type": "security", "label": "RBAC Guard", "sublabel": "JWT & Role Check", "pos": [500, 130], "size": [150, 64], "tag": "Mutual TLS" },
+    { "id": "api-gateway", "type": "backend", "label": "FastAPI Gateway", "sublabel": "Async REST Engine", "brand": "fastapi", "pos": [500, 300], "size": [150, 64], "tag": "Port 8000" },
+    { "id": "doc-storage", "type": "cloud", "label": "Document Store", "sublabel": "Encrypted KYC Files", "pos": [500, 470], "size": [150, 64], "tag": "UUID Protected" },
+    { "id": "workflow-fsm", "type": "backend", "label": "FSM State Engine", "sublabel": "Finite State Machine", "pos": [740, 130], "size": [150, 64], "tag": "ACID Guard" },
+    { "id": "underwriter", "type": "backend", "label": "Risk Underwriter", "sublabel": "DTI & Scoring Engine", "pos": [740, 300], "size": [150, 64], "tag": "Fixed-Point ₹" },
+    { "id": "cache-queue", "type": "database", "label": "Redis Cache", "sublabel": "Session & Revocation", "brand": "redis", "pos": [740, 470], "size": [150, 64], "tag": "In-Memory" },
+    { "id": "audit-ledger", "type": "database", "label": "PostgreSQL Core", "sublabel": "Audit & Loan Database", "brand": "postgresql", "pos": [980, 220], "size": [160, 64], "tag": "Append-Only" }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "CredVidhi Enterprise Cloud Boundary",
+      "wraps": ["auth-guard", "api-gateway", "doc-storage", "workflow-fsm", "underwriter", "cache-queue", "audit-ledger"]
+    },
+    {
+      "kind": "security-group",
+      "label": "Zero-Trust Financial Processing Zone",
+      "wraps": ["api-gateway", "workflow-fsm", "underwriter"]
+    }
+  ],
+  "connections": [
+    { "id": "users-to-web", "from": "users", "to": "web-app", "label": "HTTPS :443", "variant": "emphasis" },
+    { "id": "web-to-api", "from": "web-app", "to": "api-gateway", "label": "REST / JSON", "variant": "emphasis" },
+    { "id": "api-to-auth", "from": "api-gateway", "to": "auth-guard", "label": "verify role", "variant": "security", "fromSide": "top", "toSide": "bottom" },
+    { "id": "api-to-docs", "from": "api-gateway", "to": "doc-storage", "label": "upload KYC", "variant": "dashed", "fromSide": "bottom", "toSide": "top", "labelDy": 35 },
+    { "id": "auth-to-fsm", "from": "auth-guard", "to": "workflow-fsm", "label": "authorized", "fromSide": "right", "toSide": "left" },
+    { "id": "api-to-underwriter", "from": "api-gateway", "to": "underwriter", "label": "assess risk", "fromSide": "right", "toSide": "left" },
+    { "id": "api-to-cache", "from": "api-gateway", "to": "cache-queue", "label": "rate limit", "fromSide": "right", "toSide": "left" },
+    { "id": "fsm-to-db", "from": "workflow-fsm", "to": "audit-ledger", "label": "state transition", "fromSide": "right", "toSide": "top" },
+    { "id": "underwriter-to-db", "from": "underwriter", "to": "audit-ledger", "label": "durable record", "fromSide": "right", "toSide": "bottom" }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Presentation & Edge",
+      "items": [
+        "React 19 client with fluid Framer Motion transitions",
+        "Sub-second borrower intake & officer queues",
+        "Strict client-side KYC MIME & size validation"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "Deterministic Engine",
+      "items": [
+        "Fixed-point math in ₹ avoiding IEEE 754 float drift",
+        "Non-reversible FSM lifecycle state machine",
+        "Atomic audit envelope committing with every state change"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "Security & Storage",
+      "items": [
+        "Granular RBAC enforced across every API dependency",
+        "Immutable append-only ledger in PostgreSQL 16",
+        "Encrypted documents stored with obfuscated UUID keys"
+      ]
+    }
+  ]
+}

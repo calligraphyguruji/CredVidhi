@@ -101,37 +101,29 @@ CredVidhi provides dedicated, purpose-built workspaces tailored to each key stak
 
 CredVidhi enforces clear domain-driven separation between the user interface, orchestration engine, financial calculations, and persistent storage:
 
-```mermaid
-graph TB
-    subgraph Client ["Client Presentation Layer (React 19 + TypeScript + Vite)"]
-        UI_Borrower["Borrower Application Portal<br/>(Wizard & Real-Time Tracker)"]
-        UI_Officer["Loan Officer Workbench<br/>(Queue Triage & Doc Verification)"]
-        UI_Underwriter["Underwriting Cockpit<br/>(Risk Assessment & DTI Engine)"]
-        UI_Admin["Compliance & Audit View<br/>(Immutable Event Ledger)"]
-    end
+<div align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/architecture-dark.png">
+    <source media="(prefers-color-scheme: light)" srcset="docs/architecture.png">
+    <img alt="CredVidhi Platform Architecture" src="docs/architecture.png" width="100%" style="border-radius: 10px; border: 1px solid #e2e8f0; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);" />
+  </picture>
+  <p align="center">
+    <sub>Generated with <b>Archify</b>. An interactive standalone diagram with guided chapters, focus tracing, and theme switching is available at <a href="docs/architecture.html"><code>docs/architecture.html</code></a>.</sub>
+  </p>
+</div>
 
-    subgraph Core ["Application Orchestration Layer (FastAPI Core Engine)"]
-        AuthService["Auth & RBAC Service<br/>(JWT Tokens & Role Guard)"]
-        WorkflowEngine["FSM Workflow Engine<br/>(State Transition Guardrails)"]
-        UnderwritingEngine["Deterministic Scoring Engine<br/>(Fixed-Point Math in ₹)"]
-        DocService["Document Storage Service<br/>(UUID Obfuscation & S3 Storage)"]
-        AuditService["Audit Trail Service<br/>(Append-Only Event Ledger)"]
-    end
+### Architectural Segregation & Trust Zones:
 
-    subgraph Data ["Persistence & Cache Layer"]
-        DB[(PostgreSQL 16<br/>ACID Transactions & NUMERIC Precision)]
-        Redis[(Redis 7<br/>Session Invalidation & Rate Limits)]
-        S3Storage[("Secure Object Storage<br/>(Encrypted Loan Documents)")]
-    end
-
-    Client -->|REST API / JSON Envelopes| Core
-    AuthService --> DB
-    WorkflowEngine --> DB
-    UnderwritingEngine --> DB
-    DocService --> S3Storage
-    AuditService --> DB
-    AuthService --> Redis
-```
+1. **Presentation & Edge Layer:** Single-page application built on **React 19**, **TypeScript**, and **Tailwind CSS**. Fluid micro-interactions and transitions powered by **Framer Motion** with strict `prefers-reduced-motion` compliance.
+2. **Security & Boundary Guard:** **RBAC Guard** terminates TLS 1.3, verifies signed JWT tokens, and validates actor roles before any request enters internal processing.
+3. **Application Orchestration:** **FastAPI Core Gateway** serves as the asynchronous controller, enforcing request validation with Pydantic v2.
+4. **Zero-Trust Financial Processing Zone:**
+   - **FSM State Engine:** Enforces forward-only, non-reversible application status transitions within strict ACID transaction envelopes.
+   - **Deterministic Underwriting Engine:** Evaluates Debt-to-Income (DTI), EMI amortization, and risk scores using fixed-point precision in Indian Rupees (`₹`).
+5. **Persistence & Cache Layer:**
+   - **PostgreSQL 16:** Append-only ledger storing immutable audit logs, loan applications, and reviewer decisions.
+   - **Redis 7:** High-throughput token revocation and rate-limiting cache.
+   - **Encrypted Object Store:** S3-compatible sandboxed document repository storing KYC records under non-guessable UUID keys.
 
 ---
 
@@ -347,6 +339,11 @@ npm run preview
 CredVidhi/
 ├── README.md                      # Comprehensive project documentation & architecture
 ├── .gitignore                     # Git ignore rules for dependencies & environments
+├── docs/                          # Architecture diagrams & Archify interactive views
+│   ├── architecture.html          # Standalone interactive Archify viewer
+│   ├── architecture.json          # Archify system architecture specification
+│   ├── architecture.png           # High-resolution light architecture diagram
+│   └── architecture-dark.png      # High-resolution dark architecture diagram
 └── frontend/                      # Production React client application
     ├── public/                    # Static vector assets & favicons
     ├── src/
