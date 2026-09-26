@@ -1,17 +1,17 @@
 # Project Memory (MEMORY.md)
-## System: Loan Approval Processing System (LAPS)
+## System: CredVidhi (formerly LAPS)
 
-- **Project Name:** Loan Approval Processing System (LAPS)
+- **Project Name:** CredVidhi (Loan Approval Processing & Verification System)
 - **Primary Objective:** Deliver a secure, auditable, production-ready full-stack platform managing the complete loan origination, document verification, deterministic risk underwriting, and approval lifecycle.
-- **Current Phase:** Phase 0: Planning, Architecture & Governance Setup
-- **Last Updated:** 2026-09-10
+- **Current Phase:** Phase 1: Frontend Client Scaffolding & Visual Identity
+- **Last Updated:** 2026-09-27
 
 ---
 
 ## 1. Current Project State & Milestones
 
 - **Phase 0 (Completed):** Creation of foundational governance, architecture, design, and testing specifications (`PRD.md`, `AGENTS.md`, `DESIGN.md`, `ARCHITECTURE.md`, `RULES.md`, `MEMORY.md`, `DECISIONS.md`, `TESTING.md`).
-- **Phase 1 (Completed):** Scaffolding of complete frontend client (`frontend/`) in React + TypeScript + Vite + Tailwind CSS featuring high-density Officer Queue, Document Verification Workbench (Stitch-aligned), Quantitative Underwriting Cockpit, Borrower Portal with multi-step wizard, Compliance Audit Explorer, and Loan Products Catalog.
+- **Phase 1 (Completed):** Scaffolding of complete frontend client (`frontend/`) in React + TypeScript + Vite + Tailwind CSS. Rebranded to **CredVidhi** with an authentic Indian Saffron (`#EA580C`, `#C2410C`, `#F97316`, `orange-600`/`orange-700`) design system replacing all blue accents and buttons across 21 components and pages. Built and verified error-free.
 - **Phase 2 (Next):** FastAPI backend service endpoints, PostgreSQL models, and Alembic migrations.
 
 ---
