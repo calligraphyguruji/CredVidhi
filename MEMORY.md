@@ -11,7 +11,7 @@
 ## 1. Current Project State & Milestones
 
 - **Phase 0 (Completed):** Creation of foundational governance, architecture, design, and testing specifications (`PRD.md`, `AGENTS.md`, `DESIGN.md`, `ARCHITECTURE.md`, `RULES.md`, `MEMORY.md`, `DECISIONS.md`, `TESTING.md`).
-- **Phase 1 (Completed):** Scaffolding of complete frontend client (`frontend/`) in React + TypeScript + Vite + Tailwind CSS. Rebranded to **CredVidhi** with an authentic Indian Saffron (`#EA580C`, `#C2410C`, `#F97316`, `orange-600`/`orange-700`) design system replacing all blue accents and buttons across 21 components and pages. Built and verified error-free.
+- **Phase 1 (Completed):** Scaffolding of complete frontend client (`frontend/`) in React + TypeScript + Vite + Tailwind CSS. Rebranded to **Dhanexa** with royal Saffron (`#EA580C`, `orange-600`) fintech aesthetics. Built and integrated a comprehensive production-grade motion and micro-interaction system using Framer Motion (`motion.ts`, `AnimatedCounter`, `Toast`, gliding `layoutId` pills, page transitions, and `prefers-reduced-motion` accessibility). CodeRabbit review verified and closed.
 - **Phase 2 (Next):** FastAPI backend service endpoints, PostgreSQL models, and Alembic migrations.
 
 ---
