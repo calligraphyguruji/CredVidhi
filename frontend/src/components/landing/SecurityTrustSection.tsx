@@ -50,7 +50,7 @@ export const SecurityTrustSection: React.FC = () => {
         
         {/* Section Heading */}
         <div className="max-w-3xl mb-12">
-          <div className="inline-flex items-center gap-2 text-xs font-mono font-semibold uppercase text-blue-700 bg-blue-50 px-2.5 py-1 rounded border border-blue-200 mb-3">
+          <div className="inline-flex items-center gap-2 text-xs font-mono font-semibold uppercase text-orange-700 bg-orange-50 px-2.5 py-1 rounded border border-orange-200 mb-3">
             <span>FINANCIAL GOVERNANCE & PRIVACY</span>
           </div>
           <h2 className="text-2xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
@@ -71,7 +71,7 @@ export const SecurityTrustSection: React.FC = () => {
                 key={i}
                 className="p-6 bg-slate-50/70 rounded-xl border border-slate-200 hover:border-slate-300 transition-all"
               >
-                <div className="w-9 h-9 rounded-lg bg-blue-100/80 text-blue-700 flex items-center justify-center font-bold mb-4">
+                <div className="w-9 h-9 rounded-lg bg-orange-100/80 text-orange-700 flex items-center justify-center font-bold mb-4">
                   <Icon className="w-5 h-5" />
                 </div>
                 <h3 className="text-sm font-bold text-slate-900 mb-2">
@@ -104,7 +104,7 @@ export const SecurityTrustSection: React.FC = () => {
               switchRole('ADMIN');
               setActiveView('compliance-audit');
             }}
-            className="shrink-0 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold rounded-md transition-colors cursor-pointer"
+            className="shrink-0 px-4 py-2 bg-orange-600 hover:bg-orange-500 text-white text-xs font-semibold rounded-md transition-colors cursor-pointer"
           >
             Open Compliance Audit Stream
           </button>

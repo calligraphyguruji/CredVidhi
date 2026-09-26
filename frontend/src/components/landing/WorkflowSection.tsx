@@ -123,7 +123,7 @@ export const WorkflowSection: React.FC = () => {
         
         {/* Section Heading */}
         <div className="max-w-3xl mb-12">
-          <div className="inline-flex items-center gap-2 text-xs font-mono font-semibold uppercase text-blue-700 bg-blue-50 px-2.5 py-1 rounded border border-blue-200 mb-3">
+          <div className="inline-flex items-center gap-2 text-xs font-mono font-semibold uppercase text-orange-700 bg-orange-50 px-2.5 py-1 rounded border border-orange-200 mb-3">
             <span>FINITE STATE MACHINE ARCHITECTURE</span>
           </div>
           <h2 className="text-2xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
@@ -146,20 +146,20 @@ export const WorkflowSection: React.FC = () => {
                 onClick={() => setActiveStep(idx)}
                 className={`p-3 rounded-lg border text-left transition-all cursor-pointer relative ${
                   isSelected
-                    ? 'bg-blue-50/70 border-blue-600 shadow-xs'
+                    ? 'bg-orange-50/70 border-orange-600 shadow-xs'
                     : 'bg-slate-50/80 border-slate-200 hover:bg-slate-100/70 text-slate-600'
                 }`}
               >
                 <div className="flex items-center justify-between mb-2">
                   <span
                     className={`w-6 h-6 rounded flex items-center justify-center text-xs font-mono font-bold ${
-                      isSelected ? 'bg-blue-700 text-white' : 'bg-slate-200 text-slate-700'
+                      isSelected ? 'bg-orange-600 text-white' : 'bg-slate-200 text-slate-700'
                     }`}
                   >
                     0{s.step}
                   </span>
                   <Icon
-                    className={`w-4 h-4 ${isSelected ? 'text-blue-700' : 'text-slate-400'}`}
+                    className={`w-4 h-4 ${isSelected ? 'text-orange-600' : 'text-slate-400'}`}
                   />
                 </div>
                 <div className="font-semibold text-xs text-slate-900 truncate">{s.title}</div>
@@ -176,7 +176,7 @@ export const WorkflowSection: React.FC = () => {
           {/* Left Details */}
           <div className="lg:col-span-7 space-y-4">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="text-xs font-mono font-bold bg-blue-100 text-blue-800 px-2.5 py-0.5 rounded">
+              <span className="text-xs font-mono font-bold bg-orange-100 text-orange-800 px-2.5 py-0.5 rounded">
                 STAGE 0{current.step}
               </span>
               <span className="text-xs font-mono bg-slate-200 text-slate-700 px-2 py-0.5 rounded">
@@ -188,7 +188,7 @@ export const WorkflowSection: React.FC = () => {
             </div>
 
             <h3 className="text-xl sm:text-2xl font-bold text-slate-900 flex items-center gap-2.5">
-              <CurrentIcon className="w-6 h-6 text-blue-700 shrink-0" />
+              <CurrentIcon className="w-6 h-6 text-orange-600 shrink-0" />
               <span>{current.title}</span>
             </h3>
 
@@ -209,7 +209,7 @@ export const WorkflowSection: React.FC = () => {
                   switchRole(current.targetRole);
                   setActiveView(current.targetView);
                 }}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-blue-700 text-white rounded text-xs font-semibold hover:bg-blue-800 transition-colors shadow-2xs cursor-pointer"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-orange-600 text-white rounded text-xs font-semibold hover:bg-orange-700 transition-colors shadow-2xs cursor-pointer"
               >
                 <span>Launch {current.title} Interface</span>
                 <ArrowRight className="w-3.5 h-3.5" />
@@ -227,7 +227,7 @@ export const WorkflowSection: React.FC = () => {
             <div className="space-y-2.5 text-[11px]">
               <div className="p-2 bg-slate-50 rounded border border-slate-200">
                 <span className="text-slate-400 block text-[10px]">CURRENT TRANSITION ENVELOPE</span>
-                <span className="text-blue-700 font-bold">
+                <span className="text-orange-600 font-bold">
                   {current.step === 1 ? 'DRAFT' : steps[activeStep - 1]?.statusTag || 'SUBMITTED'} →{' '}
                   {current.statusTag}
                 </span>

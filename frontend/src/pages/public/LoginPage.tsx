@@ -96,18 +96,18 @@ export const LoginPage: React.FC = () => {
       <header className="px-6 py-4 flex items-center justify-between border-b border-slate-200 bg-white">
         <button
           onClick={() => setActiveView('landing')}
-          className="inline-flex items-center gap-2 text-xs font-semibold text-slate-600 hover:text-blue-700 transition-colors cursor-pointer"
+          className="inline-flex items-center gap-2 text-xs font-semibold text-slate-600 hover:text-orange-600 transition-colors cursor-pointer"
         >
           <ArrowLeft className="w-4 h-4" />
           <span>Back to CredVidhi Home</span>
         </button>
 
         <div className="flex items-center gap-2">
-          <ShieldCheck className="w-5 h-5 text-blue-700" />
+          <ShieldCheck className="w-5 h-5 text-orange-600" />
           <span className="font-extrabold text-sm tracking-tight text-slate-900 font-sans">
             CREDIVIDHI GATEWAY
           </span>
-          <span className="text-[10px] font-mono bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded border border-blue-200">
+          <span className="text-[10px] font-mono bg-orange-50 text-orange-700 px-1.5 py-0.5 rounded border border-orange-200">
             PORT 443
           </span>
         </div>
@@ -129,7 +129,7 @@ export const LoginPage: React.FC = () => {
 
             <div className="relative z-10 space-y-6">
               <div>
-                <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded bg-slate-900 text-blue-400 border border-slate-800 text-[11px] font-mono mb-3">
+                <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded bg-slate-900 text-orange-400 border border-slate-800 text-[11px] font-mono mb-3">
                   <Lock className="w-3.5 h-3.5" />
                   <span>256-BIT TLS ENCRYPTED SESSION</span>
                 </div>
@@ -157,7 +157,7 @@ export const LoginPage: React.FC = () => {
                   </div>
                   <div className="p-3 bg-slate-900/90 rounded border border-slate-800">
                     <span className="text-[10px] text-slate-400 block">AVG TURNAROUND (TAT)</span>
-                    <span className="text-xl font-bold text-blue-400">4.2 Min</span>
+                    <span className="text-xl font-bold text-orange-400">4.2 Min</span>
                   </div>
                   <div className="p-3 bg-slate-900/90 rounded border border-slate-800">
                     <span className="text-[10px] text-slate-400 block">DECISION INTEGRITY</span>
@@ -174,7 +174,7 @@ export const LoginPage: React.FC = () => {
                 </div>
                 <div className="bg-black/60 rounded p-3 font-mono text-[10px] text-slate-400 space-y-1.5 border border-slate-800/80">
                   <div className="truncate">
-                    <span className="text-blue-400">[03:14:02]</span> AUTH_SUCCESS: d.vance@credvidhi.com
+                    <span className="text-orange-400">[03:14:02]</span> AUTH_SUCCESS: d.vance@credvidhi.com
                   </div>
                   <div className="truncate">
                     <span className="text-emerald-400">[03:12:45]</span> SANCTION_ISSUED: Ref APP-2026-0891 (₹45,000)
@@ -217,7 +217,7 @@ export const LoginPage: React.FC = () => {
                   }}
                   className={`py-2 rounded-md font-semibold transition-all cursor-pointer ${
                     activeTab === 'staff'
-                      ? 'bg-white text-blue-700 shadow-xs'
+                      ? 'bg-white text-orange-600 shadow-xs'
                       : 'text-slate-600 hover:text-slate-900'
                   }`}
                 >
@@ -232,7 +232,7 @@ export const LoginPage: React.FC = () => {
                   }}
                   className={`py-2 rounded-md font-semibold transition-all cursor-pointer ${
                     activeTab === 'borrower'
-                      ? 'bg-white text-blue-700 shadow-xs'
+                      ? 'bg-white text-orange-600 shadow-xs'
                       : 'text-slate-600 hover:text-slate-900'
                   }`}
                 >
@@ -270,7 +270,7 @@ export const LoginPage: React.FC = () => {
                         <button
                           type="button"
                           onClick={() => setForgotModalOpen(true)}
-                          className="text-[11px] text-blue-700 hover:underline cursor-pointer"
+                          className="text-[11px] text-orange-700 hover:underline cursor-pointer"
                         >
                           Forgot password?
                         </button>
@@ -283,7 +283,7 @@ export const LoginPage: React.FC = () => {
                           placeholder="Enter your security password"
                           autoComplete="current-password"
                           required
-                          className="w-full text-xs p-2.5 bg-slate-50 border border-slate-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-600 focus:bg-white pr-10 font-mono"
+                          className="w-full text-xs p-2.5 bg-slate-50 border border-slate-300 rounded focus:outline-none focus:ring-2 focus:ring-orange-500 focus:bg-white pr-10 font-mono"
                         />
                         <button
                           type="button"
@@ -302,7 +302,7 @@ export const LoginPage: React.FC = () => {
                           type="checkbox"
                           checked={rememberMe}
                           onChange={(e) => setRememberMe(e.target.checked)}
-                          className="rounded border-slate-300 text-blue-700 focus:ring-blue-600"
+                          className="rounded border-slate-300 text-orange-600 focus:ring-orange-500"
                         />
                         <span>Remember workstation session</span>
                       </label>
@@ -339,9 +339,9 @@ export const LoginPage: React.FC = () => {
                       required
                     />
 
-                    <div className="p-3 bg-blue-50/70 border border-blue-200 rounded text-xs text-blue-900">
+                    <div className="p-3 bg-orange-50/70 border border-orange-200 rounded text-xs text-orange-950">
                       <div className="font-semibold mb-0.5">Quick Self-Service Access:</div>
-                      <p className="text-[11px] text-blue-700 leading-normal">
+                      <p className="text-[11px] text-orange-700 leading-normal">
                         No permanent password needed. Real-time application tracker is secured via reference matching.
                       </p>
                     </div>
@@ -375,11 +375,11 @@ export const LoginPage: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => handleQuickLogin('LOAN_OFFICER')}
-                    className="p-2.5 bg-slate-50 hover:bg-blue-50/60 border border-slate-200 hover:border-blue-300 rounded text-left transition-all cursor-pointer group"
+                    className="p-2.5 bg-slate-50 hover:bg-orange-50/60 border border-slate-200 hover:border-orange-300 rounded text-left transition-all cursor-pointer group"
                   >
-                    <div className="text-xs font-bold text-slate-800 group-hover:text-blue-700 flex items-center justify-between">
+                    <div className="text-xs font-bold text-slate-800 group-hover:text-orange-700 flex items-center justify-between">
                       <span>David Vance</span>
-                      <span className="text-[9px] font-mono bg-blue-100 text-blue-800 px-1.5 py-0.2 rounded">
+                      <span className="text-[9px] font-mono bg-orange-100 text-orange-800 px-1.5 py-0.2 rounded">
                         OFFICER
                       </span>
                     </div>
@@ -391,9 +391,9 @@ export const LoginPage: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => handleQuickLogin('RISK_ANALYST')}
-                    className="p-2.5 bg-slate-50 hover:bg-blue-50/60 border border-slate-200 hover:border-blue-300 rounded text-left transition-all cursor-pointer group"
+                    className="p-2.5 bg-slate-50 hover:bg-orange-50/60 border border-slate-200 hover:border-orange-300 rounded text-left transition-all cursor-pointer group"
                   >
-                    <div className="text-xs font-bold text-slate-800 group-hover:text-blue-700 flex items-center justify-between">
+                    <div className="text-xs font-bold text-slate-800 group-hover:text-orange-700 flex items-center justify-between">
                       <span>Katherine Reed</span>
                       <span className="text-[9px] font-mono bg-indigo-100 text-indigo-800 px-1.5 py-0.2 rounded">
                         ANALYST
@@ -407,9 +407,9 @@ export const LoginPage: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => handleQuickLogin('ADMIN')}
-                    className="p-2.5 bg-slate-50 hover:bg-blue-50/60 border border-slate-200 hover:border-blue-300 rounded text-left transition-all cursor-pointer group"
+                    className="p-2.5 bg-slate-50 hover:bg-orange-50/60 border border-slate-200 hover:border-orange-300 rounded text-left transition-all cursor-pointer group"
                   >
-                    <div className="text-xs font-bold text-slate-800 group-hover:text-blue-700 flex items-center justify-between">
+                    <div className="text-xs font-bold text-slate-800 group-hover:text-orange-700 flex items-center justify-between">
                       <span>Sarah Sterling</span>
                       <span className="text-[9px] font-mono bg-amber-100 text-amber-800 px-1.5 py-0.2 rounded">
                         ADMIN
@@ -423,9 +423,9 @@ export const LoginPage: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => handleQuickLogin('APPLICANT')}
-                    className="p-2.5 bg-slate-50 hover:bg-blue-50/60 border border-slate-200 hover:border-blue-300 rounded text-left transition-all cursor-pointer group"
+                    className="p-2.5 bg-slate-50 hover:bg-orange-50/60 border border-slate-200 hover:border-orange-300 rounded text-left transition-all cursor-pointer group"
                   >
-                    <div className="text-xs font-bold text-slate-800 group-hover:text-blue-700 flex items-center justify-between">
+                    <div className="text-xs font-bold text-slate-800 group-hover:text-orange-700 flex items-center justify-between">
                       <span>Alex Taylor</span>
                       <span className="text-[9px] font-mono bg-emerald-100 text-emerald-800 px-1.5 py-0.2 rounded">
                         APPLICANT

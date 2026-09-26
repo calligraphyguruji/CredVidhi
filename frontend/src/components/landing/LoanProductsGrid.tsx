@@ -13,7 +13,7 @@ export const LoanProductsGrid: React.FC = () => {
         
         {/* Section Heading */}
         <div className="max-w-3xl mb-12">
-          <div className="inline-flex items-center gap-2 text-xs font-mono font-semibold uppercase text-blue-700 bg-blue-50 px-2.5 py-1 rounded border border-blue-200 mb-3">
+          <div className="inline-flex items-center gap-2 text-xs font-mono font-semibold uppercase text-orange-700 bg-orange-50 px-2.5 py-1 rounded border border-orange-200 mb-3">
             <span>TRANSPARENT INSTITUTIONAL FINANCING</span>
           </div>
           <h2 className="text-2xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
@@ -35,7 +35,7 @@ export const LoanProductsGrid: React.FC = () => {
               <div>
                 {/* Product Badge */}
                 <div className="flex items-center justify-between mb-4">
-                  <span className="font-mono text-[10px] font-bold uppercase text-blue-700 bg-blue-50 px-2.5 py-1 rounded border border-blue-200">
+                  <span className="font-mono text-[10px] font-bold uppercase text-orange-700 bg-orange-50 px-2.5 py-1 rounded border border-orange-200">
                     {product.code}
                   </span>
                   <span className="text-xs font-mono text-emerald-700 font-semibold">
@@ -67,7 +67,7 @@ export const LoanProductsGrid: React.FC = () => {
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-slate-500">Max DTI Ceiling:</span>
-                    <span className="font-bold text-blue-700">{product.maxDtiRatio}%</span>
+                    <span className="font-bold text-orange-700">{product.maxDtiRatio}%</span>
                   </div>
                 </div>
 

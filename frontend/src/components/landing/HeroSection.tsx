@@ -30,15 +30,15 @@ export const HeroSection: React.FC = () => {
           {/* LEFT COLUMN: Strategic FinTech Value Proposition (7 Cols) */}
           <div className="lg:col-span-7 space-y-6 text-left">
             {/* System Status Pill */}
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 border border-blue-200/90 text-blue-800 text-[11px] font-mono font-medium shadow-2xs">
-              <span className="w-2 h-2 rounded-full bg-blue-600 animate-pulse"></span>
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-50 border border-orange-200/90 text-orange-800 text-[11px] font-mono font-medium shadow-2xs">
+              <span className="w-2 h-2 rounded-full bg-orange-600 animate-pulse"></span>
               <span>CREDVIDHI CORE V2.4 • DETERMINISTIC UNDERWRITING</span>
             </div>
 
             {/* Main Headline */}
             <h1 className="text-3xl sm:text-5xl lg:text-5xl font-extrabold tracking-tight text-slate-900 leading-[1.12]">
               Deterministic credit underwriting.{' '}
-              <span className="text-blue-700 block sm:inline">
+              <span className="text-orange-600 block sm:inline">
                 Sanctioned in minutes, not days.
               </span>
             </h1>
@@ -92,7 +92,7 @@ export const HeroSection: React.FC = () => {
                   switchRole('LOAN_OFFICER');
                   setActiveView('officer-queue');
                 }}
-                icon={<Activity className="w-4 h-4 text-blue-700" />}
+                icon={<Activity className="w-4 h-4 text-orange-600" />}
               >
                 Launch Staff Workbench Demo
               </Button>
@@ -110,7 +110,7 @@ export const HeroSection: React.FC = () => {
               {/* Card Header */}
               <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-5">
                 <div className="flex items-center gap-2">
-                  <div className="w-7 h-7 rounded bg-blue-50 text-blue-700 flex items-center justify-center font-bold">
+                  <div className="w-7 h-7 rounded bg-orange-50 text-orange-600 flex items-center justify-center font-bold">
                     <Sliders className="w-4 h-4" />
                   </div>
                   <div>
@@ -139,7 +139,7 @@ export const HeroSection: React.FC = () => {
                       onClick={() => setSelectedProductIndex(idx)}
                       className={`px-2 py-2 rounded text-xs font-semibold text-center truncate transition-all cursor-pointer ${
                         selectedProductIndex === idx
-                          ? 'bg-blue-700 text-white shadow-2xs'
+                          ? 'bg-orange-600 text-white shadow-2xs'
                           : 'bg-slate-50 text-slate-700 border border-slate-200 hover:bg-slate-100'
                       }`}
                     >
@@ -155,7 +155,7 @@ export const HeroSection: React.FC = () => {
                   <span className="text-[10px] font-mono font-semibold uppercase text-slate-500 tracking-wider">
                     Requested Amount
                   </span>
-                  <span className="text-lg font-bold font-mono text-blue-700">
+                  <span className="text-lg font-bold font-mono text-orange-600">
                     {formatCurrency(loanAmount)}
                   </span>
                 </div>
@@ -166,7 +166,7 @@ export const HeroSection: React.FC = () => {
                   step={50000}
                   value={loanAmount}
                   onChange={(e) => setLoanAmount(Number(e.target.value))}
-                  className="w-full accent-blue-700 cursor-pointer h-2 bg-slate-200 rounded-lg appearance-none"
+                  className="w-full accent-orange-600 cursor-pointer h-2 bg-slate-200 rounded-lg appearance-none"
                 />
                 <div className="flex justify-between text-[10px] font-mono text-slate-400">
                   <span>₹1,00,000</span>

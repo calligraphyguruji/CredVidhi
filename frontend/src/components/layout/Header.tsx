@@ -43,7 +43,7 @@ export const Header: React.FC = () => {
               onClick={() => switchRole(r.role)}
               className={`px-2.5 py-1 rounded text-xs font-medium transition-all ${
                 isCurrent
-                  ? 'bg-white text-blue-700 shadow-xs font-semibold'
+                  ? 'bg-white text-orange-600 shadow-xs font-semibold'
                   : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/50'
               }`}
             >
@@ -62,7 +62,7 @@ export const Header: React.FC = () => {
 
         <button
           onClick={() => setActiveView('landing')}
-          className="flex items-center gap-1 text-xs text-slate-600 hover:text-blue-700 px-2 py-1 rounded hover:bg-slate-100 transition-colors"
+          className="flex items-center gap-1 text-xs text-slate-600 hover:text-orange-600 px-2 py-1 rounded hover:bg-slate-100 transition-colors"
           title="Return to Public Landing Page"
         >
           <Home className="w-3.5 h-3.5" />
@@ -74,7 +74,7 @@ export const Header: React.FC = () => {
           className="relative p-1.5 text-slate-500 hover:text-slate-800 rounded hover:bg-slate-100 transition-colors"
         >
           <Bell className="w-4 h-4" />
-          <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-blue-600 ring-2 ring-white"></span>
+          <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-orange-600 ring-2 ring-white"></span>
         </button>
 
         <div className="h-4 w-px bg-slate-200"></div>
@@ -89,7 +89,7 @@ export const Header: React.FC = () => {
               {currentUser.role.replace('_', ' ')}
             </div>
           </div>
-          <div className="w-8 h-8 rounded-full bg-blue-700 text-white flex items-center justify-center font-medium shadow-xs">
+          <div className="w-8 h-8 rounded-full bg-orange-600 text-white flex items-center justify-center font-medium shadow-xs">
             <UserIcon className="w-4 h-4" />
           </div>
           <button

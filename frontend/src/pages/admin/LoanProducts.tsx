@@ -12,7 +12,7 @@ export const LoanProducts: React.FC = () => {
       {/* Page Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-5 rounded-md border border-slate-200 shadow-xs">
         <div>
-          <span className="text-xs font-mono uppercase text-blue-700 font-semibold tracking-wider">
+          <span className="text-xs font-mono uppercase text-orange-600 font-semibold tracking-wider">
             Enterprise Product Catalog
           </span>
           <h1 className="text-xl font-bold tracking-tight text-slate-900 mt-0.5">
@@ -44,7 +44,7 @@ export const LoanProducts: React.FC = () => {
               <div className="bg-slate-50 p-3 rounded border border-slate-200 space-y-2 text-xs">
                 <div className="flex justify-between items-center">
                   <span className="text-slate-500 font-medium">Base Fixed APR:</span>
-                  <span className="font-mono font-bold text-blue-700">{product.baseApr}%</span>
+                  <span className="font-mono font-bold text-orange-600">{product.baseApr}%</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-slate-500 font-medium">Allowable Amount:</span>
@@ -77,7 +77,7 @@ export const LoanProducts: React.FC = () => {
                       key={i}
                       className="p-1.5 bg-slate-50 rounded border border-slate-200 flex items-center gap-2 text-[11px]"
                     >
-                      <FileText className="w-3.5 h-3.5 text-blue-600 shrink-0" />
+                      <FileText className="w-3.5 h-3.5 text-orange-600 shrink-0" />
                       <span className="font-medium text-slate-800 truncate">{doc.title}</span>
                     </div>
                   ))}

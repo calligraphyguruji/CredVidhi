@@ -142,7 +142,7 @@ export const BorrowerPortal: React.FC = () => {
       {/* Top Banner */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-5 rounded-md border border-slate-200 shadow-xs">
         <div>
-          <span className="text-xs font-mono uppercase text-blue-700 font-semibold tracking-wider">
+          <span className="text-xs font-mono uppercase text-orange-600 font-semibold tracking-wider">
             Applicant Self-Service Portal
           </span>
           <h1 className="text-xl font-bold tracking-tight text-slate-900 mt-0.5">
@@ -218,7 +218,7 @@ export const BorrowerPortal: React.FC = () => {
                     {!isLast && (
                       <div
                         className={`absolute left-3.5 top-7 -bottom-6 w-0.5 ${
-                          m.isComplete ? 'bg-blue-600' : 'bg-slate-200'
+                          m.isComplete ? 'bg-orange-600' : 'bg-slate-200'
                         }`}
                       ></div>
                     )}
@@ -227,9 +227,9 @@ export const BorrowerPortal: React.FC = () => {
                     <div
                       className={`relative z-10 w-7 h-7 rounded-full flex items-center justify-center shrink-0 border ${
                         m.isComplete
-                          ? 'bg-blue-700 text-white border-blue-700'
+                          ? 'bg-orange-600 text-white border-orange-600'
                           : m.isActive
-                          ? 'bg-white text-blue-700 border-blue-600 ring-2 ring-blue-100'
+                          ? 'bg-white text-orange-600 border-orange-600 ring-2 ring-orange-100'
                           : 'bg-slate-100 text-slate-400 border-slate-300'
                       }`}
                     >
@@ -251,7 +251,7 @@ export const BorrowerPortal: React.FC = () => {
                           {m.title}
                         </span>
                         {m.isActive && (
-                          <span className="text-[10px] font-mono font-semibold text-blue-700 bg-blue-50 px-2 py-0.5 rounded">
+                          <span className="text-[10px] font-mono font-semibold text-orange-700 bg-orange-50 px-2 py-0.5 rounded">
                             IN PROGRESS
                           </span>
                         )}
@@ -289,7 +289,7 @@ export const BorrowerPortal: React.FC = () => {
               </div>
               <div className="flex justify-between py-1.5 border-b border-slate-100">
                 <span className="text-slate-500">Estimated Monthly EMI</span>
-                <span className="font-mono font-bold text-blue-700 text-sm">
+                <span className="font-mono font-bold text-orange-600 text-sm">
                   {formatCurrency(calculateEmi(activeApp.requestedAmount, activeApp.product.baseApr, activeApp.requestedTenorMonths))} / mo
                 </span>
               </div>
@@ -313,7 +313,7 @@ export const BorrowerPortal: React.FC = () => {
                     className="p-2.5 bg-slate-50 rounded border border-slate-200 flex items-center justify-between"
                   >
                     <div className="flex items-center gap-2 truncate">
-                      <FileText className="w-4 h-4 text-blue-600 shrink-0" />
+                      <FileText className="w-4 h-4 text-orange-600 shrink-0" />
                       <div className="truncate">
                         <div className="font-semibold text-slate-900 truncate">
                           {doc.documentType}
@@ -390,7 +390,7 @@ export const BorrowerPortal: React.FC = () => {
                 key={st.num}
                 className={`py-1.5 px-2 rounded border text-xs font-semibold ${
                   step === st.num
-                    ? 'bg-blue-50 text-blue-700 border-blue-300'
+                    ? 'bg-orange-50 text-orange-700 border-orange-300'
                     : step > st.num
                     ? 'bg-slate-100 text-slate-700 border-slate-200'
                     : 'text-slate-400 border-slate-100'
@@ -427,7 +427,7 @@ export const BorrowerPortal: React.FC = () => {
                     <label className="text-[10px] font-mono font-semibold text-slate-500 uppercase tracking-wider">
                       Requested Loan Amount
                     </label>
-                    <span className="font-mono font-bold text-sm text-blue-700">
+                    <span className="font-mono font-bold text-sm text-orange-600">
                       {formatCurrency(loanAmount)}
                     </span>
                   </div>
@@ -438,7 +438,7 @@ export const BorrowerPortal: React.FC = () => {
                     step={1000}
                     value={loanAmount}
                     onChange={(e) => setLoanAmount(Number(e.target.value))}
-                    className="w-full accent-blue-700 cursor-pointer"
+                    className="w-full accent-orange-600 cursor-pointer"
                   />
                   <div className="flex justify-between text-[10px] font-mono text-slate-400 mt-1">
                     <span>{formatCurrency(selectedProduct.minAmount)}</span>
@@ -458,7 +458,7 @@ export const BorrowerPortal: React.FC = () => {
                         onClick={() => setTenorMonths(m)}
                         className={`py-1.5 rounded border text-center font-medium ${
                           tenorMonths === m
-                            ? 'bg-blue-700 text-white border-blue-700'
+                            ? 'bg-orange-600 text-white border-orange-600'
                             : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
                         }`}
                       >
@@ -482,7 +482,7 @@ export const BorrowerPortal: React.FC = () => {
                   <div className="text-[10px] font-mono text-slate-500 uppercase">
                     Live Calculation Preview
                   </div>
-                  <div className="text-2xl font-bold font-mono text-blue-700 mt-1">
+                  <div className="text-2xl font-bold font-mono text-orange-600 mt-1">
                     {formatCurrency(liveEmi)} / mo
                   </div>
                   <div className="text-[11px] text-slate-500 font-mono mt-0.5">
@@ -579,7 +579,7 @@ export const BorrowerPortal: React.FC = () => {
                     }
                     className={`py-1.5 rounded font-medium ${
                       financialForm.employmentType === 'SALARIED'
-                        ? 'bg-white text-blue-700 shadow-xs'
+                        ? 'bg-white text-orange-600 shadow-xs'
                         : 'text-slate-600'
                     }`}
                   >
@@ -592,7 +592,7 @@ export const BorrowerPortal: React.FC = () => {
                     }
                     className={`py-1.5 rounded font-medium ${
                       financialForm.employmentType === 'SELF_EMPLOYED'
-                        ? 'bg-white text-blue-700 shadow-xs'
+                        ? 'bg-white text-orange-600 shadow-xs'
                         : 'text-slate-600'
                     }`}
                   >
@@ -682,7 +682,7 @@ export const BorrowerPortal: React.FC = () => {
                     className="p-2.5 bg-slate-50 rounded border border-slate-200 flex items-center justify-between"
                   >
                     <div className="flex items-center gap-2">
-                      <FileText className="w-4 h-4 text-blue-600 shrink-0" />
+                      <FileText className="w-4 h-4 text-orange-600 shrink-0" />
                       <span className="font-medium text-slate-900">{f.title}:</span>
                       <span className="font-mono text-slate-500 text-[11px]">{f.filename}</span>
                     </div>
@@ -699,7 +699,7 @@ export const BorrowerPortal: React.FC = () => {
                   id="consent"
                   checked={declarationConsent}
                   onChange={(e) => setDeclarationConsent(e.target.checked)}
-                  className="mt-1 accent-blue-700 cursor-pointer"
+                  className="mt-1 accent-orange-600 cursor-pointer"
                 />
                 <label htmlFor="consent" className="text-[11px] text-slate-600 leading-relaxed cursor-pointer">
                   I certify that all information provided in this application is true and complete. I consent to deterministic credit underwriting, income verification, and immutable audit logging in accordance with regulatory banking compliance.

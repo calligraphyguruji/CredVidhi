@@ -101,7 +101,7 @@ export const UnderwritingCockpit: React.FC = () => {
               variant="outline"
               size="sm"
               onClick={handleRunEvaluation}
-              icon={<Activity className="w-3.5 h-3.5 text-blue-600" />}
+              icon={<Activity className="w-3.5 h-3.5 text-orange-600" />}
             >
               Re-Calculate Risk
             </Button>
@@ -168,7 +168,7 @@ export const UnderwritingCockpit: React.FC = () => {
           <div className="text-[10px] font-mono text-slate-500 uppercase tracking-wider">
             Estimated Monthly EMI
           </div>
-          <div className="text-2xl font-bold font-mono text-blue-700 mt-1">
+          <div className="text-2xl font-bold font-mono text-orange-600 mt-1">
             {assessment ? formatCurrency(assessment.calculatedEmi) : 'Pending'}
           </div>
           <div className="text-[11px] text-slate-500 font-mono mt-1">
@@ -223,7 +223,7 @@ export const UnderwritingCockpit: React.FC = () => {
                           100
                       )}%`,
                     }}
-                    className="bg-blue-600"
+                    className="bg-orange-600"
                     title="Proposed Loan EMI"
                   ></div>
                   <div className="flex-1 bg-emerald-500" title="Disposable Surplus"></div>
@@ -239,7 +239,7 @@ export const UnderwritingCockpit: React.FC = () => {
                     <span>Housing: {formatCurrency(application.financial.housingExpense)}</span>
                   </div>
                   <div className="flex items-center gap-1.5">
-                    <span className="w-2.5 h-2.5 rounded-full bg-blue-600"></span>
+                    <span className="w-2.5 h-2.5 rounded-full bg-orange-600"></span>
                     <span>Proposed EMI: {formatCurrency(assessment?.calculatedEmi || 0)}</span>
                   </div>
                   <div className="flex items-center gap-1.5">
@@ -295,8 +295,8 @@ export const UnderwritingCockpit: React.FC = () => {
                   </Badge>
                 </div>
 
-                <div className="text-xs text-slate-700 bg-blue-50/60 border border-blue-200 p-2.5 rounded">
-                  <span className="font-semibold text-blue-900 block mb-0.5">
+                <div className="text-xs text-slate-700 bg-orange-50/60 border border-orange-200 p-2.5 rounded">
+                  <span className="font-semibold text-orange-950 block mb-0.5">
                     System Recommendation:
                   </span>
                   {assessment.recommendation}
@@ -447,7 +447,7 @@ export const UnderwritingCockpit: React.FC = () => {
                   value={underwriterNotes}
                   onChange={(e) => setUnderwriterNotes(e.target.value)}
                   placeholder="Mandatory rationale for credit committee and regulatory audit..."
-                  className="w-full text-xs p-2.5 bg-slate-50 border border-slate-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-600"
+                  className="w-full text-xs p-2.5 bg-slate-50 border border-slate-300 rounded focus:outline-none focus:ring-1 focus:ring-orange-500"
                 ></textarea>
               </div>
 

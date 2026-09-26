@@ -92,7 +92,7 @@ export const OfficerQueue: React.FC = () => {
         <div className="bg-white p-4 rounded-md border border-slate-200 shadow-xs">
           <div className="flex items-center justify-between text-slate-500 text-xs">
             <span>Total Inbound Docket</span>
-            <TrendingUp className="w-4 h-4 text-blue-600" />
+            <TrendingUp className="w-4 h-4 text-orange-600" />
           </div>
           <div className="text-2xl font-bold font-mono text-slate-900 mt-2">{totalCount}</div>
           <div className="text-[11px] text-slate-500 mt-1">Active institutional portfolio</div>
@@ -110,10 +110,10 @@ export const OfficerQueue: React.FC = () => {
         <div className="bg-white p-4 rounded-md border border-slate-200 shadow-xs">
           <div className="flex items-center justify-between text-slate-500 text-xs">
             <span>Ready for Underwriting</span>
-            <FileCheck2 className="w-4 h-4 text-blue-600" />
+            <FileCheck2 className="w-4 h-4 text-orange-600" />
           </div>
-          <div className="text-2xl font-bold font-mono text-blue-700 mt-2">{readyForRiskCount}</div>
-          <div className="text-[11px] text-blue-600/80 mt-1">Documents 100% certified</div>
+          <div className="text-2xl font-bold font-mono text-orange-600 mt-2">{readyForRiskCount}</div>
+          <div className="text-[11px] text-orange-600/80 mt-1">Documents 100% certified</div>
         </div>
 
         <div className="bg-white p-4 rounded-md border border-slate-200 shadow-xs">
@@ -136,7 +136,7 @@ export const OfficerQueue: React.FC = () => {
             placeholder="Search by Reference ID, Applicant, or Product..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-3 py-1.5 text-xs bg-slate-50 border border-slate-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-600 focus:bg-white transition-colors"
+            className="w-full pl-9 pr-3 py-1.5 text-xs bg-slate-50 border border-slate-300 rounded focus:outline-none focus:ring-1 focus:ring-orange-500 focus:bg-white transition-colors"
           />
         </div>
 
@@ -155,7 +155,7 @@ export const OfficerQueue: React.FC = () => {
               onClick={() => setStatusFilter(pill.id)}
               className={`px-2.5 py-1 rounded text-xs font-medium transition-all ${
                 statusFilter === pill.id
-                  ? 'bg-blue-700 text-white shadow-xs'
+                  ? 'bg-orange-600 text-white shadow-xs'
                   : 'bg-slate-100 text-slate-600 hover:bg-slate-200/70'
               }`}
             >
@@ -193,11 +193,11 @@ export const OfficerQueue: React.FC = () => {
                 filteredApplications.map((app) => (
                   <tr
                     key={app.id}
-                    className="hover:bg-blue-50/40 transition-colors group cursor-pointer"
+                    className="hover:bg-orange-50/40 transition-colors group cursor-pointer"
                     onClick={() => handleOpenWorkbench(app.id)}
                   >
                     {/* Ref Docket */}
-                    <td className="py-3 px-4 font-mono font-semibold text-blue-700">
+                    <td className="py-3 px-4 font-mono font-semibold text-orange-600">
                       {app.referenceNumber}
                       <div className="text-[10px] text-slate-400 font-normal">
                         {formatDateTime(app.submittedAt || app.createdAt)}

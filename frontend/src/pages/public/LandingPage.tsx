@@ -15,7 +15,7 @@ export const LandingPage: React.FC = () => {
   const { setActiveView, switchRole } = useApp();
 
   return (
-    <div className="min-h-screen bg-white text-slate-900 flex flex-col font-sans selection:bg-blue-100 selection:text-blue-900">
+    <div className="min-h-screen bg-white text-slate-900 flex flex-col font-sans selection:bg-orange-100 selection:text-orange-900">
       {/* Institutional Top Navbar */}
       <Navbar />
 
@@ -41,11 +41,11 @@ export const LandingPage: React.FC = () => {
 
         {/* 7. Strategic Conversion CTA Section */}
         <section className="py-16 md:py-24 bg-slate-950 bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 text-white relative overflow-hidden">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(37,99,235,0.15),transparent_50%)] pointer-events-none" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(234,88,12,0.15),transparent_50%)] pointer-events-none" />
 
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center space-y-6">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-900/60 border border-blue-700/60 text-blue-300 text-xs font-mono">
-              <ShieldCheck className="w-3.5 h-3.5 text-blue-400" />
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-950/60 border border-orange-700/60 text-orange-300 text-xs font-mono">
+              <ShieldCheck className="w-3.5 h-3.5 text-orange-400" />
               <span>EXPERIENCE THE PRODUCTION DEMO</span>
             </div>
 
@@ -67,7 +67,7 @@ export const LandingPage: React.FC = () => {
                   setActiveView('officer-queue');
                 }}
                 icon={<ArrowRight className="w-4 h-4" />}
-                className="bg-blue-600 hover:bg-blue-500 shadow-md font-bold"
+                className="shadow-md font-bold"
               >
                 Enter Officer Queue Demo
               </Button>

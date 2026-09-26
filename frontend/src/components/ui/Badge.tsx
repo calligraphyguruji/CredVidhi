@@ -36,7 +36,7 @@ export const Badge: React.FC<BadgeProps> = ({
         break;
       case 'DOCUMENTS_VERIFIED':
         badgeText = badgeText || 'Docs Verified';
-        bgClasses = 'bg-blue-50 text-blue-700 border-blue-300';
+        bgClasses = 'bg-orange-50 text-orange-700 border-orange-300';
         break;
       case 'RISK_ASSESSED':
         badgeText = badgeText || 'Risk Assessed';
@@ -80,7 +80,7 @@ export const Badge: React.FC<BadgeProps> = ({
         bgClasses = 'bg-orange-50 text-orange-700 border-orange-300';
         break;
       case 'verified':
-        bgClasses = 'bg-blue-50 text-blue-700 border-blue-300';
+        bgClasses = 'bg-orange-50 text-orange-700 border-orange-300';
         break;
       case 'rejected':
         bgClasses = 'bg-rose-50 text-rose-700 border-rose-300';

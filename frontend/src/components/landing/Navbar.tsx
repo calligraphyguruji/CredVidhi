@@ -39,7 +39,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onNavigateSection }) => {
             onClick={() => setActiveView('landing')}
             className="flex items-center gap-2.5 cursor-pointer group"
           >
-            <div className="w-9 h-9 rounded-md bg-blue-700 text-white flex items-center justify-center font-bold shadow-xs group-hover:bg-blue-800 transition-colors">
+            <div className="w-9 h-9 rounded-md bg-orange-600 text-white flex items-center justify-center font-bold shadow-xs group-hover:bg-orange-700 transition-colors">
               <ShieldCheck className="w-5 h-5 text-white" />
             </div>
             <div>
@@ -47,7 +47,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onNavigateSection }) => {
                 <span className="font-extrabold text-base tracking-tight text-slate-900 font-sans">
                   CredVidhi
                 </span>
-                <span className="text-[10px] font-mono font-semibold px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200/80">
+                <span className="text-[10px] font-mono font-semibold px-1.5 py-0.5 rounded bg-orange-50 text-orange-700 border border-orange-200/80">
                   ENTERPRISE
                 </span>
               </div>
@@ -64,7 +64,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onNavigateSection }) => {
             <button
               key={link.id}
               onClick={() => scrollTo(link.id)}
-              className="text-xs font-semibold text-slate-600 hover:text-blue-700 transition-colors cursor-pointer"
+              className="text-xs font-semibold text-slate-600 hover:text-orange-600 transition-colors cursor-pointer"
             >
               {link.label}
             </button>
@@ -75,7 +75,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onNavigateSection }) => {
         <div className="hidden sm:flex items-center gap-2.5">
           <button
             onClick={() => setActiveView('login')}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:text-blue-700 rounded-md hover:bg-slate-100 transition-colors"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:text-orange-600 rounded-md hover:bg-slate-100 transition-colors"
           >
             <Lock className="w-3.5 h-3.5 text-slate-500" />
             <span>Staff SSO</span>
@@ -125,7 +125,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onNavigateSection }) => {
               <button
                 key={link.id}
                 onClick={() => scrollTo(link.id)}
-                className="text-left text-sm font-semibold text-slate-700 hover:text-blue-700 py-1.5 transition-colors"
+                className="text-left text-sm font-semibold text-slate-700 hover:text-orange-600 py-1.5 transition-colors"
               >
                 {link.label}
               </button>

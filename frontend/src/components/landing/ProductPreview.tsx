@@ -23,7 +23,7 @@ export const ProductPreview: React.FC = () => {
         {/* Section Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
           <div>
-            <div className="inline-flex items-center gap-2 text-xs font-mono font-semibold uppercase text-blue-700 bg-blue-50 px-2.5 py-1 rounded border border-blue-200 mb-3">
+            <div className="inline-flex items-center gap-2 text-xs font-mono font-semibold uppercase text-orange-700 bg-orange-50 px-2.5 py-1 rounded border border-orange-200 mb-3">
               <span>UNIFIED OPERATIONAL WORKSPACES</span>
             </div>
             <h2 className="text-2xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
@@ -41,7 +41,7 @@ export const ProductPreview: React.FC = () => {
               onClick={() => setPreviewTab('workbench')}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-all cursor-pointer ${
                 previewTab === 'workbench'
-                  ? 'bg-white text-blue-700 shadow-xs'
+                  ? 'bg-white text-orange-600 shadow-xs'
                   : 'text-slate-600 hover:text-slate-900'
               }`}
             >
@@ -52,7 +52,7 @@ export const ProductPreview: React.FC = () => {
               onClick={() => setPreviewTab('underwriting')}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-all cursor-pointer ${
                 previewTab === 'underwriting'
-                  ? 'bg-white text-blue-700 shadow-xs'
+                  ? 'bg-white text-orange-600 shadow-xs'
                   : 'text-slate-600 hover:text-slate-900'
               }`}
             >
@@ -63,7 +63,7 @@ export const ProductPreview: React.FC = () => {
               onClick={() => setPreviewTab('borrower')}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-all cursor-pointer ${
                 previewTab === 'borrower'
-                  ? 'bg-white text-blue-700 shadow-xs'
+                  ? 'bg-white text-orange-600 shadow-xs'
                   : 'text-slate-600 hover:text-slate-900'
               }`}
             >
@@ -108,7 +108,7 @@ export const ProductPreview: React.FC = () => {
                     setActiveView('borrower-portal');
                   }
                 }}
-                className="inline-flex items-center gap-1 bg-blue-600 hover:bg-blue-500 text-white px-2.5 py-1 rounded text-xs font-sans font-semibold transition-colors cursor-pointer"
+                className="inline-flex items-center gap-1 bg-orange-600 hover:bg-orange-500 text-white px-2.5 py-1 rounded text-xs font-sans font-semibold transition-colors cursor-pointer"
               >
                 <span>Open in App</span>
                 <ExternalLink className="w-3 h-3" />
@@ -147,14 +147,14 @@ export const ProductPreview: React.FC = () => {
                     </div>
                   </div>
 
-                  <div className="p-3 bg-blue-50/70 border border-blue-200 rounded-md">
-                    <span className="text-[10px] font-mono font-bold text-blue-700 uppercase block">
+                  <div className="p-3 bg-orange-50/70 border border-orange-200 rounded-md">
+                    <span className="text-[10px] font-mono font-bold text-orange-700 uppercase block">
                       Confirmed Gross Wages
                     </span>
-                    <span className="text-xl font-bold font-mono text-blue-950">
+                    <span className="text-xl font-bold font-mono text-orange-950">
                       ₹{(app.financial.grossMonthlyIncome * 12).toLocaleString('en-IN')}.00
                     </span>
-                    <span className="text-[11px] text-blue-700 block mt-0.5 font-mono">
+                    <span className="text-[11px] text-orange-700 block mt-0.5 font-mono">
                       = {formatCurrency(app.financial.grossMonthlyIncome)} / month
                     </span>
                   </div>
@@ -173,7 +173,7 @@ export const ProductPreview: React.FC = () => {
                     <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider font-mono">
                       Verification Checklist
                     </h4>
-                    <span className="text-[11px] font-mono text-blue-700 bg-blue-50 px-2 py-0.5 rounded font-semibold">
+                    <span className="text-[11px] font-mono text-orange-700 bg-orange-50 px-2 py-0.5 rounded font-semibold">
                       v1.2 Policy
                     </span>
                   </div>
@@ -213,7 +213,7 @@ export const ProductPreview: React.FC = () => {
 
                 <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between">
                   <span className="text-[11px] font-mono text-slate-500">Officer: David Vance</span>
-                  <span className="text-xs font-bold text-blue-700">66% Complete</span>
+                  <span className="text-xs font-bold text-orange-600">66% Complete</span>
                 </div>
               </div>
             </div>
@@ -244,7 +244,7 @@ export const ProductPreview: React.FC = () => {
                   </div>
                   <div className="p-3 bg-slate-50 rounded border border-slate-200">
                     <span className="text-[10px] text-slate-500 uppercase block">Proprietary Score</span>
-                    <span className="text-lg font-bold text-blue-700">785 / 1000</span>
+                    <span className="text-lg font-bold text-orange-600">785 / 1000</span>
                     <span className="text-[10px] text-slate-400 block">Floor: 650</span>
                   </div>
                   <div className="p-3 bg-slate-50 rounded border border-slate-200">
@@ -274,7 +274,7 @@ export const ProductPreview: React.FC = () => {
                   <div className="space-y-3 font-mono text-xs">
                     <div className="flex justify-between items-center p-2 bg-slate-50 rounded border border-slate-200">
                       <span className="text-slate-500">Sanctioned Limit:</span>
-                      <span className="font-bold text-blue-700">{formatCurrency(app.requestedAmount)}</span>
+                      <span className="font-bold text-orange-600">{formatCurrency(app.requestedAmount)}</span>
                     </div>
                     <div className="flex justify-between items-center p-2 bg-slate-50 rounded border border-slate-200">
                       <span className="text-slate-500">Approved APR:</span>
@@ -314,7 +314,7 @@ export const ProductPreview: React.FC = () => {
                 <div className="grid grid-cols-3 gap-2 font-mono text-xs">
                   <div className="p-2.5 bg-slate-50 rounded border border-slate-200">
                     <span className="text-[10px] text-slate-400 block uppercase">Requested</span>
-                    <span className="font-bold text-blue-700">{formatCurrency(app.requestedAmount)}</span>
+                    <span className="font-bold text-orange-600">{formatCurrency(app.requestedAmount)}</span>
                   </div>
                   <div className="p-2.5 bg-slate-50 rounded border border-slate-200">
                     <span className="text-[10px] text-slate-400 block uppercase">Estimated EMI</span>

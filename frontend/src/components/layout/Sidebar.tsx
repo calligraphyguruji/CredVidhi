@@ -50,7 +50,7 @@ export const Sidebar: React.FC = () => {
       {/* Brand Header */}
       <div className="h-14 px-4 border-b border-slate-200 flex items-center justify-between">
         <div className="flex items-center gap-2.5">
-          <div className="w-7 h-7 bg-blue-700 text-white flex items-center justify-center rounded shadow-xs">
+          <div className="w-7 h-7 bg-orange-600 text-white flex items-center justify-center rounded shadow-xs">
             <Building2 className="w-4 h-4" />
           </div>
           <div>
@@ -71,7 +71,7 @@ export const Sidebar: React.FC = () => {
             ACTIVE
           </span>
         </div>
-        <div className="font-mono text-xs font-bold text-blue-700 mt-1 truncate">
+        <div className="font-mono text-xs font-bold text-orange-600 mt-1 truncate">
           {activeApp.referenceNumber}
         </div>
         <div className="text-xs text-slate-600 truncate mt-0.5 font-medium">
@@ -99,7 +99,7 @@ export const Sidebar: React.FC = () => {
                     onClick={() => setActiveView(item.id)}
                     className={`w-full flex items-center gap-2.5 px-2.5 py-2 rounded text-xs font-medium transition-all ${
                       isActive
-                        ? 'bg-blue-700 text-white shadow-xs'
+                        ? 'bg-orange-600 text-white shadow-xs'
                         : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
                     }`}
                   >

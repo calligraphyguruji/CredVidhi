@@ -41,7 +41,7 @@ export const Input: React.FC<InputProps> = ({
         <input
           id={inputId}
           className={`block w-full text-sm text-slate-900 border ${
-            error ? 'border-rose-500 focus:ring-rose-500 focus:border-rose-500' : 'border-slate-300 focus:ring-blue-600 focus:border-blue-600'
+            error ? 'border-rose-500 focus:ring-rose-500 focus:border-rose-500' : 'border-slate-300 focus:ring-orange-500 focus:border-orange-500'
           } ${prefixText ? 'rounded-l-none' : 'rounded-l-md'} ${
             suffixText ? 'rounded-r-none' : 'rounded-r-md'
           } px-3 py-2 bg-white placeholder-slate-400 focus:outline-none focus:ring-1 transition-colors ${

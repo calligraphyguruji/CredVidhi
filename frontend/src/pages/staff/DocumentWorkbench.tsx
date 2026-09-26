@@ -94,7 +94,7 @@ export const DocumentWorkbench: React.FC = () => {
         <div className="flex items-center gap-3">
           <button
             onClick={() => setActiveView('officer-queue')}
-            className="flex items-center gap-1.5 text-slate-500 hover:text-blue-700 transition-colors text-xs font-medium"
+            className="flex items-center gap-1.5 text-slate-500 hover:text-orange-600 transition-colors text-xs font-medium"
           >
             <ArrowLeft className="w-4 h-4" />
             <span>Queue [{application.referenceNumber}]</span>
@@ -109,9 +109,9 @@ export const DocumentWorkbench: React.FC = () => {
             </span>
           </div>
 
-          <div className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-50 text-blue-700 rounded font-mono text-xs font-semibold">
+          <div className="inline-flex items-center gap-1 px-2 py-0.5 bg-orange-50 text-orange-700 rounded font-mono text-xs font-semibold">
             <span>{formatCurrency(application.requestedAmount)}</span>
-            <span className="uppercase text-[10px] text-blue-600 font-normal">
+            <span className="uppercase text-[10px] text-orange-600 font-normal">
               • {application.product.name}
             </span>
           </div>
@@ -166,7 +166,7 @@ export const DocumentWorkbench: React.FC = () => {
                       onClick={() => setSelectedDocId(doc.id)}
                       className={`flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-mono font-medium transition-all ${
                         isSelected
-                          ? 'bg-blue-700 text-white shadow-xs'
+                          ? 'bg-orange-600 text-white shadow-xs'
                           : 'bg-slate-50 text-slate-600 hover:text-slate-900 hover:bg-slate-100'
                       }`}
                     >
@@ -298,14 +298,14 @@ export const DocumentWorkbench: React.FC = () => {
 
                 {/* Financial Boxes */}
                 <div className="grid grid-cols-2 gap-3 text-xs">
-                  <div className="border border-blue-200 bg-blue-50/50 p-2.5 rounded-xs">
-                    <span className="block text-[9px] font-mono text-blue-700 uppercase font-semibold">
+                  <div className="border border-orange-200 bg-orange-50/50 p-2.5 rounded-xs">
+                    <span className="block text-[9px] font-mono text-orange-700 uppercase font-semibold">
                       1. Wages, tips, other compensation
                     </span>
-                    <span className="text-base font-bold font-mono text-blue-900">
+                    <span className="text-base font-bold font-mono text-orange-950">
                       ₹{(application.financial.grossMonthlyIncome * 12).toLocaleString('en-IN')}.00
                     </span>
-                    <span className="block text-[10px] text-blue-600 mt-0.5">
+                    <span className="block text-[10px] text-orange-700 mt-0.5">
                       = ₹{application.financial.grossMonthlyIncome.toLocaleString('en-IN')} / mo
                     </span>
                   </div>
@@ -351,7 +351,7 @@ export const DocumentWorkbench: React.FC = () => {
                   Audit-logged compliance requirements for {application.product.name}
                 </p>
               </div>
-              <span className="text-xs font-mono text-blue-700 font-semibold bg-blue-50 px-2 py-0.5 rounded">
+              <span className="text-xs font-mono text-orange-700 font-semibold bg-orange-50 px-2 py-0.5 rounded">
                 Checklist v1.2
               </span>
             </div>
@@ -440,7 +440,7 @@ export const DocumentWorkbench: React.FC = () => {
                 value={activeOfficerNotes}
                 onChange={(e) => setActiveOfficerNotes(e.target.value)}
                 placeholder="Enter regulatory verification comments for underwriter..."
-                className="w-full text-xs p-2.5 bg-slate-50 border border-slate-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-600 focus:bg-white"
+                className="w-full text-xs p-2.5 bg-slate-50 border border-slate-300 rounded focus:outline-none focus:ring-1 focus:ring-orange-500 focus:bg-white"
               ></textarea>
               <div className="flex justify-end mt-2">
                 <Button
@@ -524,7 +524,7 @@ export const DocumentWorkbench: React.FC = () => {
             <select
               value={clarificationReason}
               onChange={(e) => setClarificationReason(e.target.value)}
-              className="w-full text-xs p-2 bg-slate-50 border border-slate-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-600"
+              className="w-full text-xs p-2 bg-slate-50 border border-slate-300 rounded focus:outline-none focus:ring-1 focus:ring-orange-500"
             >
               <option value="BLURRY_OR_ILLEGIBLE">Blurry or Illegible Scanned File</option>
               <option value="EXPIRED_DOCUMENT">Document Expired or Outdated</option>
@@ -543,7 +543,7 @@ export const DocumentWorkbench: React.FC = () => {
               value={clarificationNotes}
               onChange={(e) => setClarificationNotes(e.target.value)}
               placeholder="e.g. Please upload pages 1 through 4 of your December bank statement showing full employer deposit stamps."
-              className="w-full text-xs p-2.5 bg-slate-50 border border-slate-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-600"
+              className="w-full text-xs p-2.5 bg-slate-50 border border-slate-300 rounded focus:outline-none focus:ring-1 focus:ring-orange-500"
             ></textarea>
           </div>
         </div>

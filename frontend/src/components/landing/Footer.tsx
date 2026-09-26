@@ -13,7 +13,7 @@ export const Footer: React.FC = () => {
           {/* Brand & Purpose (4 Cols) */}
           <div className="md:col-span-4 space-y-4">
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-md bg-blue-600 text-white flex items-center justify-center font-bold">
+              <div className="w-8 h-8 rounded-md bg-orange-600 text-white flex items-center justify-center font-bold">
                 <ShieldCheck className="w-5 h-5 text-white" />
               </div>
               <div>
