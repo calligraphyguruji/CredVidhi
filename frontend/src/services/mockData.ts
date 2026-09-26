@@ -61,7 +61,7 @@ export const INITIAL_PRODUCTS: LoanProduct[] = [
 export const INITIAL_USERS: User[] = [
   {
     id: 'usr-officer-1',
-    email: 'd.vance@lapsbank.com',
+    email: 'd.vance@credvidhi.com',
     fullName: 'David Vance',
     role: 'LOAN_OFFICER',
     phone: '+1 (555) 234-5678',
@@ -69,7 +69,7 @@ export const INITIAL_USERS: User[] = [
   },
   {
     id: 'usr-analyst-1',
-    email: 'k.reed@lapsbank.com',
+    email: 'k.reed@credvidhi.com',
     fullName: 'Katherine Reed',
     role: 'RISK_ANALYST',
     phone: '+1 (555) 345-6789',
@@ -85,7 +85,7 @@ export const INITIAL_USERS: User[] = [
   },
   {
     id: 'usr-admin-1',
-    email: 'admin@lapsbank.com',
+    email: 'admin@credvidhi.com',
     fullName: 'Sarah Sterling (Admin)',
     role: 'ADMIN',
     phone: '+1 (555) 111-2222',

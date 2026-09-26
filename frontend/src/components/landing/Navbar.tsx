@@ -45,14 +45,14 @@ export const Navbar: React.FC<NavbarProps> = ({ onNavigateSection }) => {
             <div>
               <div className="flex items-center gap-1.5">
                 <span className="font-extrabold text-base tracking-tight text-slate-900 font-sans">
-                  LAPS
+                  CredVidhi
                 </span>
                 <span className="text-[10px] font-mono font-semibold px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200/80">
                   ENTERPRISE
                 </span>
               </div>
               <p className="text-[10px] font-mono text-slate-500 hidden sm:block">
-                Loan Approval Processing System
+                Deterministic Credit & Lending Infrastructure
               </p>
             </div>
           </div>

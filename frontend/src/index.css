@@ -4,16 +4,16 @@
 
 @layer base {
   :root {
-    --bg-canvas: #F8FAFC;
+    --bg-canvas: #FAF9F6;
     --bg-surface: #FFFFFF;
-    --bg-subtle: #F1F5F9;
+    --bg-subtle: #FFF7ED;
     --border-default: #E2E8F0;
-    --border-focus: #2563EB;
+    --border-focus: #EA580C;
     --text-primary: #0F172A;
     --text-secondary: #475569;
     --text-muted: #94A3B8;
-    --primary-default: #1D4ED8;
-    --primary-hover: #1E40AF;
+    --primary-default: #C2410C;
+    --primary-hover: #9A3412;
   }
 
   .dark {
@@ -21,12 +21,12 @@
     --bg-surface: #131B2B;
     --bg-subtle: #1E293B;
     --border-default: #26354A;
-    --border-focus: #60A5FA;
+    --border-focus: #FB923C;
     --text-primary: #F8FAFC;
     --text-secondary: #94A3B8;
     --text-muted: #64748B;
-    --primary-default: #3B82F6;
-    --primary-hover: #2563EB;
+    --primary-default: #EA580C;
+    --primary-hover: #C2410C;
   }
 
   html, body {

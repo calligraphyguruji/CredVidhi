@@ -371,7 +371,7 @@ export const BorrowerPortal: React.FC = () => {
                 disabled={!declarationConsent}
                 onClick={handleFinishWizard}
               >
-                Submit Application to LAPS
+                Submit Application to CredVidhi
               </Button>
             )}
           </div>

@@ -32,7 +32,7 @@ export const HeroSection: React.FC = () => {
             {/* System Status Pill */}
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 border border-blue-200/90 text-blue-800 text-[11px] font-mono font-medium shadow-2xs">
               <span className="w-2 h-2 rounded-full bg-blue-600 animate-pulse"></span>
-              <span>LAPS CORE V2.4 • DETERMINISTIC UNDERWRITING</span>
+              <span>CREDVIDHI CORE V2.4 • DETERMINISTIC UNDERWRITING</span>
             </div>
 
             {/* Main Headline */}

@@ -86,7 +86,7 @@ export const ProductPreview: React.FC = () => {
               </div>
               <span className="text-slate-500 ml-2">|</span>
               <span className="text-slate-400 font-semibold truncate">
-                laps.internal.bank/workspace/{previewTab} • {app.referenceNumber}
+                credvidhi.internal.bank/workspace/{previewTab} • {app.referenceNumber}
               </span>
             </div>
 

@@ -70,9 +70,9 @@ interface AppContextType {
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 const STORAGE_KEYS = {
-  APPLICATIONS: 'laps_applications_v2',
-  AUDIT_LOGS: 'laps_audit_logs_v2',
-  CURRENT_ROLE: 'laps_current_role_v2',
+  APPLICATIONS: 'credvidhi_applications_v1',
+  AUDIT_LOGS: 'credvidhi_audit_logs_v1',
+  CURRENT_ROLE: 'credvidhi_current_role_v1',
 };
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {

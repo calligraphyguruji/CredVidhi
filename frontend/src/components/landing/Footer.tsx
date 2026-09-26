@@ -18,10 +18,10 @@ export const Footer: React.FC = () => {
               </div>
               <div>
                 <span className="font-extrabold text-base tracking-tight text-white font-sans">
-                  LAPS
+                  CredVidhi
                 </span>
                 <span className="text-[10px] font-mono text-slate-500 block">
-                  Loan Approval Processing System
+                  Deterministic Credit & Lending System
                 </span>
               </div>
             </div>
@@ -146,7 +146,7 @@ export const Footer: React.FC = () => {
 
         {/* Bottom Disclaimer & Copyright */}
         <div className="mt-12 pt-8 border-t border-slate-900 flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] text-slate-500">
-          <p>© 2026 LAPS Architecture. All rights reserved.</p>
+          <p>© 2026 CredVidhi Architecture. All rights reserved.</p>
           <p className="text-center sm:text-right">
             Deterministic Lending & Underwriting System • Built to PRD.md & RULES.md Specifications
           </p>
