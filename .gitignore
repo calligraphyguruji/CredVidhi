@@ -14,3 +14,20 @@ npm-debug.log*
 # OS
 .DS_Store
 Thumbs.db
+
+# Internal agent configs & skills
+.agents/
+AGENTS.md
+
+# Internal planning & governance specifications
+.planning/
+ARCHITECTURE.md
+DECISIONS.md
+DESIGN.md
+MEMORY.md
+PRD.md
+RULES.md
+TESTING.md
+
+# Temporary design reference screens
+stitch_screens/

@@ -191,14 +191,8 @@ Where:
 
 ```text
 CredVidhi/
-├── AGENTS.md                  # Autonomous agent operating protocol & governance
-├── ARCHITECTURE.md            # Detailed technical stack & schema specifications
-├── DECISIONS.md               # Architecture Decision Records (ADRs)
-├── DESIGN.md                  # UI/UX guidelines, design tokens, and style rules
-├── MEMORY.md                  # Project state and execution learnings
-├── PRD.md                     # Comprehensive Product Requirements Document
-├── RULES.md                   # Strict financial, database, and security constraints
-├── TESTING.md                 # Test plan, linting, and quality verification gates
+├── README.md                  # Project overview, architecture & setup
+├── .gitignore                 # Environment & dependency ignore rules
 └── frontend/                  # React client application
     ├── src/
     │   ├── components/
@@ -278,17 +272,15 @@ npm run preview
 
 ---
 
-## 📚 Governance & Documentation
+## 📚 Governance & Standards
 
-Detailed project architecture, operational specifications, and technical standards are maintained in the repository:
+CredVidhi adheres to institutional-grade financial and operational specifications:
 
-- 📖 [**Product Requirements Document (PRD.md)**](PRD.md)
-- 🏛️ [**System Architecture & Schemas (ARCHITECTURE.md)**](ARCHITECTURE.md)
-- 🎨 [**Design Tokens & UI Standards (DESIGN.md)**](DESIGN.md)
-- ⚖️ [**Non-Negotiable Business & Engineering Rules (RULES.md)**](RULES.md)
-- 🧪 [**Quality Assurance & Testing Protocol (TESTING.md)**](TESTING.md)
-- 📋 [**Architecture Decision Records (DECISIONS.md)**](DECISIONS.md)
-- 🤖 [**AI Agent Operating Manual (AGENTS.md)**](AGENTS.md)
+- **Deterministic Underwriting:** Reproducible mathematical risk assessment with zero IEEE 754 floating-point drift.
+- **Strict Role-Based Access Control:** Hard boundaries separating Borrower, Officer, Underwriter, and Admin operations.
+- **Audit Immutability:** Append-only transaction envelopes recording every lifecycle transition and reviewer note.
+- **Non-Destructive Evolution:** Version-controlled database migrations with ACID transaction envelopes.
+- **Quality Verification Gates:** Comprehensive type-checking, fast static linting (`oxlint`), and frontend build checks.
 
 ---
 
