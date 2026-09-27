@@ -175,11 +175,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const refreshFromBackend = async () => {
     try {
       setIsSyncing(true);
-      const health = await healthApi.checkReady();
-      setIsBackendConnected(true);
-      const isDbUp = (health as any)?.dependencies?.database === 'UP' || Boolean((health as any)?.database);
-      const isRedisUp = (health as any)?.dependencies?.redis === 'UP' || Boolean((health as any)?.redis);
-      setBackendHealth({ database: isDbUp, redis: isRedisUp });
+      const ready = await healthApi.checkReady();
+      setIsBackendConnected(ready.status === 'READY');
+      setBackendHealth({ database: true, redis: false });
+
+      // Optionally inspect detailed dependencies without failing on degraded Redis
+      healthApi.checkDetailed().then((detailed) => {
+        const isDbUp = detailed?.dependencies?.database === 'UP';
+        const isRedisUp = detailed?.dependencies?.redis === 'UP';
+        setBackendHealth({ database: isDbUp, redis: isRedisUp });
+      }).catch(() => {
+        // Redis degraded or offline, database operational
+      });
 
       // Synchronize catalog products from live backend
       try {

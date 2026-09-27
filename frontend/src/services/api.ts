@@ -74,7 +74,8 @@ async function request<T>(
 // ==========================================
 export const healthApi = {
   checkLive: () => request<{ status: string }>('/health/live'),
-  checkReady: () => request<{ status: string; database: boolean; redis: boolean }>('/health'),
+  checkReady: () => request<{ status: string }>('/health/ready'),
+  checkDetailed: () => request<{ status: string; dependencies?: { database: string; redis: string } }>('/health'),
 };
 
 // ==========================================
