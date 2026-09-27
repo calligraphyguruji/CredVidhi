@@ -360,7 +360,7 @@ CredVidhi's design language combines institutional banking reliability with high
 
 ---
 
-### Backend Service Setup
+### Backend Service Setup & Deployment Runbook
 
 ```bash
 # 1. Enter backend directory
@@ -374,10 +374,13 @@ uv venv
 source .venv/bin/activate
 uv pip install -e ".[dev]"
 
-# 4. Seed database with institutional accounts & loan products
+# 4. Run version-controlled Alembic database migrations
+alembic upgrade head
+
+# 5. Seed database with institutional accounts & loan products
 python -m app.scripts.seed_db
 
-# 5. Start development API server
+# 6. Start development API server
 uvicorn app.main:app --reload --port 8000
 ```
 
@@ -400,7 +403,12 @@ ruff check . && ruff format --check .
 
 ---
 
-### Frontend Client Setup
+### Frontend Client Setup & Dual-Mode Engine
+
+The frontend features a **Dual-Mode Hybrid Architecture**:
+1. **Live REST Mode:** Connects directly to the FastAPI `/api/v1` backend using a zero-dependency native `fetch` client with JWT authentication, standardized error envelopes, and automated optimistic mutations.
+2. **Autonomous Local Engine Mode:** If the backend is not running or network connectivity drops, the client autonomously falls back to its local deterministic financial math, in-memory FSM state machine, and localStorage persistence without white-screens or degraded UX.
+3. **Live Indicator & Re-Probe:** The application header displays a live `Live API` (green) / `Local Mode` (gray) badge that users can click at any time to re-probe backend health.
 
 ```bash
 # 1. Enter frontend directory
@@ -409,7 +417,10 @@ cd frontend
 # 2. Install dependencies
 npm install
 
-# 3. Start local development server
+# 3. Configure environment (optional, defaults to http://localhost:8000/api/v1)
+# echo "VITE_API_BASE_URL=http://localhost:8000/api/v1" > .env.local
+
+# 4. Start local development server
 npm run dev
 ```
 

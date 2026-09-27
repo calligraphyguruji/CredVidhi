@@ -18,6 +18,18 @@ import {
 import { calculateEmi, calculateDti, calculateDisposableIncome } from '../utils/financial';
 import { ToastContainer, type ToastMessage } from '../components/ui/Toast';
 import { applyRouteSEO, resolveViewFromUrl } from '../utils/seo';
+import {
+  healthApi,
+  productsApi,
+  applicationsApi,
+  queuesApi,
+  documentsApi,
+  underwritingApi,
+  auditApi,
+  mapBackendProduct,
+  mapBackendApplication,
+  mapBackendAuditLog,
+} from '../services/api';
 
 interface AppContextType {
   currentUser: User;
@@ -32,6 +44,11 @@ interface AppContextType {
   setActiveView: (view: string) => void;
   selectedDocId: string | null;
   setSelectedDocId: (id: string | null) => void;
+  // Backend Live Connectivity
+  isBackendConnected: boolean;
+  backendHealth: { database: boolean; redis: boolean } | null;
+  isSyncing: boolean;
+  refreshFromBackend: () => Promise<void>;
   // Notifications / Toasts
   toasts: ToastMessage[];
   addToast: (toast: Omit<ToastMessage, 'id'>) => void;
@@ -87,6 +104,9 @@ const STORAGE_KEYS = {
   PRODUCTS: 'credvidhi_products_v1',
   USERS: 'credvidhi_users_v1',
 };
+
+const isUUID = (str: string): boolean =>
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [currentRole, setCurrentRole] = useState<UserRole>(() => {
@@ -148,6 +168,75 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [selectedDocId, setSelectedDocId] = useState<string | null>('doc-002');
   const [activeView, setActiveView] = useState<string>(() => resolveViewFromUrl());
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
+  const [isBackendConnected, setIsBackendConnected] = useState<boolean>(false);
+  const [backendHealth, setBackendHealth] = useState<{ database: boolean; redis: boolean } | null>(null);
+  const [isSyncing, setIsSyncing] = useState<boolean>(false);
+
+  const refreshFromBackend = async () => {
+    try {
+      setIsSyncing(true);
+      const health = await healthApi.checkReady();
+      setIsBackendConnected(true);
+      const isDbUp = (health as any)?.dependencies?.database === 'UP' || Boolean((health as any)?.database);
+      const isRedisUp = (health as any)?.dependencies?.redis === 'UP' || Boolean((health as any)?.redis);
+      setBackendHealth({ database: isDbUp, redis: isRedisUp });
+
+      // Synchronize catalog products from live backend
+      try {
+        const liveProducts = await productsApi.list();
+        if (Array.isArray(liveProducts) && liveProducts.length > 0) {
+          setProducts(liveProducts.map(mapBackendProduct));
+        }
+      } catch (err) {
+        console.warn('Backend products fetch failed, using local products catalog', err);
+      }
+
+      // Synchronize queue applications from live backend (non-destructively merge)
+      try {
+        const liveApps = await queuesApi.getOfficerQueue();
+        if (Array.isArray(liveApps) && liveApps.length > 0) {
+          setApplications((prev) => {
+            const liveMap = new Map(liveApps.map((a: any) => [String(a.id), a]));
+            const updated = prev.map((app) => {
+              const live = liveMap.get(app.id);
+              if (!live) return app;
+              liveMap.delete(app.id);
+              return { ...app, status: live.status, requestedAmount: Number(live.requested_amount) };
+            });
+            for (const [, newApp] of liveMap) {
+              updated.push(mapBackendApplication(newApp));
+            }
+            return updated;
+          });
+        }
+      } catch (err) {
+        console.warn('Backend officer queue fetch failed, using local applications', err);
+      }
+
+      // Synchronize immutable audit logs from live backend
+      try {
+        const liveLogs = await auditApi.getLogs({ limit: 50 });
+        if (liveLogs && Array.isArray(liveLogs.items) && liveLogs.items.length > 0) {
+          setAuditLogs(liveLogs.items.map(mapBackendAuditLog));
+        }
+      } catch (err) {
+        console.warn('Backend audit logs fetch failed, using local audit ledger', err);
+      }
+    } catch {
+      // Backend is offline or unreachable - gracefully operate in autonomous local mode
+      setIsBackendConnected(false);
+      setBackendHealth(null);
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      void refreshFromBackend();
+    }, 0);
+    return () => clearTimeout(timer);
+  }, []);
 
   // Dynamic Route SEO and Meta Tag Synchronization
   useEffect(() => {
@@ -245,6 +334,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         };
       })
     );
+
+    if (isBackendConnected && isUUID(applicationId)) {
+      applicationsApi.transition(applicationId, nextStatus, notes).catch((err) => {
+        console.warn('Backend status transition sync failed (local state preserved):', err);
+      });
+    }
   };
 
   const verifyDocument = (
@@ -315,6 +410,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         };
       })
     );
+
+    if (isBackendConnected && isUUID(documentId)) {
+      documentsApi.verify(documentId, status, remarks).catch((err) => {
+        console.warn('Backend document verification sync failed (local state preserved):', err);
+      });
+    }
   };
 
   const runRiskAssessment = (applicationId: string) => {
@@ -428,6 +529,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         };
       })
     );
+
+    if (isBackendConnected && isUUID(applicationId)) {
+      underwritingApi.evaluate(applicationId).catch((err) => {
+        console.warn('Backend risk evaluation sync failed (local state preserved):', err);
+      });
+    }
   };
 
   const recordUnderwritingDecision = (
@@ -490,6 +597,23 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         };
       })
     );
+
+    if (isBackendConnected && isUUID(applicationId)) {
+      underwritingApi
+        .recordDecision(applicationId, {
+          decision,
+          approved_amount: payload.approvedAmount,
+          approved_apr: payload.approvedApr,
+          approved_tenor_months: payload.approvedTenorMonths,
+          conditions: payload.conditions,
+          rejection_reason_code:
+            payload.rejectionReasonCode || (decision === 'REJECTED' ? 'CREDIT_POLICY' : undefined),
+          underwriter_notes: payload.underwriterNotes,
+        })
+        .catch((err) => {
+          console.warn('Backend decision sync failed (local state preserved):', err);
+        });
+    }
   };
 
   const submitNewApplication = (data: {
@@ -568,6 +692,49 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       message: `Docket ${refNumber} created for ₹${data.requestedAmount.toLocaleString('en-IN')}.`,
     });
 
+    if (isBackendConnected) {
+      const backendProdId = isUUID(selectedProd.id)
+        ? selectedProd.id
+        : products.find((p) => isUUID(p.id))?.id;
+
+      if (backendProdId) {
+        applicationsApi
+          .createDraft({
+            product_id: backendProdId,
+            requested_amount: data.requestedAmount,
+            requested_tenor_months: data.requestedTenorMonths,
+            purpose: data.purpose,
+          })
+          .then((draft) => {
+            return applicationsApi
+              .updateDraft(draft.id, {
+                applicant_personal_snapshot: data.personal,
+                applicant_financial_snapshot: data.financial,
+              })
+              .then(() => applicationsApi.submit(draft.id))
+              .then((submitted) => {
+                const liveId = String(submitted.id || draft.id);
+                const liveRef = submitted.reference_number || refNumber;
+                setApplications((prev) =>
+                  prev.map((a) =>
+                    a.id === newId
+                      ? {
+                          ...a,
+                          id: liveId,
+                          referenceNumber: liveRef,
+                        }
+                      : a
+                  )
+                );
+                setActiveApplicationId(liveId);
+              });
+          })
+          .catch((err) => {
+            console.warn('Backend application submit sync failed (local state preserved):', err);
+          });
+      }
+    }
+
     return newId;
   };
 
@@ -586,6 +753,25 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       title: 'Loan Product Configured',
       message: `Product ${newProduct.name} successfully created.`,
     });
+
+    if (isBackendConnected) {
+      productsApi
+        .create({
+          code: newProductData.code,
+          name: newProductData.name,
+          description: newProductData.description,
+          min_amount: newProductData.minAmount,
+          max_amount: newProductData.maxAmount,
+          min_tenor_months: newProductData.minTenorMonths,
+          max_tenor_months: newProductData.maxTenorMonths,
+          base_apr: newProductData.baseApr,
+          max_dti_ratio: newProductData.maxDtiRatio,
+          required_documents: newProductData.requiredDocuments,
+        })
+        .catch((err) => {
+          console.warn('Backend product create sync failed (local state preserved):', err);
+        });
+    }
   };
 
   const updateLoanProduct = (id: string, updates: Partial<LoanProduct>) => {
@@ -679,6 +865,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setActiveView,
         selectedDocId,
         setSelectedDocId,
+        isBackendConnected,
+        backendHealth,
+        isSyncing,
+        refreshFromBackend,
         toasts,
         addToast,
         dismissToast,

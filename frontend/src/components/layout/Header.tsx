@@ -5,11 +5,25 @@ import { useApp } from '../../context/AppContext';
 import type { UserRole } from '../../types';
 
 export const Header: React.FC = () => {
-  const { currentUser, currentRole, switchRole, applications, activeApplicationId, setActiveView, auditLogs } = useApp();
+  const {
+    currentUser,
+    currentRole,
+    switchRole,
+    applications,
+    activeApplicationId,
+    setActiveView,
+    auditLogs,
+    isBackendConnected,
+    isSyncing,
+    refreshFromBackend,
+  } = useApp();
   const shouldReduceMotion = useReducedMotion();
   const [showNotifications, setShowNotifications] = useState(false);
 
-  const activeApp = applications.find((a) => a.id === activeApplicationId) || applications[0];
+  const activeApp = applications.find((a) => a.id === activeApplicationId) || applications[0] || {
+    referenceNumber: 'CV-STANDBY',
+    status: 'DRAFT',
+  };
 
   const roles: { role: UserRole; label: string }[] = [
     { role: 'LOAN_OFFICER', label: 'Loan Officer' },
@@ -28,10 +42,40 @@ export const Header: React.FC = () => {
           </span>
           <span className="text-[11px] text-slate-500 font-mono">({activeApp.status})</span>
         </div>
-        <div className="flex items-center gap-1.5 text-emerald-700 text-xs font-mono">
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-          <span>Auto-synced</span>
-        </div>
+        <button
+          disabled={isSyncing}
+          aria-label={
+            isBackendConnected
+              ? 'Connected to FastAPI backend. Click to re-sync.'
+              : 'Operating in Local Mode. Click to probe backend.'
+          }
+          onClick={() => {
+            if (!isSyncing) void refreshFromBackend();
+          }}
+          title={
+            isBackendConnected
+              ? 'Connected to FastAPI REST Backend (:8000). Click to re-sync.'
+              : 'Operating in Local Autonomous Engine Mode. Click to probe backend.'
+          }
+          className={`flex items-center gap-1.5 text-xs font-mono px-2 py-0.5 rounded transition-colors ${
+            isSyncing ? 'cursor-not-allowed opacity-75' : 'cursor-pointer'
+          } ${
+            isBackendConnected
+              ? 'text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200'
+              : 'text-slate-600 bg-slate-100 hover:bg-slate-200 border border-slate-200'
+          }`}
+        >
+          <span
+            className={`w-1.5 h-1.5 rounded-full ${
+              isBackendConnected
+                ? isSyncing
+                  ? 'bg-emerald-400 animate-ping'
+                  : 'bg-emerald-500 animate-pulse'
+                : 'bg-slate-400'
+            }`}
+          />
+          <span>{isBackendConnected ? (isSyncing ? 'Syncing...' : 'Live API') : 'Local Mode'}</span>
+        </button>
       </div>
 
       {/* Center: Interactive Role Switcher Bar with gliding pill */}
@@ -112,15 +156,19 @@ export const Header: React.FC = () => {
                   </span>
                 </div>
                 <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
-                  {auditLogs.slice(0, 4).map((log) => (
-                    <div key={log.id} className="text-left p-2 rounded bg-slate-50 hover:bg-slate-100 transition-colors">
-                      <div className="flex items-center justify-between text-[10px] font-mono text-slate-500">
-                        <span className="font-semibold text-orange-600 truncate">{log.eventType}</span>
-                        <span>{new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                  {auditLogs.length === 0 ? (
+                    <p className="text-xs text-slate-400 py-3 text-center">No recent audit activity.</p>
+                  ) : (
+                    auditLogs.slice(0, 4).map((log) => (
+                      <div key={log.id} className="text-left p-2 rounded bg-slate-50 hover:bg-slate-100 transition-colors">
+                        <div className="flex items-center justify-between text-[10px] font-mono text-slate-500">
+                          <span className="font-semibold text-orange-600 truncate">{log.eventType}</span>
+                          <span>{new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                        </div>
+                        <p className="text-xs text-slate-700 mt-0.5 line-clamp-2 leading-relaxed">{log.notes}</p>
                       </div>
-                      <p className="text-xs text-slate-700 mt-0.5 line-clamp-2 leading-relaxed">{log.notes}</p>
-                    </div>
-                  ))}
+                    ))
+                  )}
                 </div>
               </motion.div>
             )}
