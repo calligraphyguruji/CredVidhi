@@ -12,6 +12,7 @@ import { BorrowerPortal } from './pages/applicant/BorrowerPortal';
 import { ComplianceAudit } from './pages/admin/ComplianceAudit';
 import { LoanProducts } from './pages/admin/LoanProducts';
 import { pageTransitionVariants } from './utils/motion';
+import { Analytics } from '@vercel/analytics/react';
 
 const MainContent: React.FC = () => {
   const { activeView } = useApp();
@@ -95,6 +96,7 @@ export const App: React.FC = () => {
   return (
     <AppProvider>
       <MainContent />
+      <Analytics />
     </AppProvider>
   );
 };
