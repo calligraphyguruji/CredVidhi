@@ -3,9 +3,11 @@
 Loads environment variables using Pydantic Settings v2 with strict type validation.
 """
 
+import json
 from functools import lru_cache
+from typing import Any, List, Union
 
-from pydantic import model_validator
+from pydantic import field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -36,12 +38,41 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
 
-    # CORS Allowed Origins
-    CORS_ORIGINS: list[str] = [
+    # CORS Allowed Origins (Flexible parsing: supports JSON list, single string, or comma-separated)
+    CORS_ORIGINS: Union[List[str], str] = [
         "http://localhost:5173",
         "http://localhost:3000",
         "https://credvidhi.vercel.app",
     ]
+
+    @field_validator("CORS_ORIGINS", mode="before")
+    @classmethod
+    def parse_cors_origins(cls, v: Any) -> List[str]:
+        """Safely parse CORS_ORIGINS from JSON array, comma-delimited string, or list."""
+        if isinstance(v, list):
+            return [str(item).strip() for item in v if str(item).strip()]
+        if isinstance(v, str):
+            v_stripped = v.strip()
+            if not v_stripped:
+                return []
+            if v_stripped.startswith("[") and v_stripped.endswith("]"):
+                try:
+                    parsed = json.loads(v_stripped)
+                    if isinstance(parsed, list):
+                        return [str(item).strip() for item in parsed if str(item).strip()]
+                except Exception:
+                    inner = v_stripped[1:-1]
+                    return [
+                        item.strip().strip("'\"")
+                        for item in inner.split(",")
+                        if item.strip().strip("'\"")
+                    ]
+            return [
+                item.strip().strip("'\"")
+                for item in v_stripped.split(",")
+                if item.strip().strip("'\"")
+            ]
+        return []
 
     # Logging
     LOG_LEVEL: str = "INFO"
