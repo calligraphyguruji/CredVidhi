@@ -10,24 +10,16 @@ from typing import AsyncGenerator, Optional
 import redis.asyncio as aioredis
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import (
-    AsyncAttrs,
     AsyncEngine,
     AsyncSession,
     async_sessionmaker,
     create_async_engine,
 )
-from sqlalchemy.orm import DeclarativeBase
 
 from app.config import get_settings
 from app.core.logging import logger
 
 settings = get_settings()
-
-
-class Base(AsyncAttrs, DeclarativeBase):
-    """Base model class with async attribute access."""
-
-    pass
 
 
 # Global engine and session factory
