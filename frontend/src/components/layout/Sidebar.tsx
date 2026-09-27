@@ -11,6 +11,7 @@ import {
   RefreshCw,
   Home,
   LogIn,
+  Users,
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { formatCurrency } from '../../utils/financial';
@@ -36,6 +37,7 @@ export const Sidebar: React.FC = () => {
       items: [
         { id: 'compliance-audit', label: 'Compliance Audit', icon: Shield },
         { id: 'loan-products', label: 'Loan Products', icon: Layers },
+        { id: 'user-admin', label: 'User Administration', icon: Users },
       ],
     },
     {

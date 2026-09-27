@@ -103,6 +103,16 @@ CredVidhi provides dedicated, purpose-built workspaces tailored to each key stak
 - **Event-Driven Audit Stream:** Chronological event feed capturing actor ID, timestamp, prior state, subsequent state, and IP context.
 - **Non-Destructive Data Retention:** Strictly prohibits hard deletes; superseded applications and cancelled workflows are archived immutably.
 
+### 5. ⚙️ Institutional Product Catalog & Policy Management
+- **Configurable Lending Guidelines:** Define and update allowable principal ranges, tenor brackets, base APRs, and hard DTI threshold caps.
+- **Mandatory Document Checklist Engine:** Dynamically attach required document types and verification criteria to individual loan products.
+- **Lifecycle Activation Controls:** Toggle active/inactive catalog availability without destructive schema mutations.
+
+### 6. 👥 Identity & Access Management (RBAC) & User Administration
+- **Staff & Borrower Profile Management:** Provision, view, and administer users across `LOAN_OFFICER`, `RISK_ANALYST`, `APPLICANT`, and `ADMIN` roles.
+- **Dynamic Role Elevation & Suspension:** Instant account activation or suspension and cryptographic role reassignment.
+- **Sortable & Filterable Data Grid:** Powered by reusable `DataTable` with multi-field search and column-level sorting.
+
 ---
 
 <a id="system-architecture"></a>

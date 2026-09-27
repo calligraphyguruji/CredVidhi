@@ -80,6 +80,13 @@ export const ROUTE_SEO_MAP: Record<string, RouteSEOMetadata> = {
     robots: 'noindex, nofollow',
     isPublic: false,
   },
+  'user-admin': {
+    title: 'Identity & Access Management (RBAC) | CredVidhi Admin',
+    description: 'User administration, cryptographic role provisioning, and account lifecycle management.',
+    canonicalPath: '/user-admin',
+    robots: 'noindex, nofollow',
+    isPublic: false,
+  },
 };
 
 /**

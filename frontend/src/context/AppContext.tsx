@@ -70,6 +70,11 @@ interface AppContextType {
       underwriterNotes: string;
     }
   ) => void;
+  users: User[];
+  addLoanProduct: (product: Omit<LoanProduct, 'id'>) => void;
+  updateLoanProduct: (id: string, updates: Partial<LoanProduct>) => void;
+  addUser: (user: Omit<User, 'id'>) => void;
+  updateUser: (id: string, updates: Partial<User>) => void;
   resetAllData: () => void;
 }
 
@@ -79,6 +84,8 @@ const STORAGE_KEYS = {
   APPLICATIONS: 'credvidhi_applications_v1',
   AUDIT_LOGS: 'credvidhi_audit_logs_v1',
   CURRENT_ROLE: 'credvidhi_current_role_v1',
+  PRODUCTS: 'credvidhi_products_v1',
+  USERS: 'credvidhi_users_v1',
 };
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -87,7 +94,31 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return (saved as UserRole) || 'LOAN_OFFICER';
   });
 
-  const currentUser = INITIAL_USERS.find((u) => u.role === currentRole) || INITIAL_USERS[0];
+  const [users, setUsers] = useState<User[]>(() => {
+    const saved = localStorage.getItem(STORAGE_KEYS.USERS);
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        console.error('Failed to parse cached users', e);
+      }
+    }
+    return INITIAL_USERS;
+  });
+
+  const [products, setProducts] = useState<LoanProduct[]>(() => {
+    const saved = localStorage.getItem(STORAGE_KEYS.PRODUCTS);
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        console.error('Failed to parse cached products', e);
+      }
+    }
+    return INITIAL_PRODUCTS;
+  });
+
+  const currentUser = users.find((u) => u.role === currentRole) || users[0];
 
   const [applications, setApplications] = useState<LoanApplication[]>(() => {
     const saved = localStorage.getItem(STORAGE_KEYS.APPLICATIONS);
@@ -162,6 +193,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEYS.CURRENT_ROLE, currentRole);
   }, [currentRole]);
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(products));
+  }, [products]);
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(users));
+  }, [users]);
 
   const addAuditLog = (entry: Omit<AuditLog, 'id' | 'timestamp' | 'actorId' | 'actorName' | 'actorRole'>) => {
     const newLog: AuditLog = {
@@ -532,12 +571,88 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return newId;
   };
 
+  const addLoanProduct = (newProductData: Omit<LoanProduct, 'id'>) => {
+    const newProduct: LoanProduct = {
+      ...newProductData,
+      id: `prod-${Date.now().toString().slice(-4)}`,
+    };
+    setProducts((prev) => [...prev, newProduct]);
+    addAuditLog({
+      eventType: 'LOAN_PRODUCT_CREATED',
+      notes: `Configured loan product '${newProduct.name}' (${newProduct.code}) with base APR ${newProduct.baseApr}%.`,
+    });
+    addToast({
+      type: 'success',
+      title: 'Loan Product Configured',
+      message: `Product ${newProduct.name} successfully created.`,
+    });
+  };
+
+  const updateLoanProduct = (id: string, updates: Partial<LoanProduct>) => {
+    setProducts((prev) =>
+      prev.map((p) => {
+        if (p.id !== id) return p;
+        const updated = { ...p, ...updates };
+        addAuditLog({
+          eventType: 'LOAN_PRODUCT_UPDATED',
+          notes: `Updated parameters for loan product '${updated.name}' (${updated.code}).`,
+        });
+        return updated;
+      })
+    );
+    addToast({
+      type: 'info',
+      title: 'Loan Product Updated',
+      message: 'Product policy parameters have been saved.',
+    });
+  };
+
+  const addUser = (userData: Omit<User, 'id'>) => {
+    const newUser: User = {
+      ...userData,
+      id: `usr-${Date.now().toString().slice(-4)}`,
+    };
+    setUsers((prev) => [...prev, newUser]);
+    addAuditLog({
+      eventType: 'USER_CREATED',
+      notes: `Registered identity '${newUser.fullName}' (${newUser.email}) with role ${newUser.role}.`,
+    });
+    addToast({
+      type: 'success',
+      title: 'User Created',
+      message: `Account for ${newUser.fullName} added successfully.`,
+    });
+  };
+
+  const updateUser = (id: string, updates: Partial<User>) => {
+    setUsers((prev) =>
+      prev.map((u) => {
+        if (u.id !== id) return u;
+        const updated = { ...u, ...updates };
+        addAuditLog({
+          eventType: 'USER_UPDATED',
+          notes: `Updated profile for '${updated.fullName}' (Role: ${updated.role}, Active: ${updated.isActive}).`,
+        });
+        return updated;
+      })
+    );
+    addToast({
+      type: 'info',
+      title: 'User Profile Updated',
+      message: 'User permissions and status updated.',
+    });
+  };
+
   const resetAllData = () => {
     localStorage.removeItem(STORAGE_KEYS.APPLICATIONS);
     localStorage.removeItem(STORAGE_KEYS.AUDIT_LOGS);
     localStorage.removeItem(STORAGE_KEYS.CURRENT_ROLE);
+    localStorage.removeItem(STORAGE_KEYS.PRODUCTS);
+    localStorage.removeItem(STORAGE_KEYS.USERS);
     setApplications(INITIAL_APPLICATIONS);
     setAuditLogs(INITIAL_AUDIT_LOGS);
+    setProducts(INITIAL_PRODUCTS);
+    setUsers(INITIAL_USERS);
     setCurrentRole('LOAN_OFFICER');
     setActiveApplicationId('app-001');
     setActiveView('officer-queue');
@@ -555,7 +670,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         currentRole,
         switchRole,
         applications,
-        products: INITIAL_PRODUCTS,
+        products,
+        users,
         auditLogs,
         activeApplicationId,
         setActiveApplicationId,
@@ -571,6 +687,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         transitionApplicationStatus,
         runRiskAssessment,
         recordUnderwritingDecision,
+        addLoanProduct,
+        updateLoanProduct,
+        addUser,
+        updateUser,
         resetAllData,
       }}
     >

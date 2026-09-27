@@ -11,6 +11,7 @@ import { UnderwritingCockpit } from './pages/staff/UnderwritingCockpit';
 import { BorrowerPortal } from './pages/applicant/BorrowerPortal';
 import { ComplianceAudit } from './pages/admin/ComplianceAudit';
 import { LoanProducts } from './pages/admin/LoanProducts';
+import { UserAdministration } from './pages/admin/UserAdministration';
 import { pageTransitionVariants } from './utils/motion';
 import { Analytics } from '@vercel/analytics/react';
 
@@ -82,6 +83,7 @@ const MainContent: React.FC = () => {
                   {activeView === 'borrower-portal' && <BorrowerPortal />}
                   {activeView === 'compliance-audit' && <ComplianceAudit />}
                   {activeView === 'loan-products' && <LoanProducts />}
+                  {activeView === 'user-admin' && <UserAdministration />}
                 </motion.div>
               </AnimatePresence>
             </main>
