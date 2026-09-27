@@ -17,6 +17,7 @@ import {
 } from '../services/mockData';
 import { calculateEmi, calculateDti, calculateDisposableIncome } from '../utils/financial';
 import { ToastContainer, type ToastMessage } from '../components/ui/Toast';
+import { applyRouteSEO, resolveViewFromUrl } from '../utils/seo';
 
 interface AppContextType {
   currentUser: User;
@@ -114,8 +115,26 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const [activeApplicationId, setActiveApplicationId] = useState<string>('app-001');
   const [selectedDocId, setSelectedDocId] = useState<string | null>('doc-002');
-  const [activeView, setActiveView] = useState<string>('landing');
+  const [activeView, setActiveView] = useState<string>(() => resolveViewFromUrl());
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
+
+  // Dynamic Route SEO and Meta Tag Synchronization
+  useEffect(() => {
+    applyRouteSEO(activeView);
+  }, [activeView]);
+
+  // Handle browser back/forward navigation
+  useEffect(() => {
+    const handlePopState = (event: PopStateEvent) => {
+      if (event.state && event.state.view) {
+        setActiveView(event.state.view);
+      } else {
+        setActiveView(resolveViewFromUrl());
+      }
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
 
   const addToast = (toast: Omit<ToastMessage, 'id'>) => {
     const id = `toast-${Date.now()}-${Math.floor(Math.random() * 1000)}`;

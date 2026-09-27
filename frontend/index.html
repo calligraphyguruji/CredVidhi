@@ -2,18 +2,179 @@
 <html lang="en" class="h-full">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>CredVidhi | Institutional Loan Approval & Underwriting System</title>
-    <meta name="description" content="CredVidhi is an enterprise-grade digital lending platform featuring deterministic rule-based credit evaluation, OCR document verification, and immutable audit compliance." />
-    <meta property="og:title" content="CredVidhi | Institutional Loan Approval & Underwriting System" />
-    <meta property="og:description" content="Deterministic credit underwriting sanctioned in minutes. Automated document verification, transparent risk rules, and audit-ready operations." />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+
+    <!-- Primary SEO Metadata -->
+    <title>CredVidhi — Enterprise Loan Processing & Approval Management System</title>
+    <meta
+      name="description"
+      content="Institutional digital loan processing and deterministic underwriting platform featuring automated KYC verification, mathematical DTI calculations, and immutable audit compliance."
+    />
+    <meta
+      name="keywords"
+      content="loan processing system, loan approval management system, digital lending platform, deterministic underwriting, KYC document verification, loan application tracking, credit risk assessment"
+    />
+    <meta name="author" content="CredVidhi Technologies" />
+    <meta
+      name="robots"
+      content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"
+      id="robots-meta"
+    />
+    <link rel="canonical" href="https://credvidhi.vercel.app/" id="canonical-url" />
+
+    <!-- Open Graph Protocol (Facebook, LinkedIn, WhatsApp, Slack, Discord) -->
     <meta property="og:type" content="website" />
-    <meta property="og:site_name" content="CredVidhi Lending Platform" />
+    <meta property="og:site_name" content="CredVidhi" />
+    <meta property="og:url" content="https://credvidhi.vercel.app/" />
+    <meta property="og:title" content="CredVidhi — Enterprise Loan Processing & Approval Management System" />
+    <meta
+      property="og:description"
+      content="Deterministic credit underwriting sanctioned in minutes. Automated document verification, transparent risk rules, and audit-ready operations."
+    />
+    <meta property="og:image" content="https://credvidhi.vercel.app/og-image.png" />
+    <meta property="og:image:secure_url" content="https://credvidhi.vercel.app/og-image.png" />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="CredVidhi - Enterprise Loan Processing & Approval Management System" />
+    <meta property="og:locale" content="en_US" />
+
+    <!-- Twitter / X Card Metadata -->
     <meta name="twitter:card" content="summary_large_image" />
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <meta name="twitter:title" content="CredVidhi — Enterprise Loan Processing & Approval Management System" />
+    <meta
+      name="twitter:description"
+      content="End-to-end digital loan approval and deterministic credit underwriting platform with automated KYC verification and immutable compliance."
+    />
+    <meta name="twitter:image" content="https://credvidhi.vercel.app/og-image.png" />
+    <meta name="twitter:image:alt" content="CredVidhi - Enterprise Loan Processing & Approval Management System" />
+
+    <!-- PWA, Theme & Browser Capabilities -->
+    <meta name="theme-color" content="#EA580C" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="CredVidhi" />
+    <meta name="application-name" content="CredVidhi" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="manifest" href="/manifest.json" />
+
+    <!-- Search Engine Webmaster Verification Placeholders -->
+    <!-- Replace the content tokens below with your actual verified credentials in Google Search Console & Bing Webmaster Tools -->
+    <meta name="google-site-verification" content="GOOGLE_SEARCH_CONSOLE_VERIFICATION_TOKEN_PLACEHOLDER" />
+    <meta name="msvalidate.01" content="BING_WEBMASTER_VERIFICATION_TOKEN_PLACEHOLDER" />
+
+    <!-- Preconnect Font Resources for Optimum Core Web Vitals (LCP/CLS) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Validated Structured Data (JSON-LD): WebSite, Organization, WebApplication, FAQPage -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "WebSite",
+            "@id": "https://credvidhi.vercel.app/#website",
+            "url": "https://credvidhi.vercel.app/",
+            "name": "CredVidhi",
+            "description": "Enterprise Loan Processing & Approval Management System",
+            "publisher": {
+              "@id": "https://credvidhi.vercel.app/#organization"
+            },
+            "inLanguage": "en-US"
+          },
+          {
+            "@type": "Organization",
+            "@id": "https://credvidhi.vercel.app/#organization",
+            "name": "CredVidhi",
+            "url": "https://credvidhi.vercel.app/",
+            "logo": {
+              "@type": "ImageObject",
+              "url": "https://credvidhi.vercel.app/favicon.svg"
+            }
+          },
+          {
+            "@type": "WebApplication",
+            "@id": "https://credvidhi.vercel.app/#application",
+            "name": "CredVidhi Loan Processing Platform",
+            "url": "https://credvidhi.vercel.app/",
+            "applicationCategory": "FinanceApplication",
+            "operatingSystem": "All modern web browsers",
+            "description": "Institutional digital loan processing and deterministic underwriting platform featuring automated KYC verification, mathematical DTI calculations, and immutable audit compliance.",
+            "offers": {
+              "@type": "Offer",
+              "price": "0",
+              "priceCurrency": "INR"
+            },
+            "featureList": [
+              "Deterministic Rule-based Underwriting Engine",
+              "Automated KYC & Income Proof Verification",
+              "Real-time Loan Officer Queue Management",
+              "Self-service Borrower Application Portal",
+              "Immutable Audit Logging & Compliance Ledger"
+            ]
+          },
+          {
+            "@type": "FAQPage",
+            "@id": "https://credvidhi.vercel.app/#faq",
+            "mainEntity": [
+              {
+                "@type": "Question",
+                "name": "How does CredVidhi calculate deterministic loan underwriting decisions?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "CredVidhi evaluates applications using mathematical, rule-based algorithms without black-box bias. The engine computes strict Debt-to-Income (DTI) thresholds, verified monthly disposable income, and deterministic credit bureau scores to output transparent APPROVE, CONDITIONAL, or REJECT recommendations with exact justification codes."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "What types of loan products are supported on the platform?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "CredVidhi supports configured enterprise lending products including Home Mortgages (up to ₹1.5 Cr at 8.75% APR), SME Working Capital Loans (up to ₹50 Lakh at 11.5% APR), and Personal Loans (up to ₹15 Lakh at 13.25% APR) with customizable tenure and collateral parameters."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "How does automated KYC and document verification work?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Borrowers upload government identity proofs (PAN card, Aadhaar), salary slips, and bank statements through the self-service portal. The loan officer document workbench provides side-by-side inspection, automated checksum verification, and structured status transitions (PENDING, VERIFIED, DEFICIENT)."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Can borrowers track their loan approval status in real time?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Yes. The Borrower Application Portal provides complete visibility into the 6-stage lifecycle (Draft → Submitted → Under Review → Approved/Rejected → Disbursed). Borrowers receive instant status updates and clear deficiency notices if additional documentation is required."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "How does CredVidhi maintain regulatory compliance and audit trails?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Every state transition, document verification, and underwriting decision is permanently committed to an immutable append-only audit ledger with cryptographic timestamps and actor identifiers. The platform enforces strict Role-Based Access Control (RBAC) across Loan Officers, Underwriters, and Compliance Auditors."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "How does CredVidhi accelerate loan processing turnaround time (TAT)?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "By replacing manual spreadsheets and disconnected document handoffs with an integrated finite state machine and automated risk calculation, CredVidhi reduces loan origination turnaround time by up to 60%, resolving qualified applications in under 24 hours."
+                }
+              }
+            ]
+          }
+        ]
+      }
+    </script>
   </head>
   <body class="h-full bg-slate-50 text-slate-900 font-sans antialiased selection:bg-orange-100 selection:text-orange-900">
     <div id="root" class="h-full"></div>

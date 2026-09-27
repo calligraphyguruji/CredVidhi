@@ -1,0 +1,26 @@
+# CredVidhi - Loan Processing & Approval Management System
+# Production Robots Directive
+
+User-agent: *
+Allow: /$
+Allow: /login$
+Allow: /favicon.svg
+Allow: /og-image.png
+Allow: /manifest.json
+
+# Disallow private, authenticated, internal, and dashboard views
+Disallow: /officer-queue
+Disallow: /document-workbench
+Disallow: /underwriting-cockpit
+Disallow: /borrower-portal
+Disallow: /compliance-audit
+Disallow: /loan-products
+Disallow: /dashboard
+Disallow: /admin
+Disallow: /settings
+Disallow: /profile
+Disallow: /internal
+Disallow: /api/
+
+# Sitemap location
+Sitemap: https://credvidhi.vercel.app/sitemap.xml

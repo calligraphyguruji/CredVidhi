@@ -1,0 +1,18 @@
+{
+  "name": "CredVidhi — Loan Processing & Approval Management System",
+  "short_name": "CredVidhi",
+  "description": "Institutional loan processing and deterministic underwriting platform featuring automated KYC verification, mathematical DTI calculations, and immutable audit compliance.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#090D16",
+  "theme_color": "#EA580C",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["finance", "business", "productivity"]
+}

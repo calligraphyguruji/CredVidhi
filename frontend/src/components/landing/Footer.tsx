@@ -10,8 +10,8 @@ export const Footer: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-8 lg:gap-12">
           
-          {/* Brand & Purpose (4 Cols) */}
-          <div className="md:col-span-4 space-y-4">
+          {/* Brand & Purpose */}
+          <div className="md:col-span-4 lg:col-span-3 space-y-4">
             <div className="flex items-center gap-2.5">
               <div className="w-8 h-8 rounded-md bg-orange-600 text-white flex items-center justify-center font-bold">
                 <ShieldCheck className="w-5 h-5 text-white" />
@@ -37,8 +37,57 @@ export const Footer: React.FC = () => {
             </div>
           </div>
 
-          {/* Nav Column 1: Lending Workspaces (3 Cols) */}
-          <div className="md:col-span-3 space-y-3">
+          {/* Nav Column 1: Public Platform */}
+          <div className="md:col-span-4 lg:col-span-2 space-y-3">
+            <div className="text-xs font-mono font-semibold uppercase text-slate-200 tracking-wider">
+              Platform & Features
+            </div>
+            <ul className="space-y-2 text-slate-400">
+              <li>
+                <a
+                  href="#products"
+                  className="hover:text-white transition-colors cursor-pointer"
+                >
+                  Loan Products Matrix
+                </a>
+              </li>
+              <li>
+                <a
+                  href="#engine"
+                  className="hover:text-white transition-colors cursor-pointer"
+                >
+                  Deterministic Underwriting Engine
+                </a>
+              </li>
+              <li>
+                <a
+                  href="#workflow"
+                  className="hover:text-white transition-colors cursor-pointer"
+                >
+                  6-Stage Approval Workflow
+                </a>
+              </li>
+              <li>
+                <a
+                  href="#security"
+                  className="hover:text-white transition-colors cursor-pointer"
+                >
+                  Security & Compliance Safeguards
+                </a>
+              </li>
+              <li>
+                <a
+                  href="#faq"
+                  className="hover:text-white transition-colors cursor-pointer"
+                >
+                  Frequently Asked Questions (FAQ)
+                </a>
+              </li>
+            </ul>
+          </div>
+
+          {/* Nav Column 2: Lending Workspaces */}
+          <div className="md:col-span-4 lg:col-span-2 space-y-3">
             <div className="text-xs font-mono font-semibold uppercase text-slate-200 tracking-wider">
               Lending Rails
             </div>
@@ -90,8 +139,8 @@ export const Footer: React.FC = () => {
             </ul>
           </div>
 
-          {/* Nav Column 2: Governance & Settings (2 Cols) */}
-          <div className="md:col-span-2 space-y-3">
+          {/* Nav Column 3: Governance & Settings */}
+          <div className="md:col-span-6 lg:col-span-2 space-y-3">
             <div className="text-xs font-mono font-semibold uppercase text-slate-200 tracking-wider">
               Governance
             </div>
@@ -129,8 +178,8 @@ export const Footer: React.FC = () => {
             </ul>
           </div>
 
-          {/* Nav Column 3: Architecture Specs (3 Cols) */}
-          <div className="md:col-span-3 space-y-3">
+          {/* Nav Column 4: Architecture Specs */}
+          <div className="md:col-span-6 lg:col-span-3 space-y-3">
             <div className="text-xs font-mono font-semibold uppercase text-slate-200 tracking-wider">
               Engineering Specs
             </div>

@@ -30,6 +30,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onNavigateSection }) => {
     { label: 'Underwriting Engine', id: 'engine' },
     { label: 'Workflow', id: 'workflow' },
     { label: 'Security & Audit', id: 'security' },
+    { label: 'FAQ', id: 'faq' },
   ];
 
   return (

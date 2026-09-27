@@ -8,6 +8,7 @@ import { KeyCapabilities } from '../../components/landing/KeyCapabilities';
 import { ProductPreview } from '../../components/landing/ProductPreview';
 import { LoanProductsGrid } from '../../components/landing/LoanProductsGrid';
 import { SecurityTrustSection } from '../../components/landing/SecurityTrustSection';
+import { FAQSection } from '../../components/landing/FAQSection';
 import { Footer } from '../../components/landing/Footer';
 import { Button } from '../../components/ui/Button';
 
@@ -39,7 +40,10 @@ export const LandingPage: React.FC = () => {
         {/* 6. Security, Privacy & Compliance Safeguards */}
         <SecurityTrustSection />
 
-        {/* 7. Strategic Conversion CTA Section */}
+        {/* 7. Frequently Asked Questions & Structured Q&A */}
+        <FAQSection />
+
+        {/* 8. Strategic Conversion CTA Section */}
         <section className="py-16 md:py-24 bg-slate-950 bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 text-white relative overflow-hidden">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(234,88,12,0.15),transparent_50%)] pointer-events-none" />
 
