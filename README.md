@@ -307,6 +307,7 @@ All client-server communication utilizes predictable HTTP response codes and a s
 | **Underwriting** | `GET` | `/api/v1/applications/{id}/assessment` | Owner or Staff | Inspect financial metrics (DTI, EMI, surplus, score factors, amortization preview) |
 | **Underwriting** | `POST` | `/api/v1/applications/{id}/decision` | `RISK_ANALYST`, `ADMIN` | Record formal credit decision (`APPROVED`, `REJECTED`) with supervisor escalation |
 | **Underwriting** | `GET` | `/api/v1/applications/{id}/decision` | Owner or Staff | Retrieve binding credit decision details (with underwriter notes masked for applicants) |
+| **Compliance & Audit** | `GET` | `/api/v1/audit/logs` | `ADMIN`, `OPERATIONS` | Query tamper-proof chronological audit ledger with multi-attribute filtering |
 
 ---
 
@@ -387,7 +388,7 @@ uvicorn app.main:app --reload --port 8000
 #### Backend Quality & Verification Gates
 
 ```bash
-# Run complete test suite (44+ tests covering Auth, RBAC, Health, FSM, Queues, S3 Document Storage & Verification, Arbitrary-Precision Financial Math & Deterministic Underwriting)
+# Run complete test suite (53+ tests covering Auth, RBAC, Health, FSM, Queues, S3 Document Storage, Deterministic Financial Math & Underwriting, Immutable Audit Ledger, PII Redaction & Full E2E Lifecycle)
 pytest -v
 
 # Run static type checking
