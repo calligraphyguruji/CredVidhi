@@ -32,12 +32,6 @@ TestingSessionLocal = async_sessionmaker(
 )
 
 
-@pytest.fixture(scope="session")
-def anyio_backend() -> str:
-    """Configure anyio backend for pytest-asyncio."""
-    return "asyncio"
-
-
 @pytest.fixture(scope="function", autouse=True)
 async def setup_test_database() -> AsyncGenerator[None, None]:
     """Create fresh in-memory SQLite schema for each test run."""

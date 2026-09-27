@@ -266,6 +266,28 @@ All client-server communication utilizes predictable HTTP response codes and a s
 }
 ```
 
+### Core API Endpoints
+
+| Domain | Method | Endpoint | Authorized Roles | Description |
+| :--- | :--- | :--- | :--- | :--- |
+| **Auth** | `POST` | `/api/v1/auth/register` | Public | Register new borrower account |
+| **Auth** | `POST` | `/api/v1/auth/login` | Public | Authenticate user & issue JWT tokens |
+| **Auth** | `POST` | `/api/v1/auth/refresh` | Authenticated | Rotate refresh token & issue new access token |
+| **Auth** | `POST` | `/api/v1/auth/logout` | Authenticated | Revoke tokens via Redis JTI blacklist |
+| **Auth** | `GET` | `/api/v1/auth/me` | Authenticated | Get current authenticated profile |
+| **Products** | `GET` | `/api/v1/products` | Public | List active loan products & financial limits |
+| **Products** | `POST` | `/api/v1/products` | `ADMIN` | Configure new loan product |
+| **Applications** | `POST` | `/api/v1/applications` | `APPLICANT`, `ADMIN` | Initialize new loan application draft |
+| **Applications** | `PUT` | `/api/v1/applications/{id}/draft` | `APPLICANT`, `ADMIN` | Auto-save draft parameters & financial snapshots |
+| **Applications** | `POST` | `/api/v1/applications/{id}/submit` | `APPLICANT`, `ADMIN` | Formally submit draft & generate reference number |
+| **Applications** | `GET` | `/api/v1/applications/{id}` | Owner or Staff | Retrieve comprehensive application state & history |
+| **Applications** | `POST` | `/api/v1/applications/{id}/transition` | Role Guarded | Execute verified FSM transition with audit entry |
+| **Applications** | `POST` | `/api/v1/applications/{id}/cancel` | `APPLICANT`, `OFFICER`, `ADMIN` | Cancel active application with audit reason |
+| **Queues** | `GET` | `/api/v1/queues/applicant` | `APPLICANT` | Paginated borrower application history |
+| **Queues** | `GET` | `/api/v1/queues/officer` | `LOAN_OFFICER`, `ADMIN` | Intake triage queue (`SUBMITTED`, `UNDER_REVIEW`, `DOCUMENTS_PENDING`) |
+| **Queues** | `GET` | `/api/v1/queues/underwriter` | `RISK_ANALYST`, `ADMIN` | Underwriting queue (`DOCUMENTS_VERIFIED`, `RISK_ASSESSED`) |
+| **Queues** | `GET` | `/api/v1/queues/disbursement` | `OPERATIONS`, `ADMIN` | Settlement queue (`APPROVED`) |
+
 ---
 
 <a id="design-system"></a>
@@ -345,7 +367,7 @@ uvicorn app.main:app --reload --port 8000
 #### Backend Quality & Verification Gates
 
 ```bash
-# Run complete test suite (18+ tests covering Auth, RBAC, Health, Serialization)
+# Run complete test suite (26+ tests covering Auth, RBAC, Health, Serialization, FSM Lifecycle, Audit Trail, Queues)
 pytest -v
 
 # Run static type checking
