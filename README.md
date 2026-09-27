@@ -293,6 +293,10 @@ All client-server communication utilizes predictable HTTP response codes and a s
 | **Documents** | `GET` | `/api/v1/applications/{id}/documents` | Owner or Staff | List uploaded documents with concurrent presigned download URLs |
 | **Documents** | `GET` | `/api/v1/applications/{id}/documents/checklist` | Owner or Staff | Real-time product checklist evaluation (required vs verified) |
 | **Documents** | `POST` | `/api/v1/documents/{id}/verify` | `LOAN_OFFICER`, `ADMIN` | Officer audit gate (`VERIFIED`, `DEFICIENT`) with automated FSM advancement |
+| **Underwriting** | `POST` | `/api/v1/applications/{id}/evaluate` | `RISK_ANALYST`, `ADMIN` | Trigger deterministic financial underwriting & risk scorecard evaluation |
+| **Underwriting** | `GET` | `/api/v1/applications/{id}/assessment` | Owner or Staff | Inspect financial metrics (DTI, EMI, surplus, score factors, amortization preview) |
+| **Underwriting** | `POST` | `/api/v1/applications/{id}/decision` | `RISK_ANALYST`, `ADMIN` | Record formal credit decision (`APPROVED`, `REJECTED`) with supervisor escalation |
+| **Underwriting** | `GET` | `/api/v1/applications/{id}/decision` | Owner or Staff | Retrieve binding credit decision details (with underwriter notes masked for applicants) |
 
 ---
 
@@ -373,7 +377,7 @@ uvicorn app.main:app --reload --port 8000
 #### Backend Quality & Verification Gates
 
 ```bash
-# Run complete test suite (33+ tests covering Auth, RBAC, Health, FSM, Queues, S3 Document Storage & Verification)
+# Run complete test suite (44+ tests covering Auth, RBAC, Health, FSM, Queues, S3 Document Storage & Verification, Arbitrary-Precision Financial Math & Deterministic Underwriting)
 pytest -v
 
 # Run static type checking
