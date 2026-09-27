@@ -44,6 +44,7 @@ COPY --chown=appuser:appgroup app /app/app
 COPY --chown=appuser:appgroup alembic /app/alembic
 COPY --chown=appuser:appgroup alembic.ini /app/alembic.ini
 COPY --chown=appuser:appgroup README.md /app/README.md
+COPY --chown=appuser:appgroup docker-entrypoint.sh /app/docker-entrypoint.sh
 
 USER appuser
 
@@ -53,4 +54,4 @@ EXPOSE 8000
 HEALTHCHECK --interval=15s --timeout=5s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:8000/api/v1/health/live || exit 1
 
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+ENTRYPOINT ["/app/docker-entrypoint.sh"]
