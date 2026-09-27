@@ -17,10 +17,10 @@
   }
 
   .dark {
-    --bg-canvas: #0B0F17;
-    --bg-surface: #131B2B;
-    --bg-subtle: #1E293B;
-    --border-default: #26354A;
+    --bg-canvas: #000000;
+    --bg-surface: #0f172a;
+    --bg-subtle: #1e293b;
+    --border-default: #334155;
     --border-focus: #FB923C;
     --text-primary: #F8FAFC;
     --text-secondary: #94A3B8;
@@ -36,6 +36,60 @@
     background-color: var(--bg-canvas);
     color: var(--text-primary);
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+
+  html.dark {
+    color-scheme: dark;
+  }
+
+  html.dark,
+  html.dark body {
+    background-color: #000000;
+    background-image: url('/dark-bg-clean.jpg');
+    background-repeat: no-repeat;
+    background-position: center top;
+    background-size: 100% auto;
+    background-attachment: fixed;
+    color: var(--text-primary);
+  }
+
+  /* Allow dark mode hero and canvas to display background image */
+  html.dark .min-h-screen.bg-white {
+    background-color: transparent !important;
+    color: #F8FAFC !important;
+  }
+
+  html.dark section.bg-slate-50,
+  html.dark div.bg-slate-50 {
+    background-color: transparent !important;
+    background-image: none !important;
+  }
+
+  html.dark header.bg-white\/95 {
+    background-color: rgba(0, 0, 0, 0.75) !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+  }
+
+  html.dark header .text-slate-900,
+  html.dark .text-slate-900 {
+    color: #F8FAFC !important;
+  }
+
+  html.dark header .text-slate-600,
+  html.dark .text-slate-600,
+  html.dark .text-slate-700 {
+    color: #94A3B8 !important;
+  }
+
+  html.dark .border-slate-200 {
+    border-color: rgba(255, 255, 255, 0.12) !important;
+  }
+
+  /* Surface glass effect for dark mode cards */
+  html.dark .bg-white:not(.min-h-screen) {
+    background-color: rgba(15, 23, 42, 0.8) !important;
+    backdrop-filter: blur(12px);
+    border-color: rgba(255, 255, 255, 0.12) !important;
   }
 
   #root {
