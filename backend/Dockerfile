@@ -39,8 +39,10 @@ COPY --from=builder /opt/venv /opt/venv
 ENV VIRTUAL_ENV="/opt/venv"
 ENV PATH="/opt/venv/bin:${PATH}"
 
-# Copy application source code
+# Copy application source code and migrations
 COPY --chown=appuser:appgroup app /app/app
+COPY --chown=appuser:appgroup alembic /app/alembic
+COPY --chown=appuser:appgroup alembic.ini /app/alembic.ini
 COPY --chown=appuser:appgroup README.md /app/README.md
 
 USER appuser
