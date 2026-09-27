@@ -287,6 +287,12 @@ All client-server communication utilizes predictable HTTP response codes and a s
 | **Queues** | `GET` | `/api/v1/queues/officer` | `LOAN_OFFICER`, `ADMIN` | Intake triage queue (`SUBMITTED`, `UNDER_REVIEW`, `DOCUMENTS_PENDING`) |
 | **Queues** | `GET` | `/api/v1/queues/underwriter` | `RISK_ANALYST`, `ADMIN` | Underwriting queue (`DOCUMENTS_VERIFIED`, `RISK_ASSESSED`) |
 | **Queues** | `GET` | `/api/v1/queues/disbursement` | `OPERATIONS`, `ADMIN` | Settlement queue (`APPROVED`) |
+| **Documents** | `POST` | `/api/v1/applications/{id}/documents/presign` | `APPLICANT`, `ADMIN` | Generate secure time-limited presigned S3/MinIO upload URL |
+| **Documents** | `POST` | `/api/v1/applications/{id}/documents/confirm` | `APPLICANT`, `ADMIN` | Register uploaded document metadata with SHA-256 integrity hash |
+| **Documents** | `POST` | `/api/v1/applications/{id}/documents/upload` | `APPLICANT`, `ADMIN` | Direct chunked multipart upload with magic byte inspection |
+| **Documents** | `GET` | `/api/v1/applications/{id}/documents` | Owner or Staff | List uploaded documents with concurrent presigned download URLs |
+| **Documents** | `GET` | `/api/v1/applications/{id}/documents/checklist` | Owner or Staff | Real-time product checklist evaluation (required vs verified) |
+| **Documents** | `POST` | `/api/v1/documents/{id}/verify` | `LOAN_OFFICER`, `ADMIN` | Officer audit gate (`VERIFIED`, `DEFICIENT`) with automated FSM advancement |
 
 ---
 
@@ -367,7 +373,7 @@ uvicorn app.main:app --reload --port 8000
 #### Backend Quality & Verification Gates
 
 ```bash
-# Run complete test suite (26+ tests covering Auth, RBAC, Health, Serialization, FSM Lifecycle, Audit Trail, Queues)
+# Run complete test suite (33+ tests covering Auth, RBAC, Health, FSM, Queues, S3 Document Storage & Verification)
 pytest -v
 
 # Run static type checking
