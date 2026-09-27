@@ -29,7 +29,7 @@
 
 ---
 
-<img src="frontend/src/assets/hero.png" alt="CredVidhi Platform Preview" width="100%" style="border-radius: 12px; border: 1px solid #e2e8f0; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05);" />
+<img src="docs/credvidhi-preview.png" alt="CredVidhi Platform Preview" width="100%" style="border-radius: 12px; border: 1px solid #e2e8f0; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05);" />
 
 </div>
 
@@ -340,7 +340,8 @@ CredVidhi/
 ├── README.md                      # Comprehensive project documentation & architecture
 ├── LICENSE                        # Open-source MIT License
 ├── .gitignore                     # Git ignore rules for dependencies & environments
-├── docs/                          # Architecture diagrams & Archify interactive views
+├── docs/                          # Architecture diagrams & platform previews
+│   ├── credvidhi-preview.png      # High-resolution platform preview
 │   ├── architecture.html          # Standalone interactive Archify viewer
 │   ├── architecture.json          # Archify system architecture specification
 │   ├── architecture.png           # High-resolution light architecture diagram
