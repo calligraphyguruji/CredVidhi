@@ -4,6 +4,11 @@
 
 ### Enterprise-Grade Loan Origination, Risk Underwriting & Lifecycle Governance System
 
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.110+-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
+[![Python](https://img.shields.io/badge/Python-3.11+-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
+[![Redis](https://img.shields.io/badge/Redis-7-DC382D?style=for-the-badge&logo=redis&logoColor=white)](https://redis.io/)
+[![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)
 [![React](https://img.shields.io/badge/React-19.2-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Vite](https://img.shields.io/badge/Vite-6.x-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vite.dev/)
@@ -305,30 +310,69 @@ CredVidhi's design language combines institutional banking reliability with high
 
 ### Prerequisites
 
-- **Node.js**: `v18.0.0` or higher
-- **npm** or **pnpm**
+- **Python**: `v3.11` or higher (with [`uv`](https://docs.astral.sh/uv/) recommended)
+- **Node.js**: `v18.0.0` or higher & `npm` / `pnpm`
+- **Docker & Docker Compose** (for PostgreSQL 16, Redis 7 & MinIO S3)
 - **Git**
 
-### Installation & Local Setup
+---
+
+### Backend Service Setup
 
 ```bash
-# 1. Clone the repository
-git clone https://github.com/calligraphyguruji/CredVidhi.git
-cd CredVidhi
+# 1. Enter backend directory
+cd backend
 
-# 2. Enter the frontend directory
+# 2. Spin up local containerized infrastructure (PostgreSQL 16, Redis 7, MinIO S3)
+docker compose up -d
+
+# 3. Create virtual environment and install dependencies
+uv venv
+source .venv/bin/activate
+uv pip install -e ".[dev]"
+
+# 4. Seed database with institutional accounts & loan products
+python -m app.scripts.seed_db
+
+# 5. Start development API server
+uvicorn app.main:app --reload --port 8000
+```
+
+- **Interactive API Documentation:** [http://localhost:8000/docs](http://localhost:8000/docs)
+- **Service Health Check:** [http://localhost:8000/api/v1/health](http://localhost:8000/api/v1/health)
+- **MinIO Storage Console:** [http://localhost:9001](http://localhost:9001)
+
+#### Backend Quality & Verification Gates
+
+```bash
+# Run complete test suite (18+ tests covering Auth, RBAC, Health, Serialization)
+pytest -v
+
+# Run static type checking
+mypy app tests
+
+# Run linter and formatting checks
+ruff check . && ruff format --check .
+```
+
+---
+
+### Frontend Client Setup
+
+```bash
+# 1. Enter frontend directory
 cd frontend
 
-# 3. Install dependencies
+# 2. Install dependencies
 npm install
 
-# 4. Start local development server
+# 3. Start local development server
 npm run dev
 ```
 
 Open [http://localhost:5173](http://localhost:5173) in your browser.
 
-### Quality & Build Verification
+#### Frontend Quality & Build Verification
 
 ```bash
 # Run production build and TypeScript compilation
@@ -357,30 +401,31 @@ CredVidhi/
 │   ├── architecture.json          # Archify system architecture specification
 │   ├── architecture.png           # High-resolution light architecture diagram
 │   └── architecture-dark.png      # High-resolution dark architecture diagram
+├── backend/                       # Production FastAPI backend application
+│   ├── app/
+│   │   ├── api/v1/                # Health, Auth, and Product Catalog routers
+│   │   ├── core/                  # Security (Argon2/JWT), Redis cache, structured logging & envelopes
+│   │   ├── models/                # SQLAlchemy 2.0 Async domain entities (User, Product, Application, Document, Risk, Decision, Audit)
+│   │   ├── schemas/               # Pydantic v2 DTOs with validation rules
+│   │   ├── scripts/               # Idempotent database seeding script (seed_db.py)
+│   │   ├── config.py              # Pydantic Settings with production secret guards
+│   │   ├── database.py            # Async engine, sessionmaker, and health probes
+│   │   ├── dependencies.py        # Token validation and RBAC guards (require_roles)
+│   │   └── main.py                # FastAPI application factory & exception envelopes
+│   ├── alembic/                   # Async database migration environment
+│   │   └── versions/              # Reversible migration scripts (0001_initial_schema.py)
+│   ├── tests/                     # Pytest async test suite (test_health.py, test_auth_rbac.py)
+│   ├── docker-compose.yml         # Postgres 16, Redis 7, MinIO S3 & Backend orchestration
+│   ├── Dockerfile                 # Hardened multi-stage Python 3.11 container with pinned uv
+│   └── pyproject.toml             # Python package definition & lint/type configuration
 └── frontend/                      # Production React client application
-    ├── public/                    # Static vector assets & favicons
+    ├── public/                    # Static vector assets, favicons, robots.txt, sitemap.xml
     ├── src/
-    │   ├── assets/                # Platform previews & images
-    │   ├── components/
-    │   │   ├── landing/           # High-conversion landing page sections
-    │   │   │   ├── HeroSection.tsx
-    │   │   │   ├── LoanProductsGrid.tsx
-    │   │   │   ├── WorkflowSection.tsx
-    │   │   │   ├── ProductPreview.tsx
-    │   │   │   ├── KeyCapabilities.tsx
-    │   │   │   ├── SecurityTrustSection.tsx
-    │   │   │   ├── FAQSection.tsx
-    │   │   │   ├── Navbar.tsx
-    │   │   │   └── Footer.tsx
-    │   │   ├── layout/            # Navigation Header & Sidebar Shell
-    │   │   └── ui/                # Button, Input, Modal, Card, Toast, AnimatedCounter
+    │   ├── assets/                # Platform previews & brand visual assets
+    │   ├── components/            # High-conversion landing & workspace sections
     │   ├── context/               # Global AppState & Toast Notification Context
-    │   ├── pages/
-    │   │   ├── applicant/         # Borrower Portal & Multi-Step Wizard
-    │   │   ├── staff/             # Officer Queue, Document Workbench & Underwriting Cockpit
-    │   │   ├── admin/             # Compliance Audit Log & Product Management
-    │   │   └── public/            # Landing Page & Role-Based Login Portal
-    │   ├── services/              # Mock Data & Deterministic Evaluation Engines
+    │   ├── pages/                 # Applicant, Staff, Admin & Public workspaces
+    │   ├── services/              # API Client & deterministic evaluation engines
     │   ├── types/                 # Application TypeScript Interfaces & Domain Models
     │   └── utils/                 # Motion tokens, easing curves, and currency math
     ├── package.json
