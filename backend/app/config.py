@@ -47,8 +47,15 @@ class Settings(BaseSettings):
     LOG_LEVEL: str = "INFO"
 
     @model_validator(mode="after")
-    def validate_production_secrets(self) -> "Settings":
-        """Disallow default development secrets when running in staging or production."""
+    def validate_and_normalize_settings(self) -> "Settings":
+        """Normalize Render/Postgres URLs to postgresql+asyncpg and validate production secrets."""
+        if self.DATABASE_URL.startswith("postgres://"):
+            self.DATABASE_URL = self.DATABASE_URL.replace("postgres://", "postgresql+asyncpg://", 1)
+        elif self.DATABASE_URL.startswith("postgresql://") and not self.DATABASE_URL.startswith(
+            "postgresql+asyncpg://"
+        ):
+            self.DATABASE_URL = self.DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://", 1)
+
         if self.ENVIRONMENT.lower() in ("production", "staging"):
             if "development" in self.JWT_SECRET.lower():
                 raise ValueError(
