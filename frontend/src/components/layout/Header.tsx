@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
-import { Lock, Bell, User as UserIcon, Home, LogOut } from 'lucide-react';
+import { Lock, Bell, User as UserIcon, Home, LogOut, Sun, Moon } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import type { UserRole } from '../../types';
 
@@ -16,6 +16,8 @@ export const Header: React.FC = () => {
     isBackendConnected,
     isSyncing,
     refreshFromBackend,
+    theme,
+    toggleTheme,
   } = useApp();
   const shouldReduceMotion = useReducedMotion();
   const [showNotifications, setShowNotifications] = useState(false);
@@ -174,6 +176,22 @@ export const Header: React.FC = () => {
             )}
           </AnimatePresence>
         </div>
+
+        {/* Theme Toggle Button */}
+        <motion.button
+          whileHover={!shouldReduceMotion ? { scale: 1.05 } : undefined}
+          whileTap={!shouldReduceMotion ? { scale: 0.95 } : undefined}
+          onClick={toggleTheme}
+          aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+          title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+          className="p-1.5 text-slate-500 hover:text-orange-600 rounded hover:bg-slate-100 transition-colors cursor-pointer"
+        >
+          {theme === 'dark' ? (
+            <Sun className="w-4 h-4 text-amber-400" />
+          ) : (
+            <Moon className="w-4 h-4 text-slate-600" />
+          )}
+        </motion.button>
 
         <div className="h-4 w-px bg-slate-200"></div>
 

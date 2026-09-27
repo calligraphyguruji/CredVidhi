@@ -49,6 +49,9 @@ interface AppContextType {
   backendHealth: { database: boolean; redis: boolean } | null;
   isSyncing: boolean;
   refreshFromBackend: () => Promise<void>;
+  // Theme (Light / Dark)
+  theme: 'light' | 'dark';
+  toggleTheme: () => void;
   // Notifications / Toasts
   toasts: ToastMessage[];
   addToast: (toast: Omit<ToastMessage, 'id'>) => void;
@@ -109,6 +112,25 @@ const isUUID = (str: string): boolean =>
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
+    const saved = localStorage.getItem('credvidhi_theme');
+    if (saved === 'dark') return 'dark';
+    return 'light';
+  });
+
+  useEffect(() => {
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+    localStorage.setItem('credvidhi_theme', theme);
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'));
+  };
+
   const [currentRole, setCurrentRole] = useState<UserRole>(() => {
     const saved = localStorage.getItem(STORAGE_KEYS.CURRENT_ROLE);
     return (saved as UserRole) || 'LOAN_OFFICER';
@@ -876,6 +898,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         backendHealth,
         isSyncing,
         refreshFromBackend,
+        theme,
+        toggleTheme,
         toasts,
         addToast,
         dismissToast,

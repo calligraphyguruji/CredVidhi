@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
-import { ShieldCheck, Menu, X, ArrowRight, Lock } from 'lucide-react';
+import { ShieldCheck, Menu, X, ArrowRight, Lock, Sun, Moon } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { Button } from '../ui/Button';
 
@@ -9,7 +9,7 @@ interface NavbarProps {
 }
 
 export const Navbar: React.FC<NavbarProps> = ({ onNavigateSection }) => {
-  const { setActiveView, switchRole } = useApp();
+  const { setActiveView, switchRole, theme, toggleTheme } = useApp();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const shouldReduceMotion = useReducedMotion();
 
@@ -81,6 +81,21 @@ export const Navbar: React.FC<NavbarProps> = ({ onNavigateSection }) => {
 
         {/* Action Buttons & Portal Switchers */}
         <div className="hidden sm:flex items-center gap-2.5">
+          {/* Light / Dark Mode Toggle */}
+          <button
+            type="button"
+            onClick={toggleTheme}
+            aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+            title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+            className="p-1.5 rounded-md border border-slate-200 text-slate-600 hover:text-orange-600 hover:bg-slate-100 transition-colors cursor-pointer"
+          >
+            {theme === 'dark' ? (
+              <Sun className="w-4 h-4 text-amber-400" />
+            ) : (
+              <Moon className="w-4 h-4 text-slate-600" />
+            )}
+          </button>
+
           <motion.button
             whileHover={!shouldReduceMotion ? { scale: 1.02 } : undefined}
             whileTap={!shouldReduceMotion ? { scale: 0.98 } : undefined}
@@ -150,6 +165,17 @@ export const Navbar: React.FC<NavbarProps> = ({ onNavigateSection }) => {
             </div>
 
             <div className="pt-3 border-t border-slate-100 flex flex-col gap-2">
+              <button
+                type="button"
+                onClick={toggleTheme}
+                className="flex items-center justify-between px-3 py-2 rounded-md border border-slate-200 text-xs font-medium text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer"
+              >
+                <span>Interface Theme</span>
+                <span className="flex items-center gap-1.5 font-semibold text-orange-600">
+                  {theme === 'dark' ? <Sun className="w-3.5 h-3.5 text-amber-400" /> : <Moon className="w-3.5 h-3.5 text-slate-600" />}
+                  {theme === 'dark' ? 'Dark' : 'Light'}
+                </span>
+              </button>
               <Button
                 variant="primary"
                 className="w-full justify-center"
