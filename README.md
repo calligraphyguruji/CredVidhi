@@ -16,16 +16,16 @@
   <b>A deterministic, auditable, and secure financial platform designed for banks, NBFCs, and digital lenders to automate the end-to-end retail and commercial credit origination lifecycle.</b>
 </p>
 
-[System Overview](#-system-overview) •
-[Why CredVidhi](#-why-credvidhi) •
-[Core Workspaces](#-core-workspaces--ui-walkthrough) •
-[Architecture](#-system-architecture) •
-[FSM Lifecycle](#-loan-lifecycle-finite-state-machine) •
-[Financial Engine](#-underwriting--financial-engine) •
-[Role Matrix](#-role-based-access-control-rbac) •
-[API Specification](#-standardized-api--error-envelope) •
-[Quickstart](#-getting-started) •
-[Design System](#-design-system--motion-principles)
+[System Overview](#system-overview) •
+[Why CredVidhi](#why-credvidhi) •
+[Core Workspaces](#core-workspaces) •
+[Architecture](#system-architecture) •
+[FSM Lifecycle](#loan-lifecycle) •
+[Financial Engine](#underwriting-engine) •
+[Role Matrix](#role-based-access-control) •
+[API Specification](#standardized-api) •
+[Quickstart](#getting-started) •
+[Design System](#design-system)
 
 ---
 
@@ -35,6 +35,7 @@
 
 ---
 
+<a id="system-overview"></a>
 ## 📌 System Overview
 
 Modern lending institutions struggle with disconnected handoffs between sales officers, document clerks, and risk underwriters. Traditional manual pipelines result in high turnaround times (TAT), human-prone calculation errors, compliance vulnerabilities during audits, and opaque rejection rationales.
@@ -45,6 +46,7 @@ Every calculation—from Debt-to-Income (DTI) and monthly compounding EMI amorti
 
 ---
 
+<a id="why-credvidhi"></a>
 ## ⚖️ Why CredVidhi?
 
 | Strategic Dimension | Traditional Manual Operations | CredVidhi Automated Platform |
@@ -58,6 +60,7 @@ Every calculation—from Debt-to-Income (DTI) and monthly compounding EMI amorti
 
 ---
 
+<a id="core-workspaces"></a>
 ## 🖥️ Core Workspaces & UI Walkthrough
 
 CredVidhi provides dedicated, purpose-built workspaces tailored to each key stakeholder in the lending lifecycle:
@@ -97,6 +100,7 @@ CredVidhi provides dedicated, purpose-built workspaces tailored to each key stak
 
 ---
 
+<a id="system-architecture"></a>
 ## 🏗️ System Architecture
 
 CredVidhi enforces clear domain-driven separation between the user interface, orchestration engine, financial calculations, and persistent storage:
@@ -127,6 +131,7 @@ CredVidhi enforces clear domain-driven separation between the user interface, or
 
 ---
 
+<a id="loan-lifecycle"></a>
 ## 🔄 Loan Lifecycle (Finite State Machine)
 
 Every loan application transitions through a strictly non-reversible sequence governed by database ACID transaction envelopes:
@@ -158,6 +163,7 @@ stateDiagram-v2
 
 ---
 
+<a id="underwriting-engine"></a>
 ## 🧮 Underwriting & Financial Engine
 
 ### 1. Debt-to-Income (DTI) Ratio
@@ -196,6 +202,7 @@ $$\text{Disposable Income} = \text{Gross Monthly Income} - (\text{Existing Debts
 
 ---
 
+<a id="role-based-access-control"></a>
 ## 👥 Role-Based Access Control (RBAC)
 
 CredVidhi implements granular, defense-in-depth role authorization:
@@ -216,6 +223,7 @@ CredVidhi implements granular, defense-in-depth role authorization:
 
 ---
 
+<a id="standardized-api"></a>
 ## 📡 Standardized API & Error Envelope
 
 All client-server communication utilizes predictable HTTP response codes and a strict response envelope:
@@ -255,6 +263,7 @@ All client-server communication utilizes predictable HTTP response codes and a s
 
 ---
 
+<a id="design-system"></a>
 ## 🎨 Design System & Motion Principles
 
 CredVidhi's design language combines institutional banking reliability with high-efficiency SaaS ergonomics:
@@ -291,6 +300,7 @@ CredVidhi's design language combines institutional banking reliability with high
 
 ---
 
+<a id="getting-started"></a>
 ## 🚀 Getting Started
 
 ### Prerequisites
@@ -333,6 +343,7 @@ npm run preview
 
 ---
 
+<a id="repository-structure"></a>
 ## 📁 Repository Structure
 
 ```text
@@ -358,6 +369,7 @@ CredVidhi/
     │   │   │   ├── ProductPreview.tsx
     │   │   │   ├── KeyCapabilities.tsx
     │   │   │   ├── SecurityTrustSection.tsx
+    │   │   │   ├── FAQSection.tsx
     │   │   │   ├── Navbar.tsx
     │   │   │   └── Footer.tsx
     │   │   ├── layout/            # Navigation Header & Sidebar Shell
@@ -378,6 +390,7 @@ CredVidhi/
 
 ---
 
+<a id="security-compliance"></a>
 ## 🔒 Security & Institutional Compliance
 
 - **Zero Hardcoded Secrets:** All credentials, keys, and tokens are injected via environment variables.
@@ -388,6 +401,7 @@ CredVidhi/
 
 ---
 
+<a id="contributing"></a>
 ## 🤝 Contributing
 
 1. Fork the repository
@@ -402,6 +416,7 @@ CredVidhi/
 
 ---
 
+<a id="license"></a>
 ## 📜 License
 
 This project is open-source and licensed under the **[MIT License](LICENSE)**.
