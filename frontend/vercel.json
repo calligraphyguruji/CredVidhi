@@ -9,6 +9,10 @@
       "destination": "/robots.txt"
     },
     {
+      "source": "/google1cf29498a3612bd6.html",
+      "destination": "/google1cf29498a3612bd6.html"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }
