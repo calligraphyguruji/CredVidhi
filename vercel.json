@@ -8,6 +8,10 @@
       "destination": "/sitemap.xml"
     },
     {
+      "source": "/sitemap.xsl",
+      "destination": "/sitemap.xsl"
+    },
+    {
       "source": "/robots.txt",
       "destination": "/robots.txt"
     },
