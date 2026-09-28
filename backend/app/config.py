@@ -81,12 +81,20 @@ class Settings(BaseSettings):
     LLM_PROVIDER: str = "groq"
     LLM_MODEL: str = "openai/gpt-oss-120b"
     LLM_API_KEY: str = ""
+    GEMINI_API_KEY: str = ""
     LLM_BASE_URL: str = ""
     LLM_TIMEOUT_SECONDS: float = 30.0
 
     @model_validator(mode="after")
     def validate_and_normalize_settings(self) -> "Settings":
         """Normalize Render/Postgres URLs to postgresql+asyncpg and validate production secrets."""
+        # Auto-configure Gemini if GEMINI_API_KEY is supplied
+        if self.GEMINI_API_KEY and not self.LLM_API_KEY:
+            self.LLM_API_KEY = self.GEMINI_API_KEY
+            self.LLM_PROVIDER = "gemini"
+            if self.LLM_MODEL == "openai/gpt-oss-120b":
+                self.LLM_MODEL = "gemini-2.0-flash"
+
         if self.DATABASE_URL.startswith("postgres://"):
             self.DATABASE_URL = self.DATABASE_URL.replace("postgres://", "postgresql+asyncpg://", 1)
         elif self.DATABASE_URL.startswith("postgresql://") and not self.DATABASE_URL.startswith(

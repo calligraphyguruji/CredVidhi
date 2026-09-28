@@ -113,6 +113,12 @@ CredVidhi provides dedicated, purpose-built workspaces tailored to each key stak
 - **Dynamic Role Elevation & Suspension:** Instant account activation or suspension and cryptographic role reassignment.
 - **Sortable & Filterable Data Grid:** Powered by reusable `DataTable` with multi-field search and column-level sorting.
 
+### 7. 🤖 AI Customer Support & Financial Advisor Chatbot
+- **Google Gemini 2.0 Integration:** Powered by Google Gemini (or any OpenAI-compatible provider) via secure server-side proxy.
+- **24/7 Context-Aware Financial Advisory:** Answers questions on loan products, interest rates, CIBIL score requirements (≥700), DTI limits (45-50%), and required KYC documents.
+- **Offline High-Resilience Fallback:** Automatically serves deterministic grounded answers if offline or without external API keys.
+- **Floating Omnipresent Widget:** Saffron-themed conversational assistant accessible from landing, portal, and workbench pages.
+
 ---
 
 <a id="system-architecture"></a>
@@ -306,8 +312,8 @@ All client-server communication utilizes predictable HTTP response codes and a s
 | **Underwriting** | `POST` | `/api/v1/applications/{id}/evaluate` | `RISK_ANALYST`, `ADMIN` | Trigger deterministic financial underwriting & risk scorecard evaluation |
 | **Underwriting** | `GET` | `/api/v1/applications/{id}/assessment` | Owner or Staff | Inspect financial metrics (DTI, EMI, surplus, score factors, amortization preview) |
 | **Underwriting** | `POST` | `/api/v1/applications/{id}/decision` | `RISK_ANALYST`, `ADMIN` | Record formal credit decision (`APPROVED`, `REJECTED`) with supervisor escalation |
-| **Underwriting** | `GET` | `/api/v1/applications/{id}/decision` | Owner or Staff | Retrieve binding credit decision details (with underwriter notes masked for applicants) |
 | **Compliance & Audit** | `GET` | `/api/v1/audit/logs` | `ADMIN`, `OPERATIONS` | Query tamper-proof chronological audit ledger with multi-attribute filtering |
+| **AI Support Chat** | `POST` | `/api/v1/chat` | Public / Authenticated | Google Gemini customer support & loan inquiries with grounded knowledge fallback |
 
 ---
 

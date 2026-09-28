@@ -309,6 +309,34 @@ export const auditApi = {
 };
 
 // ==========================================
+// 8.1 AI Chatbot & Customer Support
+// ==========================================
+export interface ChatMessage {
+  role: 'user' | 'assistant' | 'system';
+  content: string;
+}
+
+export interface ChatResponse {
+  reply: string;
+  suggested_questions: string[];
+  provider: string;
+  model: string;
+}
+
+export const chatApi = {
+  sendMessage: (payload: {
+    message: string;
+    history?: ChatMessage[];
+    context?: Record<string, any>;
+  }) =>
+    request<ChatResponse>('/chat', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    }),
+};
+
+
+// ==========================================
 // 9. Domain Model Adapters
 // ==========================================
 export function mapBackendProduct(p: any): LoanProduct {

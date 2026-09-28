@@ -13,9 +13,11 @@ import { ComplianceAudit } from './pages/admin/ComplianceAudit';
 import { LoanProducts } from './pages/admin/LoanProducts';
 import { UserAdministration } from './pages/admin/UserAdministration';
 import { pageTransitionVariants } from './utils/motion';
+import { ChatbotWidget } from './components/chat/ChatbotWidget';
 import { Analytics } from '@vercel/analytics/react';
 
 const MainContent: React.FC = () => {
+
   const { activeView } = useApp();
   const shouldReduceMotion = useReducedMotion();
 
@@ -98,6 +100,7 @@ export const App: React.FC = () => {
   return (
     <AppProvider>
       <MainContent />
+      <ChatbotWidget />
       <Analytics />
     </AppProvider>
   );

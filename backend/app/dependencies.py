@@ -107,3 +107,32 @@ def require_roles(
         return current_user
 
     return role_checker
+
+
+async def get_optional_current_user(
+    authorization: Optional[str] = Header(None),
+    db: AsyncSession = Depends(get_db),
+) -> Optional[User]:
+    """Extract current user if Authorization Bearer header is present and valid, otherwise return None."""
+    if not authorization or not authorization.startswith("Bearer "):
+        return None
+    try:
+        token = authorization.split(None, 1)[1].strip()
+        payload = decode_jwt_token(token)
+        if payload.get("type") != "access":
+            return None
+        jti = payload.get("jti")
+        if jti and await is_token_revoked(jti):
+            return None
+        user_id_raw = payload.get("sub")
+        if not user_id_raw:
+            return None
+        user_uuid = uuid.UUID(user_id_raw)
+        result = await db.execute(select(User).where(User.id == user_uuid))
+        user = result.scalar_one_or_none()
+        if user and user.is_active:
+            return user
+        return None
+    except Exception:
+        return None
+

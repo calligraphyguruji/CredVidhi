@@ -29,6 +29,8 @@ build/
 .ruff_cache/
 .coverage
 htmlcov/
+uv.lock
+backend/uv.lock
 
 # Internal agent configs & skills
 .agents/
