@@ -114,7 +114,7 @@ CredVidhi provides dedicated, purpose-built workspaces tailored to each key stak
 - **Sortable & Filterable Data Grid:** Powered by reusable `DataTable` with multi-field search and column-level sorting.
 
 ### 7. 🤖 AI Customer Support & Financial Advisor Chatbot
-- **Google Gemini 2.0 Integration:** Powered by Google Gemini (or any OpenAI-compatible provider) via secure server-side proxy.
+- **Google Gemini 3.8 Flash Integration:** Powered by Google Gemini (or any OpenAI-compatible provider) via secure server-side proxy.
 - **24/7 Context-Aware Financial Advisory:** Answers questions on loan products, interest rates, CIBIL score requirements (≥700), DTI limits (45-50%), and required KYC documents.
 - **Offline High-Resilience Fallback:** Automatically serves deterministic grounded answers if offline or without external API keys.
 - **Floating Omnipresent Widget:** Saffron-themed conversational assistant accessible from landing, portal, and workbench pages.

@@ -38,7 +38,7 @@ export const ChatbotWidget: React.FC<UIProps> = ({ initialOpen = false }) => {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [suggestions, setSuggestions] = useState<string[]>(DEFAULT_SUGGESTIONS);
-  const [modelBadge, setModelBadge] = useState<string>('Gemini 2.0 Flash');
+  const [modelBadge, setModelBadge] = useState<string>('Gemini 3.8 Flash');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -79,7 +79,7 @@ export const ChatbotWidget: React.FC<UIProps> = ({ initialOpen = false }) => {
           setSuggestions(response.suggested_questions);
         }
         if (response.provider === 'gemini') {
-          setModelBadge(`Gemini ${response.model || '2.0 Flash'}`);
+          setModelBadge('Gemini 3.8 Flash');
         } else if (response.model) {
           setModelBadge(response.model);
         }
