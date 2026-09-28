@@ -1,4 +1,5 @@
 import type { LoanProduct, LoanApplication, User, AuditLog } from '../types';
+import { INDIAN_MOCK_USERS, getIndianMockApplications } from './indianBorrowersData';
 
 export const INITIAL_PRODUCTS: LoanProduct[] = [
   {
@@ -6,16 +7,16 @@ export const INITIAL_PRODUCTS: LoanProduct[] = [
     code: 'PL-UNSEC',
     name: 'Personal Unsecured Loan',
     description: 'Fixed-rate financing for personal expenditures, debt consolidation, or unexpected needs.',
-    minAmount: 5000,
-    maxAmount: 50000,
-    minTenorMonths: 12,
+    minAmount: 50000,
+    maxAmount: 2500000,
+    minTenorMonths: 6,
     maxTenorMonths: 60,
-    baseApr: 10.5,
+    baseApr: 11.5,
     maxDtiRatio: 45,
     requiredDocuments: [
-      { code: 'GOV_ID', title: 'Government Photo ID', description: 'Passport or Driver License', mandatory: true },
-      { code: 'W2_INCOME', title: 'W-2 / Tax Return (2025)', description: 'Most recent official annual tax filing', mandatory: true },
-      { code: 'BANK_STMT', title: 'Bank Statements (90 Days)', description: 'Last 3 consecutive months of primary checking account', mandatory: true },
+      { code: 'GOV_ID', title: 'Government Photo ID', description: 'PAN Card or Passport', mandatory: true },
+      { code: 'W2_INCOME', title: 'Salary Slip / Form 16', description: 'Most recent 3 months official paystubs or Form 16', mandatory: true },
+      { code: 'BANK_STMT', title: 'Bank Statements (90 Days)', description: 'Last 3 consecutive months of primary salary account', mandatory: true },
     ],
     isActive: true,
   },
@@ -24,35 +25,35 @@ export const INITIAL_PRODUCTS: LoanProduct[] = [
     code: 'AUTO-SEC',
     name: 'Automotive Secured Loan',
     description: 'Competitive vehicle financing with asset lien protection and flexible tenor.',
-    minAmount: 10000,
-    maxAmount: 85000,
-    minTenorMonths: 24,
-    maxTenorMonths: 72,
-    baseApr: 7.25,
-    maxDtiRatio: 48,
+    minAmount: 200000,
+    maxAmount: 8500000,
+    minTenorMonths: 12,
+    maxTenorMonths: 84,
+    baseApr: 8.75,
+    maxDtiRatio: 50,
     requiredDocuments: [
-      { code: 'GOV_ID', title: 'Government Photo ID', description: 'Passport or Driver License', mandatory: true },
-      { code: 'PAYSLIPS', title: 'Recent Paystubs (2 Months)', description: 'Consecutive monthly proof of earnings', mandatory: true },
-      { code: 'DEALER_INVOICE', title: 'Dealer Purchase Order', description: 'Itemized vehicle specification and VIN', mandatory: true },
+      { code: 'GOV_ID', title: 'Government Photo ID', description: 'PAN Card or Driving License', mandatory: true },
+      { code: 'PAYSLIPS', title: 'Recent Paystubs (3 Months)', description: 'Consecutive monthly proof of earnings', mandatory: true },
+      { code: 'DEALER_INVOICE', title: 'Dealer Proforma Invoice', description: 'Itemized vehicle specification and ex-showroom invoice', mandatory: true },
     ],
     isActive: true,
   },
   {
     id: 'prod-home',
     code: 'HOME-EQ',
-    name: 'Home Improvement & Equity',
-    description: 'Leverage residential equity for property expansion, major renovations, or repairs.',
-    minAmount: 25000,
-    maxAmount: 250000,
-    minTenorMonths: 36,
-    maxTenorMonths: 180,
-    baseApr: 6.85,
-    maxDtiRatio: 43,
+    name: 'Home Loan Prime & Equity',
+    description: 'Competitive home financing and residential equity for property acquisition, expansion, or major renovations.',
+    minAmount: 500000,
+    maxAmount: 50000000,
+    minTenorMonths: 24,
+    maxTenorMonths: 360,
+    baseApr: 8.5,
+    maxDtiRatio: 50,
     requiredDocuments: [
-      { code: 'GOV_ID', title: 'Government Photo ID', description: 'Passport or Driver License', mandatory: true },
-      { code: 'W2_INCOME', title: 'W-2 / 1040 Tax Return (2 Years)', description: 'Federal tax returns with all schedules', mandatory: true },
-      { code: 'TITLE_DEED', title: 'Property Deed / Valuation', description: 'Current title deed and municipal assessment', mandatory: true },
-      { code: 'BANK_STMT', title: 'Bank Statements (90 Days)', description: 'Last 3 consecutive months of accounts', mandatory: true },
+      { code: 'GOV_ID', title: 'Government Photo ID', description: 'PAN Card or Passport', mandatory: true },
+      { code: 'W2_INCOME', title: 'ITR-V / Form 16 (2 Years)', description: 'Income Tax Returns with computation of income', mandatory: true },
+      { code: 'TITLE_DEED', title: 'Property Sale Agreement / Deed', description: 'Registered title deed and sanctioned building plan', mandatory: true },
+      { code: 'BANK_STMT', title: 'Bank Statements (6 Months)', description: 'Last 6 consecutive months of primary operative account', mandatory: true },
     ],
     isActive: true,
   },
@@ -91,9 +92,10 @@ export const INITIAL_USERS: User[] = [
     phone: '+1 (555) 111-2222',
     isActive: true,
   },
+  ...INDIAN_MOCK_USERS,
 ];
 
-export const INITIAL_APPLICATIONS: LoanApplication[] = [
+const BASE_APPLICATIONS: LoanApplication[] = [
   {
     id: 'app-001',
     referenceNumber: 'APP-2026-0891',
@@ -477,6 +479,11 @@ export const INITIAL_APPLICATIONS: LoanApplication[] = [
     createdAt: '2026-09-23T10:00:00Z',
     updatedAt: '2026-09-24T16:30:00Z',
   },
+];
+
+export const INITIAL_APPLICATIONS: LoanApplication[] = [
+  ...BASE_APPLICATIONS,
+  ...getIndianMockApplications(INITIAL_PRODUCTS),
 ];
 
 export const INITIAL_AUDIT_LOGS: AuditLog[] = [

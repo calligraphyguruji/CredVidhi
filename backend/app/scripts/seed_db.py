@@ -167,7 +167,10 @@ async def seed_data(
                 logger.info(f"Product already exists: {prod_data['code']}")
 
         await s.commit()
-        logger.info("Database seeding completed successfully.")
+        logger.info("Database core seeding completed successfully. Now seeding Indian borrowers...")
+        from app.scripts.seed_indian_borrowers import seed_indian_borrowers_data
+        await seed_indian_borrowers_data(s)
+        logger.info("All database seed data populated successfully.")
 
     if session is not None:
         await _do_seed(session)
