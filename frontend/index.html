@@ -3,7 +3,10 @@
   <head>
     <script>
       (function() {
-        var t = localStorage.getItem('credvidhi_theme');
+        var params = new URLSearchParams(window.location.search);
+        var urlTheme = params.get('theme');
+        var validTheme = (urlTheme === 'dark' || urlTheme === 'light') ? urlTheme : null;
+        var t = validTheme || localStorage.getItem('credvidhi_theme');
         if (t === 'dark') {
           document.documentElement.classList.add('dark');
         } else {

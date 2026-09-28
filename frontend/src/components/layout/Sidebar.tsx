@@ -125,19 +125,22 @@ export const Sidebar: React.FC = () => {
       </nav>
 
       {/* Regulatory & Reset Footer */}
-      <div className="p-3 border-t border-slate-200 bg-slate-50/50 space-y-2">
-        <div className="flex items-center justify-between text-[10px] font-mono text-slate-500">
-          <span>TIER 1 CAPITAL ADQ</span>
-          <span className="text-emerald-700 font-semibold">PASS (14.2%)</span>
+      <div className="p-3 border-t border-slate-200 dark:border-slate-800/80 bg-slate-50/80 dark:bg-slate-950/80 space-y-2">
+        <div className="flex items-center justify-between text-[10px] font-mono text-slate-500 dark:text-slate-400">
+          <span className="tracking-wider">TIER 1 CAPITAL ADQ</span>
+          <span className="text-emerald-700 dark:text-emerald-400 font-semibold flex items-center gap-1">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block animate-pulse"></span>
+            PASS (14.2%)
+          </span>
         </div>
         <motion.button
           whileHover={!shouldReduceMotion ? { scale: 1.01 } : undefined}
           whileTap={!shouldReduceMotion ? { scale: 0.98 } : undefined}
           onClick={resetAllData}
-          className="w-full flex items-center justify-center gap-1.5 px-2 py-1 text-[11px] text-slate-500 hover:text-slate-800 hover:bg-slate-200/60 rounded border border-slate-200 transition-colors cursor-pointer"
+          className="w-full flex items-center justify-center gap-1.5 px-2 py-1.5 text-[11px] text-slate-600 !dark:text-orange-400 hover:text-orange-600 dark:hover:text-orange-300 bg-white/50 dark:bg-orange-950/20 hover:bg-slate-100 dark:hover:bg-orange-950/40 rounded border border-slate-200 dark:border-orange-500/30 transition-all cursor-pointer font-medium"
           title="Reset to original mock database state"
         >
-          <RefreshCw className="w-3 h-3" />
+          <RefreshCw className="w-3 h-3 text-orange-600 dark:text-orange-400" />
           <span>Reset Demo Data</span>
         </motion.button>
       </div>

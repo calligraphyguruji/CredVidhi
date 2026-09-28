@@ -47,7 +47,7 @@ export const SecurityTrustSection: React.FC = () => {
   ];
 
   return (
-    <section id="security" className="py-16 md:py-24 bg-white border-b border-slate-200 overflow-hidden">
+    <section id="security" className="py-16 md:py-24 bg-white dark:bg-transparent border-b border-slate-200 dark:border-slate-800/80 overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Section Heading */}
@@ -58,13 +58,13 @@ export const SecurityTrustSection: React.FC = () => {
           transition={{ duration: 0.3 }}
           className="max-w-3xl mb-12"
         >
-          <div className="inline-flex items-center gap-2 text-xs font-mono font-semibold uppercase text-orange-700 bg-orange-50 px-2.5 py-1 rounded border border-orange-200 mb-3">
+          <div className="inline-flex items-center gap-2 text-xs font-mono font-semibold uppercase text-orange-700 dark:text-orange-400 bg-orange-50 dark:bg-orange-950/40 px-2.5 py-1 rounded border border-orange-200 dark:border-orange-500/30 mb-3">
             <span>FINANCIAL GOVERNANCE & PRIVACY</span>
           </div>
-          <h2 className="text-2xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
+          <h2 className="text-2xl sm:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight">
             Security & audit safeguards built-in.
           </h2>
-          <p className="mt-3 text-sm sm:text-base text-slate-600 leading-relaxed">
+          <p className="mt-3 text-sm sm:text-base text-slate-600 dark:text-slate-300 leading-relaxed">
             CredVidhi enforces institutional banking standards from the database transaction boundary
             to the front-end user experience.
           </p>
@@ -82,15 +82,15 @@ export const SecurityTrustSection: React.FC = () => {
                 viewport={{ once: true, margin: '-40px' }}
                 transition={{ duration: 0.28, delay: shouldReduceMotion ? 0 : i * 0.06 }}
                 whileHover={!shouldReduceMotion ? { y: -2, transition: { duration: 0.2 } } : undefined}
-                className="p-6 bg-slate-50/70 rounded-xl border border-slate-200 hover:border-slate-300 transition-colors"
+                className="p-6 bg-slate-50/80 dark:bg-slate-900/80 rounded-xl border border-slate-200 dark:border-slate-800/80 hover:border-orange-500/50 dark:hover:border-orange-500/50 transition-colors group shadow-xs dark:shadow-black/20"
               >
-                <div className="w-9 h-9 rounded-lg bg-orange-100/80 text-orange-700 flex items-center justify-center font-bold mb-4">
-                  <Icon className="w-5 h-5" />
+                <div className="w-9 h-9 rounded-lg bg-orange-100/90 dark:bg-orange-950/60 text-orange-700 dark:text-orange-400 border border-orange-200/50 dark:border-orange-500/30 flex items-center justify-center font-bold mb-4 group-hover:scale-105 transition-transform">
+                  <Icon className="w-5 h-5 text-orange-600 dark:text-orange-400" />
                 </div>
-                <h3 className="text-sm font-bold text-slate-900 mb-2">
+                <h3 className="text-sm font-bold text-slate-900 dark:text-white group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors mb-2">
                   {pillar.title}
                 </h3>
-                <p className="text-xs text-slate-600 leading-relaxed">
+                <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
                   {pillar.description}
                 </p>
               </motion.div>
@@ -104,7 +104,7 @@ export const SecurityTrustSection: React.FC = () => {
           whileInView={{ opacity: 1, scale: 1 }}
           viewport={{ once: true, margin: '-40px' }}
           transition={{ duration: 0.3 }}
-          className="mt-10 p-6 bg-slate-900 text-white rounded-xl border border-slate-800 flex flex-col md:flex-row items-center justify-between gap-6"
+          className="mt-10 p-6 bg-slate-900 dark:bg-slate-950/90 text-white rounded-xl border border-slate-800 dark:border-orange-500/20 flex flex-col md:flex-row items-center justify-between gap-6 shadow-lg shadow-black/20"
         >
           <div className="space-y-1 text-left">
             <div className="flex items-center gap-2">
@@ -125,7 +125,7 @@ export const SecurityTrustSection: React.FC = () => {
               switchRole('ADMIN');
               setActiveView('compliance-audit');
             }}
-            className="shrink-0 px-4 py-2 bg-orange-600 hover:bg-orange-500 text-white text-xs font-semibold rounded-md transition-colors cursor-pointer"
+            className="shrink-0 px-4 py-2 bg-orange-600 hover:bg-orange-500 text-white text-xs font-semibold rounded-md transition-colors cursor-pointer shadow-xs shadow-orange-950/40"
           >
             Open Compliance Audit Stream
           </motion.button>

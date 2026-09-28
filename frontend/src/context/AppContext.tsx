@@ -113,6 +113,8 @@ const isUUID = (str: string): boolean =>
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
+    const urlTheme = new URLSearchParams(window.location.search).get('theme');
+    if (urlTheme === 'dark' || urlTheme === 'light') return urlTheme;
     const saved = localStorage.getItem('credvidhi_theme');
     if (saved === 'dark') return 'dark';
     return 'light';
