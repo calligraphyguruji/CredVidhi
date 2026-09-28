@@ -77,6 +77,13 @@ class Settings(BaseSettings):
     # Logging
     LOG_LEVEL: str = "INFO"
 
+    # LLM / AI Configuration (Server-Side Only)
+    LLM_PROVIDER: str = "groq"
+    LLM_MODEL: str = "openai/gpt-oss-120b"
+    LLM_API_KEY: str = ""
+    LLM_BASE_URL: str = ""
+    LLM_TIMEOUT_SECONDS: float = 30.0
+
     @model_validator(mode="after")
     def validate_and_normalize_settings(self) -> "Settings":
         """Normalize Render/Postgres URLs to postgresql+asyncpg and validate production secrets."""
@@ -85,7 +92,9 @@ class Settings(BaseSettings):
         elif self.DATABASE_URL.startswith("postgresql://") and not self.DATABASE_URL.startswith(
             "postgresql+asyncpg://"
         ):
-            self.DATABASE_URL = self.DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://", 1)
+            self.DATABASE_URL = self.DATABASE_URL.replace(
+                "postgresql://", "postgresql+asyncpg://", 1
+            )
 
         if self.ENVIRONMENT.lower() in ("production", "staging"):
             if "development" in self.JWT_SECRET.lower():
