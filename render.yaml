@@ -1,0 +1,79 @@
+# CredVidhi Infrastructure as Code (Render Blueprint Specification)
+# Reference: https://render.com/docs/blueprint-spec
+
+version: "1"
+
+services:
+  # ----------------------------------------------------------------------------
+  # CredVidhi Core Backend API (FastAPI + SQLAlchemy 2.0 Async + Uvicorn)
+  # ----------------------------------------------------------------------------
+  - type: web
+    name: credvidhi-backend
+    runtime: docker
+    rootDir: backend
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    plan: free # Upgrade to starter/standard for higher memory and dedicated CPU
+    region: oregon # Supported: oregon, ohio, frankfurt, singapore
+    branch: main
+    healthCheckPath: /api/v1/health/live
+    autoDeploy: true
+
+    envVars:
+      # Application Core Settings
+      - key: APP_NAME
+        value: "CredVidhi API"
+      - key: ENVIRONMENT
+        value: production
+      - key: DEBUG
+        value: "false"
+      - key: API_V1_PREFIX
+        value: "/api/v1"
+      - key: LOG_LEVEL
+        value: INFO
+
+      # Database Configuration (PostgreSQL 16)
+      # Provide external PostgreSQL URL (e.g. Supabase, Neon, or Render Postgres)
+      # Format: postgresql+asyncpg://user:pass@host:port/dbname
+      # Note: CredVidhi automatically normalizes postgres:// or postgresql:// to postgresql+asyncpg://
+      - key: DATABASE_URL
+        sync: false
+
+      # Redis 7 Configuration (Token Blacklisting & Session Invalidation)
+      # Format: redis://host:port/0 or rediss:// for SSL
+      - key: REDIS_URL
+        sync: false
+
+      # Security & JWT Tokens (Auto-generates high-entropy 256-bit secret)
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_ALGORITHM
+        value: HS256
+      - key: ACCESS_TOKEN_EXPIRE_MINUTES
+        value: "60"
+      - key: REFRESH_TOKEN_EXPIRE_DAYS
+        value: "7"
+
+      # Cross-Origin Resource Sharing (CORS)
+      - key: CORS_ORIGINS
+        value: '["https://credvidhi.vercel.app", "http://localhost:5173", "http://localhost:3000"]'
+
+      # AI Customer Support Chatbot (Google Gemini / OpenAI compatible)
+      - key: LLM_PROVIDER
+        value: gemini
+      - key: LLM_MODEL
+        value: gemini-2.0-flash
+      - key: GEMINI_API_KEY
+        sync: false
+
+      # Document Storage / KYC S3 Compatible Storage
+      - key: MINIO_BUCKET_NAME
+        value: credvidhi-documents
+      - key: MINIO_ENDPOINT
+        sync: false
+      - key: MINIO_ACCESS_KEY
+        sync: false
+      - key: MINIO_SECRET_KEY
+        sync: false
+      - key: MINIO_SECURE
+        value: "true"

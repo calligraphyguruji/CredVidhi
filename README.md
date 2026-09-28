@@ -428,7 +428,7 @@ uvicorn app.main:app --reload --port 8000
 #### Backend Quality & Verification Gates
 
 ```bash
-# Run complete test suite (53+ tests covering Auth, RBAC, Health, FSM, Queues, S3 Document Storage, Deterministic Financial Math & Underwriting, Immutable Audit Ledger, PII Redaction & Full E2E Lifecycle)
+# Run complete test suite (65 tests covering Auth, RBAC, Health, FSM, Queues, S3 Document Storage, Deterministic Financial Math & Underwriting, Immutable Audit Ledger, PII Redaction & Full E2E Lifecycle)
 pytest -v
 
 # Run static type checking
@@ -437,6 +437,19 @@ mypy app tests
 # Run linter and formatting checks
 ruff check . && ruff format --check .
 ```
+
+#### 🚀 Render Cloud Deployment (Infrastructure as Code)
+
+CredVidhi includes a production [`render.yaml`](file:///Users/calligraphyguruji/CredVidhi/render.yaml) Blueprint for 1-click cloud deployments on Render:
+
+1. Connect the repository to [Render](https://dashboard.render.com/blueprints).
+2. Render detects `render.yaml` automatically and configures:
+   - **Runtime:** Multi-stage Docker build targeting `backend/Dockerfile`
+   - **Dynamic Port:** Adapts to Render's allocated `$PORT` (`0.0.0.0:${PORT:-8000}`)
+   - **Health Probe:** Lightweight `/api/v1/health/live` probe
+   - **Boot Sequence:** Safe migrations + non-blocking background benchmark seeder
+   - **Secrets:** Auto-generates cryptographic 256-bit `JWT_SECRET`
+3. Enter your managed PostgreSQL URL (e.g. Supabase, Neon, or Render Postgres) when prompted.
 
 ---
 
@@ -492,6 +505,8 @@ CredVidhi/
 │   ├── architecture.json          # Archify system architecture specification
 │   ├── architecture.png           # High-resolution light architecture diagram
 │   └── architecture-dark.png      # High-resolution dark architecture diagram
+├── render.yaml                    # Render Blueprint Infrastructure as Code specification
+├── vercel.json                    # Vercel deployment rewrites, caching & security headers
 ├── backend/                       # Production FastAPI backend application
 │   ├── app/
 │   │   ├── api/v1/                # Health, Auth, and Product Catalog routers
