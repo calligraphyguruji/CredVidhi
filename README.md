@@ -115,8 +115,9 @@ CredVidhi provides dedicated, purpose-built workspaces tailored to each key stak
 
 ### 7. 🤖 AI Customer Support & Financial Advisor Chatbot
 - **Google Gemini 3.8 Flash Integration:** Powered by Google Gemini (or any OpenAI-compatible provider) via secure server-side proxy.
-- **24/7 Context-Aware Financial Advisory:** Answers questions on loan products, interest rates, CIBIL score requirements (≥700), DTI limits (45-50%), and required KYC documents.
-- **Offline High-Resilience Fallback:** Automatically serves deterministic grounded answers if offline or without external API keys.
+- **Strict Domain Guardrail & Anti-Abuse Firewall:** Enforces dual-layer scope restriction (pre-filter classifier + prompt boundary) ensuring Gemini is exclusively utilized for CredVidhi lending, loan products, application status tracking, eligibility, and underwriting queries, rejecting unrelated prompts (coding, trivia, entertainment) to prevent token waste and API misuse.
+- **Real-Time Application Status Tracking:** Natural language tracking assistance guiding applicants through the 5-stage lifecycle (`DRAFT` → `SUBMITTED` → `UNDER_REVIEW` → `APPROVED` → `DISBURSED`) with reference number lookups.
+- **Offline High-Resilience Fallback:** Automatically serves deterministic grounded answers covering products, interest rates, documents, CIBIL score tiers, and EMI calculations if offline or without external API keys.
 - **Floating Omnipresent Widget:** Saffron-themed conversational assistant accessible from landing, portal, and workbench pages.
 
 ---
