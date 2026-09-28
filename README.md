@@ -4,6 +4,7 @@
 
 ### Enterprise-Grade Loan Origination, Risk Underwriting & Lifecycle Governance System
 
+[![Live Demo](https://img.shields.io/badge/Live_Demo-credvidhi.vercel.app-EA580C?style=for-the-badge&logo=vercel&logoColor=white)](https://credvidhi.vercel.app)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.110+-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
 [![Python](https://img.shields.io/badge/Python-3.11+-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
@@ -21,7 +22,13 @@
   <b>A deterministic, auditable, and secure financial platform designed for banks, NBFCs, and digital lenders to automate the end-to-end retail and commercial credit origination lifecycle.</b>
 </p>
 
+<p align="center">
+  🚀 <b>Live Interactive Application:</b> <a href="https://credvidhi.vercel.app"><b>https://credvidhi.vercel.app</b></a>
+</p>
+
+[🚀 Live Demo](https://credvidhi.vercel.app) •
 [System Overview](#system-overview) •
+[Interactive Sandbox](#live-demo) •
 [Why CredVidhi](#why-credvidhi) •
 [Core Workspaces](#core-workspaces) •
 [Architecture](#system-architecture) •
@@ -48,6 +55,29 @@ Modern lending institutions struggle with disconnected handoffs between sales of
 **CredVidhi** delivers a unified, high-trust digital origination platform that enforces **mathematical determinism, non-negotiable state machines, and immutable audit logging**.
 
 Every calculation—from Debt-to-Income (DTI) and monthly compounding EMI amortization to risk scoring—is computed using fixed-point precision with strict zero-drift guarantees in **Indian Rupees (`₹`)**.
+
+---
+
+<a id="live-demo"></a>
+## 🚀 Live Demo & Interactive Sandbox
+
+Experience the complete end-to-end loan origination and underwriting flow live in your browser:
+
+🔗 **Production URL:** [**https://credvidhi.vercel.app**](https://credvidhi.vercel.app)
+
+### What You Can Experience in the Live Demo:
+1. **Borrower Digital Intake & Registration:**
+   - Click **"Apply for Loan"** to test the streamlined digital registration (`/register`) and explore loan products (Home, Auto, SME, Personal, Education).
+   - Test the real-time compound interest EMI and DTI calculator with dynamic sliders.
+2. **Deterministic Lifecycle Tracking:**
+   - Click **"Track Application"** to sign in and monitor active loan files across all 5 transparent lifecycle states (`DRAFT` $\to$ `SUBMITTED` $\to$ `UNDER_REVIEW` $\to$ `APPROVED` $\to$ `DISBURSED`).
+3. **AI Customer Support & Financial Advisor Chatbot:**
+   - Open the floating **CredVidhi AI** assistant in the bottom right corner.
+   - Powered by Google Gemini with domain boundaries and offline NLP fallbacks for interest rates, documents, CIBIL tiers, and application tracking.
+4. **Staff Verification & Underwriting Workspaces:**
+   - Access **Staff SSO** to experience the Loan Officer triage queue, document verification checklists, quantitative underwriting cockpits, and immutable audit streams.
+5. **Theme Switching:**
+   - Seamlessly toggle between crisp institutional light mode and deep abstract geometric vortex dark mode.
 
 ---
 
