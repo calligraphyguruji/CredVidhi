@@ -135,4 +135,3 @@ async def get_optional_current_user(
         return None
     except Exception:
         return None
-

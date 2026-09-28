@@ -1,6 +1,7 @@
 """Pydantic schemas for AI Chat & Customer Support."""
 
 from typing import Any, Dict, List, Literal, Optional
+
 from pydantic import BaseModel, Field
 
 
@@ -16,9 +17,7 @@ class ChatMessageSchema(BaseModel):
 class ChatRequestSchema(BaseModel):
     """Incoming user query schema."""
 
-    message: str = Field(
-        ..., min_length=1, max_length=4000, description="User question or prompt"
-    )
+    message: str = Field(..., min_length=1, max_length=4000, description="User question or prompt")
     history: Optional[List[ChatMessageSchema]] = Field(
         default=None, description="Previous conversation turns"
     )
@@ -34,7 +33,5 @@ class ChatResponseSchema(BaseModel):
     suggested_questions: List[str] = Field(
         default_factory=list, description="Follow-up prompt suggestions"
     )
-    provider: str = Field(
-        ..., description="LLM provider or engine that generated the reply"
-    )
+    provider: str = Field(..., description="LLM provider or engine that generated the reply")
     model: str = Field(..., description="Model name or fallback indicator")

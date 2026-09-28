@@ -5,7 +5,7 @@ with an intelligent domain guardrail and offline fallback engine for CredVidhi
 financial, loan, underwriting, and product inquiries.
 """
 
-from typing import Any, Dict, List, Optional
+from typing import Dict, List, Optional
 
 from fastapi import APIRouter, Depends, status
 from fastapi.responses import JSONResponse
@@ -14,7 +14,7 @@ from app.core.logging import logger
 from app.core.responses import success_response
 from app.dependencies import get_optional_current_user
 from app.models.user import User
-from app.schemas.chat import ChatMessageSchema, ChatRequestSchema, ChatResponseSchema
+from app.schemas.chat import ChatRequestSchema, ChatResponseSchema
 from app.services.llm_service import get_llm_service
 
 router = APIRouter(prefix="/chat", tags=["AI Chatbot"])
@@ -122,23 +122,111 @@ OUT_OF_SCOPE_SUGGESTIONS = [
 
 # Keywords indicating explicit domain connection to finance, loans, or CredVidhi
 FINANCIAL_INTENT_KEYWORDS = {
-    "loan", "emi", "interest", "cibil", "credit", "rate", "apr", "dti", "tenor", "kyc",
-    "pan", "aadhaar", "document", "borrow", "borrower", "borrowing", "apply", "application",
-    "status", "track", "credvidhi", "bank", "account", "register", "salary", "income", "money",
-    "rupee", "inr", "lakh", "crore", "underwriting", "approval", "disbursed", "disbursement",
-    "statement", "paystub", "slip", "itr", "gst", "udyam", "collateral", "repayment",
-    "foreclosure", "fee", "tenure", "downpayment", "login", "portal", "support", "helpline",
-    "eligible", "eligibility", "finance", "financial", "lender", "lending", "mortgage",
-    "prepayment", "turnaround", "tat",
+    "loan",
+    "emi",
+    "interest",
+    "cibil",
+    "credit",
+    "rate",
+    "apr",
+    "dti",
+    "tenor",
+    "kyc",
+    "pan",
+    "aadhaar",
+    "document",
+    "borrow",
+    "borrower",
+    "borrowing",
+    "apply",
+    "application",
+    "status",
+    "track",
+    "credvidhi",
+    "bank",
+    "account",
+    "register",
+    "salary",
+    "income",
+    "money",
+    "rupee",
+    "inr",
+    "lakh",
+    "crore",
+    "underwriting",
+    "approval",
+    "disbursed",
+    "disbursement",
+    "statement",
+    "paystub",
+    "slip",
+    "itr",
+    "gst",
+    "udyam",
+    "collateral",
+    "repayment",
+    "foreclosure",
+    "fee",
+    "tenure",
+    "downpayment",
+    "login",
+    "portal",
+    "support",
+    "helpline",
+    "eligible",
+    "eligibility",
+    "finance",
+    "financial",
+    "lender",
+    "lending",
+    "mortgage",
+    "prepayment",
+    "turnaround",
+    "tat",
 }
 
 # Keywords indicating completely unrelated, off-topic domains (code, jokes, general knowledge, etc.)
 OFF_TOPIC_KEYWORDS = {
-    "python", "javascript", "code", "programming", "html", "css", "react", "bug", "syntax",
-    "algorithm", "function", "variable", "class", "poem", "poetry", "story", "joke", "riddle",
-    "recipe", "cook", "cooking", "movie", "song", "lyrics", "cricket", "football", "match",
-    "scorecard", "weather", "forecast", "astronomy", "homework", "essay", "translate",
-    "president", "prime minister", "capital of", "who won", "geography", "history",
+    "python",
+    "javascript",
+    "code",
+    "programming",
+    "html",
+    "css",
+    "react",
+    "bug",
+    "syntax",
+    "algorithm",
+    "function",
+    "variable",
+    "class",
+    "poem",
+    "poetry",
+    "story",
+    "joke",
+    "riddle",
+    "recipe",
+    "cook",
+    "cooking",
+    "movie",
+    "song",
+    "lyrics",
+    "cricket",
+    "football",
+    "match",
+    "scorecard",
+    "weather",
+    "forecast",
+    "astronomy",
+    "homework",
+    "essay",
+    "translate",
+    "president",
+    "prime minister",
+    "capital of",
+    "who won",
+    "geography",
+    "history",
 }
 
 
@@ -173,7 +261,18 @@ def _generate_fallback_response(query: str) -> tuple[str, List[str]]:
         return OUT_OF_SCOPE_REPLY, OUT_OF_SCOPE_SUGGESTIONS
 
     # 1. Application Status & Tracking
-    if any(k in q for k in ["status", "track", "stage", "timeline", "lifecycle", "where is my loan", "progress"]):
+    if any(
+        k in q
+        for k in [
+            "status",
+            "track",
+            "stage",
+            "timeline",
+            "lifecycle",
+            "where is my loan",
+            "progress",
+        ]
+    ):
         reply = (
             "### ⏱️ Application Status & Tracking\n\n"
             "You can track your CredVidhi loan application in real-time across our 5 automated stages:\n\n"
@@ -193,7 +292,18 @@ def _generate_fallback_response(query: str) -> tuple[str, List[str]]:
         return reply, suggestions
 
     # 2. Registration & How to Apply
-    if any(k in q for k in ["register", "sign up", "signup", "create account", "new user", "how to apply", "apply"]):
+    if any(
+        k in q
+        for k in [
+            "register",
+            "sign up",
+            "signup",
+            "create account",
+            "new user",
+            "how to apply",
+            "apply",
+        ]
+    ):
         reply = (
             "### 📝 How to Apply & Register with CredVidhi\n\n"
             "Applying for a loan is 100% digital and takes less than 5 minutes:\n\n"
@@ -249,7 +359,10 @@ def _generate_fallback_response(query: str) -> tuple[str, List[str]]:
         return reply, suggestions
 
     # 5. Documents & KYC
-    if any(k in q for k in ["document", "doc", "kyc", "pan", "aadhaar", "upload", "statement", "salary"]):
+    if any(
+        k in q
+        for k in ["document", "doc", "kyc", "pan", "aadhaar", "upload", "statement", "salary"]
+    ):
         reply = (
             "### 📑 Mandatory KYC & Application Documents\n\n"
             "To ensure fast-track digital approval, please keep the following documents ready:\n\n"
@@ -318,7 +431,11 @@ def _generate_fallback_response(query: str) -> tuple[str, List[str]]:
             "- **Max DTI:** 45.0%\n"
             "- **Documents:** PAN, Aadhaar, 3 Months Salary Slips, 6 Months Bank Statement, Property Title Deeds"
         )
-        return reply, ["How do I apply for Home Loan?", "What is the Home Loan EMI?", "What are the interest rates?"]
+        return reply, [
+            "How do I apply for Home Loan?",
+            "What is the Home Loan EMI?",
+            "What are the interest rates?",
+        ]
 
     if any(k in q for k in ["auto", "car", "vehicle"]):
         reply = (
@@ -329,7 +446,11 @@ def _generate_fallback_response(query: str) -> tuple[str, List[str]]:
             "- **Max DTI:** 50.0%\n"
             "- **Documents:** PAN, Aadhaar, 3 Months Salary Slips, 6 Months Bank Statement, Vehicle Dealer Proforma"
         )
-        return reply, ["How do I apply for Auto Loan?", "What is the Auto Loan EMI?", "What are the interest rates?"]
+        return reply, [
+            "How do I apply for Auto Loan?",
+            "What is the Auto Loan EMI?",
+            "What are the interest rates?",
+        ]
 
     if any(k in q for k in ["sme", "business", "commercial", "enterprise"]):
         reply = (
@@ -340,7 +461,11 @@ def _generate_fallback_response(query: str) -> tuple[str, List[str]]:
             "- **Max DTI:** 45.0%\n"
             "- **Documents:** PAN, GST Registration / Udyam Certificate, 2 Years ITR, 12 Months Bank Statement"
         )
-        return reply, ["How do I apply for SME Loan?", "What documents are needed for SME?", "What are the interest rates?"]
+        return reply, [
+            "How do I apply for SME Loan?",
+            "What documents are needed for SME?",
+            "What are the interest rates?",
+        ]
 
     if any(k in q for k in ["personal", "flexi"]):
         reply = (
@@ -351,7 +476,11 @@ def _generate_fallback_response(query: str) -> tuple[str, List[str]]:
             "- **Max DTI:** 50.0%\n"
             "- **Documents:** PAN, Aadhaar, 3 Months Salary Slips, 6 Months Bank Statement"
         )
-        return reply, ["How do I apply for Personal Loan?", "What is the Personal Loan EMI?", "What are the interest rates?"]
+        return reply, [
+            "How do I apply for Personal Loan?",
+            "What is the Personal Loan EMI?",
+            "What are the interest rates?",
+        ]
 
     if any(k in q for k in ["education", "student", "study", "college"]):
         reply = (
@@ -362,10 +491,27 @@ def _generate_fallback_response(query: str) -> tuple[str, List[str]]:
             "- **Max DTI:** 45.0%\n"
             "- **Documents:** PAN, Aadhaar, Admission Letter, Fee Schedule, Co-applicant Income Proof"
         )
-        return reply, ["How do I apply for Education Loan?", "What documents are needed?", "What are the interest rates?"]
+        return reply, [
+            "How do I apply for Education Loan?",
+            "What documents are needed?",
+            "What are the interest rates?",
+        ]
 
     # 9. Customer Support Channels
-    if any(k in q for k in ["contact", "support", "help", "phone", "email", "call", "agent", "human", "helpline"]):
+    if any(
+        k in q
+        for k in [
+            "contact",
+            "support",
+            "help",
+            "phone",
+            "email",
+            "call",
+            "agent",
+            "human",
+            "helpline",
+        ]
+    ):
         reply = (
             "### 📞 CredVidhi Customer Support\n\n"
             "Our dedicated loan support team is here to assist you:\n\n"
@@ -385,13 +531,13 @@ def _generate_fallback_response(query: str) -> tuple[str, List[str]]:
 
     # 10. Intelligent contextual loan assistance (replaces static welcome repetition)
     reply = (
-        f"### 🇮🇳 CredVidhi Loan Assistance\n\n"
-        f"I am your dedicated CredVidhi loan assistant. I can help you with:\n\n"
-        f"- **Loan Products & Interest Rates:** Home (from 8.5%), Auto (from 9.5%), SME (from 11%), Personal (from 12.5%)\n"
-        f"- **Eligibility & KYC:** Required documents, CIBIL score requirements (>= 700), DTI limits (45-50%)\n"
-        f"- **Calculations:** EMI schedules, amortization breakdowns, disposable income\n"
-        f"- **Application Status:** Tracking stages from submission to bank disbursement\n\n"
-        f"Please select an option below or type your question about our loans and application process!"
+        "### 🇮🇳 CredVidhi Loan Assistance\n\n"
+        "I am your dedicated CredVidhi loan assistant. I can help you with:\n\n"
+        "- **Loan Products & Interest Rates:** Home (from 8.5%), Auto (from 9.5%), SME (from 11%), Personal (from 12.5%)\n"
+        "- **Eligibility & KYC:** Required documents, CIBIL score requirements (>= 700), DTI limits (45-50%)\n"
+        "- **Calculations:** EMI schedules, amortization breakdowns, disposable income\n"
+        "- **Application Status:** Tracking stages from submission to bank disbursement\n\n"
+        "Please select an option below or type your question about our loans and application process!"
     )
     suggestions = [
         "What loan products do you offer?",

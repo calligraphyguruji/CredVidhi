@@ -178,4 +178,3 @@ async def test_generate_text_none_content() -> None:
         mock_post.return_value = mock_resp
         result = await service.generate_text(prompt="test")
         assert result == ""
-

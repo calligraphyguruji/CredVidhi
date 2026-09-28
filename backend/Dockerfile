@@ -30,6 +30,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
+# Set environment variables for unbuffered output and port default
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PORT=8000
+
 # Create non-root application user
 RUN groupadd -g 1001 appgroup && \
     useradd -u 1001 -g appgroup -s /bin/bash -m appuser
@@ -45,6 +50,7 @@ COPY --chown=appuser:appgroup alembic /app/alembic
 COPY --chown=appuser:appgroup alembic.ini /app/alembic.ini
 COPY --chown=appuser:appgroup README.md /app/README.md
 COPY --chown=appuser:appgroup docker-entrypoint.sh /app/docker-entrypoint.sh
+RUN chmod +x /app/docker-entrypoint.sh
 
 USER appuser
 
@@ -52,6 +58,6 @@ EXPOSE 8000
 
 # Liveness probe avoids restarting container during temporary downstream DB/Redis latency
 HEALTHCHECK --interval=15s --timeout=5s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:8000/api/v1/health/live || exit 1
+    CMD curl -f http://localhost:${PORT:-8000}/api/v1/health/live || exit 1
 
 ENTRYPOINT ["/app/docker-entrypoint.sh"]

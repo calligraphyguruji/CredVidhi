@@ -1,9 +1,7 @@
 """Unit and integration tests for AI Chatbot customer support endpoint."""
 
-import json
 from unittest.mock import AsyncMock, patch
 
-import httpx
 import pytest
 from httpx import ASGITransport, AsyncClient
 
@@ -14,9 +12,7 @@ from app.services.llm_service import LLMService
 @pytest.mark.asyncio
 async def test_chat_endpoint_fallback_knowledge_base() -> None:
     """Verify that chatbot falls back gracefully to grounded CredVidhi answers when unconfigured."""
-    async with AsyncClient(
-        transport=ASGITransport(app=app), base_url="http://test"
-    ) as client:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
         # Ask about interest rates
         resp = await client.post(
             "/api/v1/chat",
@@ -107,9 +103,7 @@ async def test_chat_endpoint_with_mocked_gemini() -> None:
 @pytest.mark.asyncio
 async def test_chat_endpoint_status_tracking_and_domain_guardrail() -> None:
     """Verify application status tracking queries and off-topic guardrail enforcement."""
-    async with AsyncClient(
-        transport=ASGITransport(app=app), base_url="http://test"
-    ) as client:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
         # 1. Test application status tracking query
         resp_status = await client.post(
             "/api/v1/chat",
@@ -143,5 +137,3 @@ async def test_chat_endpoint_status_tracking_and_domain_guardrail() -> None:
         assert guardrail_body["data"]["provider"] == "credvidhi-guardrail"
         assert "credvidhi assistance scope" in guardrail_body["data"]["reply"].lower()
         assert "credvidhi loan products" in guardrail_body["data"]["reply"].lower()
-
-

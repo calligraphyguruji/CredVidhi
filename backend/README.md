@@ -33,3 +33,12 @@ uvicorn app.main:app --reload --port 8000
 ```bash
 pytest
 ```
+
+## Production & Render Deployment
+
+The backend is containerized via a multi-stage Docker build with non-root security.
+
+- **Port Binding:** Automatically adapts to the host environment port (`$PORT` dynamically assigned by Render, defaulting to `8000`).
+- **Boot Sequence:** `docker-entrypoint.sh` executes migrations (`alembic upgrade head`), verifies/seeds institutional accounts and benchmark loan data in a non-blocking loop, and starts `uvicorn` on `0.0.0.0:${PORT}`.
+- **Healthcheck:** Liveness probe exposed at `/api/v1/health/live`.
+

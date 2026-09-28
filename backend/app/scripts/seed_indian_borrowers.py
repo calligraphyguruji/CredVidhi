@@ -11,7 +11,7 @@ from datetime import datetime, timezone
 from decimal import Decimal
 from typing import Any, Dict, List, Optional
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.logging import logger
@@ -953,15 +953,32 @@ async def seed_indian_borrowers_data(session: Optional[AsyncSession] = None) -> 
                     max_tenor_months=240,
                     base_apr=fallback_rates.get(code, Decimal("9.50")),
                     max_dti_ratio=Decimal("50.00"),
-                    required_documents=["PAN_CARD", "AADHAAR_CARD", "SALARY_SLIP", "BANK_STATEMENT"],
+                    required_documents=[
+                        "PAN_CARD",
+                        "AADHAAR_CARD",
+                        "SALARY_SLIP",
+                        "BANK_STATEMENT",
+                    ],
                     is_active=True,
                 )
                 s.add(p)
                 await s.flush()
             products_map[code] = p
 
-        logger.info(f"Seeding {len(INDIAN_BORROWERS)} diverse Indian applicants and applications...")
+        # Fast idempotency check: if all applications already seeded, skip
+        app_count_res = await s.execute(select(func.count(LoanApplication.id)))
+        app_count = app_count_res.scalar_one()
+        if app_count >= len(INDIAN_BORROWERS):
+            logger.info(
+                f"All {app_count} Indian borrower benchmark applications already present. Skipping."
+            )
+            return
+
+        logger.info(
+            f"Seeding {len(INDIAN_BORROWERS)} diverse Indian applicants and applications..."
+        )
         seeded_count = 0
+        default_borrower_hash = get_password_hash("Borrower@CredVidhi2026")
 
         for idx, b in enumerate(INDIAN_BORROWERS, 1):
             ref_num = f"APP-2026-{idx:04d}"
@@ -972,7 +989,7 @@ async def seed_indian_borrowers_data(session: Optional[AsyncSession] = None) -> 
                 user = User(
                     id=uuid.uuid4(),
                     email=b["email"],
-                    password_hash=get_password_hash("Borrower@CredVidhi2026"),
+                    password_hash=default_borrower_hash,
                     first_name=b["first_name"],
                     last_name=b["last_name"],
                     role=UserRole.APPLICANT,
@@ -1023,13 +1040,26 @@ async def seed_indian_borrowers_data(session: Optional[AsyncSession] = None) -> 
                 # Add Documents for all applications beyond DRAFT
                 doc_types = [
                     (DocumentType.PAN_CARD, f"PAN_{b['first_name']}.pdf", "application/pdf"),
-                    (DocumentType.AADHAAR_CARD, f"Aadhaar_{b['first_name']}.pdf", "application/pdf"),
-                    (DocumentType.SALARY_SLIP, f"SalarySlip_{b['first_name']}.pdf", "application/pdf"),
-                    (DocumentType.BANK_STATEMENT, f"BankStatement_90d_{b['first_name']}.pdf", "application/pdf"),
+                    (
+                        DocumentType.AADHAAR_CARD,
+                        f"Aadhaar_{b['first_name']}.pdf",
+                        "application/pdf",
+                    ),
+                    (
+                        DocumentType.SALARY_SLIP,
+                        f"SalarySlip_{b['first_name']}.pdf",
+                        "application/pdf",
+                    ),
+                    (
+                        DocumentType.BANK_STATEMENT,
+                        f"BankStatement_90d_{b['first_name']}.pdf",
+                        "application/pdf",
+                    ),
                 ]
                 doc_status = (
                     DocumentVerificationStatus.VERIFIED
-                    if b["status"] in [
+                    if b["status"]
+                    in [
                         ApplicationStatus.DOCUMENTS_VERIFIED,
                         ApplicationStatus.RISK_ASSESSED,
                         ApplicationStatus.APPROVED,
@@ -1052,7 +1082,9 @@ async def seed_indian_borrowers_data(session: Optional[AsyncSession] = None) -> 
                         verification_remarks=f"Verified against NSDL/UIDAI/Bank e-verify by Officer {officer.first_name}"
                         if doc_status == DocumentVerificationStatus.VERIFIED
                         else None,
-                        verified_by=officer.id if doc_status == DocumentVerificationStatus.VERIFIED else None,
+                        verified_by=officer.id
+                        if doc_status == DocumentVerificationStatus.VERIFIED
+                        else None,
                         verified_at=datetime.now(timezone.utc)
                         if doc_status == DocumentVerificationStatus.VERIFIED
                         else None,
@@ -1075,15 +1107,27 @@ async def seed_indian_borrowers_data(session: Optional[AsyncSession] = None) -> 
 
                     emi_rounded = calculate_emi(p_amt, product.base_apr, n)
                     dti = calculate_dti(income_dec, debt_dec, emi_rounded)
-                    disposable = calculate_disposable_income(income_dec, debt_dec, housing_dec, emi_rounded)
+                    disposable = calculate_disposable_income(
+                        income_dec, debt_dec, housing_dec, emi_rounded
+                    )
 
-                    tier = RiskTier.LOW if b["credit_score"] >= 750 and dti <= 40 else (
-                        RiskTier.MEDIUM if b["credit_score"] >= 700 and dti <= 50 else RiskTier.HIGH
+                    tier = (
+                        RiskTier.LOW
+                        if b["credit_score"] >= 750 and dti <= 40
+                        else (
+                            RiskTier.MEDIUM
+                            if b["credit_score"] >= 700 and dti <= 50
+                            else RiskTier.HIGH
+                        )
                     )
                     rec = (
                         UnderwritingRecommendation.APPROVE
                         if tier == RiskTier.LOW
-                        else (UnderwritingRecommendation.CONDITIONAL if tier == RiskTier.MEDIUM else UnderwritingRecommendation.REJECT)
+                        else (
+                            UnderwritingRecommendation.CONDITIONAL
+                            if tier == RiskTier.MEDIUM
+                            else UnderwritingRecommendation.REJECT
+                        )
                     )
 
                     risk = RiskAssessment(
@@ -1106,7 +1150,11 @@ async def seed_indian_borrowers_data(session: Optional[AsyncSession] = None) -> 
                     s.add(risk)
 
                 # Add Decision for APPROVED, DISBURSED, REJECTED
-                if b["status"] in [ApplicationStatus.APPROVED, ApplicationStatus.DISBURSED, ApplicationStatus.REJECTED]:
+                if b["status"] in [
+                    ApplicationStatus.APPROVED,
+                    ApplicationStatus.DISBURSED,
+                    ApplicationStatus.REJECTED,
+                ]:
                     dec_type = (
                         DecisionType.REJECTED
                         if b["status"] == ApplicationStatus.REJECTED
@@ -1117,10 +1165,18 @@ async def seed_indian_borrowers_data(session: Optional[AsyncSession] = None) -> 
                         application_id=app.id,
                         underwriter_id=analyst.id,
                         decision=dec_type,
-                        approved_amount=Decimal(str(b["amount"])) if dec_type == DecisionType.APPROVED else None,
-                        approved_apr=product.base_apr if dec_type == DecisionType.APPROVED else None,
-                        approved_tenor_months=b["tenor"] if dec_type == DecisionType.APPROVED else None,
-                        rejection_reason_code="HIGH_DTI_RATIO" if dec_type == DecisionType.REJECTED else None,
+                        approved_amount=Decimal(str(b["amount"]))
+                        if dec_type == DecisionType.APPROVED
+                        else None,
+                        approved_apr=product.base_apr
+                        if dec_type == DecisionType.APPROVED
+                        else None,
+                        approved_tenor_months=b["tenor"]
+                        if dec_type == DecisionType.APPROVED
+                        else None,
+                        rejection_reason_code="HIGH_DTI_RATIO"
+                        if dec_type == DecisionType.REJECTED
+                        else None,
                         underwriter_notes=f"Credit sanction approved based on spotless CIBIL {b['credit_score']} and strong debt-service coverage."
                         if dec_type == DecisionType.APPROVED
                         else "DTI exceeds institutional policy limit of 50%. Adverse action notice issued.",
@@ -1137,13 +1193,17 @@ async def seed_indian_borrowers_data(session: Optional[AsyncSession] = None) -> 
                     actor_role=officer.role.value,
                     prior_state=None,
                     subsequent_state={"status": b["status"].value},
-                    metadata_snapshot={"notes": f"Seeded benchmark borrower '{b['first_name']} {b['last_name']}' in status {b['status'].value}"},
+                    metadata_snapshot={
+                        "notes": f"Seeded benchmark borrower '{b['first_name']} {b['last_name']}' in status {b['status'].value}"
+                    },
                 )
                 s.add(audit)
                 seeded_count += 1
 
         await s.commit()
-        logger.info(f"Successfully seeded {seeded_count} Indian borrower applications into Postgres!")
+        logger.info(
+            f"Successfully seeded {seeded_count} Indian borrower applications into Postgres!"
+        )
 
     if session is not None:
         await _populate(session)
@@ -1152,5 +1212,15 @@ async def seed_indian_borrowers_data(session: Optional[AsyncSession] = None) -> 
             await _populate(sess)
 
 
+async def main() -> None:
+    """Entry point with clean engine disposal to prevent connection leaks."""
+    try:
+        await seed_indian_borrowers_data()
+    finally:
+        from app.database import engine
+
+        await engine.dispose()
+
+
 if __name__ == "__main__":
-    asyncio.run(seed_indian_borrowers_data())
+    asyncio.run(main())

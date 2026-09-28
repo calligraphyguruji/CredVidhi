@@ -15,7 +15,7 @@ from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession
 from app.core.logging import logger
 from app.core.security import get_password_hash
 from app.database import async_session_factory, engine
-from app.models.base import Base
+from app.models.application import LoanApplication
 from app.models.loan_product import LoanProduct
 from app.models.user import User, UserRole
 
@@ -121,6 +121,20 @@ async def seed_data(
     """Seed initial records into database."""
 
     async def _do_seed(s: AsyncSession) -> None:
+        # Fast idempotency check: if admin and benchmark applications exist, exit immediately
+        admin_check = await s.execute(select(User.id).where(User.email == "admin@credvidhi.in"))
+        if admin_check.scalar_one_or_none():
+            benchmark_check = await s.execute(
+                select(LoanApplication.id).where(
+                    LoanApplication.reference_number == "APP-2026-0045"
+                )
+            )
+            if benchmark_check.scalar_one_or_none():
+                logger.info(
+                    "Database already initialized with institutional accounts and benchmark Indian borrower applications. Skipping seed."
+                )
+                return
+
         logger.info("Seeding default institutional users...")
         for user_data in DEFAULT_USERS:
             res = await s.execute(select(User).where(User.email == user_data["email"]))
@@ -169,18 +183,24 @@ async def seed_data(
         await s.commit()
         logger.info("Database core seeding completed successfully. Now seeding Indian borrowers...")
         from app.scripts.seed_indian_borrowers import seed_indian_borrowers_data
+
         await seed_indian_borrowers_data(s)
         logger.info("All database seed data populated successfully.")
 
     if session is not None:
         await _do_seed(session)
     else:
-        eng = engine_to_use or engine
-        async with eng.begin() as conn:
-            await conn.run_sync(Base.metadata.create_all)
         async with async_session_factory() as sess:
             await _do_seed(sess)
 
 
+async def main() -> None:
+    """Entry point with clean engine disposal to prevent connection leaks."""
+    try:
+        await seed_data()
+    finally:
+        await engine.dispose()
+
+
 if __name__ == "__main__":
-    asyncio.run(seed_data())
+    asyncio.run(main())
