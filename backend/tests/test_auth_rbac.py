@@ -31,7 +31,17 @@ async def test_applicant_registration_success(async_client: AsyncClient) -> None
     assert user["email"] == "testborrower@example.com"
     assert user["role"] == "APPLICANT"
     assert user["masked_pan"] == "******1234F"
+    assert "access_token" in user and len(user["access_token"]) > 20
+    assert "refresh_token" in user and len(user["refresh_token"]) > 20
     assert "password_hash" not in user
+
+    # Verify issued token can authenticate immediately against /auth/me
+    me_res = await async_client.get(
+        "/api/v1/auth/me",
+        headers={"Authorization": f"Bearer {user['access_token']}"},
+    )
+    assert me_res.status_code == 200
+    assert me_res.json()["data"]["email"] == "testborrower@example.com"
 
 
 @pytest.mark.asyncio

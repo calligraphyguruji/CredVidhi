@@ -189,7 +189,7 @@ export const WorkflowSection: React.FC = () => {
                   className={`text-[10px] font-mono truncate mt-0.5 ${
                     isSelected
                       ? 'text-orange-700 dark:text-orange-300 font-semibold'
-                      : 'text-slate-600 !dark:text-orange-400/80'
+                      : 'text-slate-600 dark:text-orange-400/80'
                   }`}
                 >
                   {s.role}
@@ -207,7 +207,7 @@ export const WorkflowSection: React.FC = () => {
             animate={{ opacity: 1, y: 0 }}
             exit={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, y: -8 }}
             transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
-            className="bg-slate-50/80 !dark:bg-slate-900/90 rounded-xl border border-slate-200 dark:border-slate-800/80 p-6 md:p-8 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center"
+            className="bg-slate-50/80 dark:bg-slate-900/90 rounded-xl border border-slate-200 dark:border-slate-800/80 p-6 md:p-8 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center"
           >
             {/* Left Details */}
             <div className="lg:col-span-7 space-y-4">
@@ -263,7 +263,7 @@ export const WorkflowSection: React.FC = () => {
               </div>
 
               <div className="space-y-2.5 text-[11px]">
-                <div className="p-2 bg-slate-50/80 !dark:bg-slate-900/80 rounded border border-slate-200 dark:border-slate-800/80">
+                <div className="p-2 bg-slate-50/80 dark:bg-slate-900/80 rounded border border-slate-200 dark:border-slate-800/80">
                   <span className="text-slate-400 dark:text-slate-400 block text-[10px]">CURRENT TRANSITION ENVELOPE</span>
                   <span className="text-orange-600 dark:text-orange-400 font-bold">
                     {current.step === 1 ? 'DRAFT' : steps[activeStep - 1]?.statusTag || 'SUBMITTED'} →{' '}
@@ -271,12 +271,12 @@ export const WorkflowSection: React.FC = () => {
                   </span>
                 </div>
 
-                <div className="p-2 bg-slate-50/80 !dark:bg-slate-900/80 rounded border border-slate-200 dark:border-slate-800/80">
+                <div className="p-2 bg-slate-50/80 dark:bg-slate-900/80 rounded border border-slate-200 dark:border-slate-800/80">
                   <span className="text-slate-400 dark:text-slate-400 block text-[10px]">ROLE PRIVILEGE VALIDATION</span>
                   <span className="text-slate-800 dark:text-slate-200">RBAC: Authorized for {current.role}</span>
                 </div>
 
-                <div className="p-2 bg-slate-50/80 !dark:bg-slate-900/80 rounded border border-slate-200 dark:border-slate-800/80">
+                <div className="p-2 bg-slate-50/80 dark:bg-slate-900/80 rounded border border-slate-200 dark:border-slate-800/80">
                   <span className="text-slate-400 dark:text-slate-400 block text-[10px]">AUDIT METADATA ATTACHMENT</span>
                   <span className="text-slate-800 dark:text-slate-200">
                     Actor ID, Timestamp, Mutation Delta, Cryptographic Nonce

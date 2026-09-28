@@ -20,6 +20,9 @@ import { ToastContainer, type ToastMessage } from '../components/ui/Toast';
 import { applyRouteSEO, resolveViewFromUrl } from '../utils/seo';
 import {
   healthApi,
+  authApi,
+  AUTH_TOKEN_KEY,
+  REFRESH_TOKEN_KEY,
   productsApi,
   applicationsApi,
   queuesApi,
@@ -95,6 +98,14 @@ interface AppContextType {
   updateLoanProduct: (id: string, updates: Partial<LoanProduct>) => void;
   addUser: (user: Omit<User, 'id'>) => void;
   updateUser: (id: string, updates: Partial<User>) => void;
+  registerApplicant: (payload: {
+    email: string;
+    password: string;
+    firstName: string;
+    lastName: string;
+    phone?: string;
+    pan?: string;
+  }) => Promise<{ success: boolean; error?: string }>;
   resetAllData: () => void;
 }
 
@@ -860,6 +871,71 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     });
   };
 
+  const registerApplicant = async (payload: {
+    email: string;
+    password: string;
+    firstName: string;
+    lastName: string;
+    phone?: string;
+    pan?: string;
+  }): Promise<{ success: boolean; error?: string }> => {
+    try {
+      let backendUserId: string | undefined;
+      if (isBackendConnected) {
+        const res = await authApi.register({
+          email: payload.email,
+          password: payload.password,
+          first_name: payload.firstName,
+          last_name: payload.lastName,
+          phone_number: payload.phone,
+          pan_number: payload.pan,
+        });
+        if (res && (res as any).access_token) {
+          localStorage.setItem(AUTH_TOKEN_KEY, (res as any).access_token);
+          if ((res as any).refresh_token) {
+            localStorage.setItem(REFRESH_TOKEN_KEY, (res as any).refresh_token);
+          }
+        }
+        if (res && (res as any).id) {
+          backendUserId = String((res as any).id);
+        }
+      }
+
+      const fullName = `${payload.firstName} ${payload.lastName}`.trim();
+      const existingUser = users.find((u) => u.email.toLowerCase() === payload.email.toLowerCase());
+      if (existingUser && !isBackendConnected) {
+        return { success: false, error: 'An account with this email address already exists.' };
+      }
+
+      const newUser: User = {
+        id: backendUserId || `usr-${Date.now().toString().slice(-4)}`,
+        email: payload.email,
+        fullName,
+        role: 'APPLICANT',
+        phone: payload.phone,
+        isActive: true,
+      };
+
+      // Prepend so newUser becomes the active user for APPLICANT role
+      setUsers((prev) => [newUser, ...prev.filter((u) => u.email.toLowerCase() !== newUser.email.toLowerCase())]);
+      setCurrentRole('APPLICANT');
+      addAuditLog({
+        eventType: 'USER_REGISTERED',
+        notes: `Borrower self-registration: '${fullName}' (${payload.email}) registered and authenticated.`,
+      });
+      addToast({
+        type: 'success',
+        title: 'Account Registered',
+        message: `Welcome ${fullName}! Your borrower account is ready.`,
+      });
+      setActiveView('borrower-portal');
+      return { success: true };
+    } catch (err: any) {
+      const msg = err?.message || 'Registration failed. Please check your details.';
+      return { success: false, error: msg };
+    }
+  };
+
   const resetAllData = () => {
     localStorage.removeItem(STORAGE_KEYS.APPLICATIONS);
     localStorage.removeItem(STORAGE_KEYS.AUDIT_LOGS);
@@ -914,6 +990,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         updateLoanProduct,
         addUser,
         updateUser,
+        registerApplicant,
         resetAllData,
       }}
     >

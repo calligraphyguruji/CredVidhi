@@ -100,8 +100,26 @@ async def register(
         masked_pan=mask_pan(new_user.pan_number),
     )
 
+    # Issue JWT tokens for seamless instant onboarding
+    access_token = create_access_token(
+        user_id=str(new_user.id),
+        email=new_user.email,
+        role=new_user.role.value,
+    )
+    refresh_token = create_refresh_token(
+        user_id=str(new_user.id),
+        email=new_user.email,
+        role=new_user.role.value,
+    )
+
+    data = user_dto.model_dump()
+    data["access_token"] = access_token
+    data["refresh_token"] = refresh_token
+    data["token_type"] = "bearer"
+    data["expires_in_seconds"] = settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60
+
     return success_response(
-        data=user_dto.model_dump(),
+        data=data,
         status_code=status.HTTP_201_CREATED,
     )
 

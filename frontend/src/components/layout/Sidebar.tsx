@@ -137,7 +137,7 @@ export const Sidebar: React.FC = () => {
           whileHover={!shouldReduceMotion ? { scale: 1.01 } : undefined}
           whileTap={!shouldReduceMotion ? { scale: 0.98 } : undefined}
           onClick={resetAllData}
-          className="w-full flex items-center justify-center gap-1.5 px-2 py-1.5 text-[11px] text-slate-600 !dark:text-orange-400 hover:text-orange-600 dark:hover:text-orange-300 bg-white/50 dark:bg-orange-950/20 hover:bg-slate-100 dark:hover:bg-orange-950/40 rounded border border-slate-200 dark:border-orange-500/30 transition-all cursor-pointer font-medium"
+          className="w-full flex items-center justify-center gap-1.5 px-2 py-1.5 text-[11px] text-slate-600 dark:text-orange-400 hover:text-orange-600 dark:hover:text-orange-300 bg-white/50 dark:bg-orange-950/20 hover:bg-slate-100 dark:hover:bg-orange-950/40 rounded border border-slate-200 dark:border-orange-500/30 transition-all cursor-pointer font-medium"
           title="Reset to original mock database state"
         >
           <RefreshCw className="w-3 h-3 text-orange-600 dark:text-orange-400" />

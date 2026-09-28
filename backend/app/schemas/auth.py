@@ -16,7 +16,13 @@ class UserRegisterRequest(BaseModel):
     first_name: str = Field(..., min_length=1, max_length=100)
     last_name: str = Field(..., min_length=1, max_length=100)
     phone_number: Optional[str] = Field(None, max_length=20)
-    pan_number: Optional[str] = Field(None, min_length=10, max_length=10)
+    pan_number: Optional[str] = Field(
+        None,
+        min_length=10,
+        max_length=10,
+        pattern=r"^[A-Z]{5}[0-9]{4}[A-Z]$",
+        description="Standard Indian 10-character Permanent Account Number",
+    )
 
 
 class UserLoginRequest(BaseModel):

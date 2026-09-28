@@ -18,10 +18,10 @@ import type { UserRole } from '../../types';
 import { scaleInVariants, formErrorVariants } from '../../utils/motion';
 
 export const LoginPage: React.FC = () => {
-  const { setActiveView, switchRole } = useApp();
+  const { setActiveView, switchRole, registerApplicant } = useApp();
   const shouldReduceMotion = useReducedMotion();
 
-  const [activeTab, setActiveTab] = useState<'staff' | 'borrower'>('staff');
+  const [activeTab, setActiveTab] = useState<'staff' | 'borrower' | 'register'>('staff');
 
   // Form states
   const [email, setEmail] = useState('d.vance@credvidhi.com');
@@ -30,6 +30,16 @@ export const LoginPage: React.FC = () => {
   const [rememberMe, setRememberMe] = useState(true);
   const [applicantRef, setApplicantRef] = useState('APP-2026-0891');
   const [applicantPhone, setApplicantPhone] = useState('+91 98765 43210');
+
+  // Registration form states
+  const [regFirstName, setRegFirstName] = useState('');
+  const [regLastName, setRegLastName] = useState('');
+  const [regEmail, setRegEmail] = useState('');
+  const [regPhone, setRegPhone] = useState('');
+  const [regPan, setRegPan] = useState('');
+  const [regPassword, setRegPassword] = useState('');
+  const [regConfirmPassword, setRegConfirmPassword] = useState('');
+  const [regConsent, setRegConsent] = useState(false);
 
   // Feedback states
   const [isLoading, setIsLoading] = useState(false);
@@ -69,8 +79,51 @@ export const LoginPage: React.FC = () => {
     }, 500);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (activeTab === 'register') {
+      if (!regFirstName.trim() || !regLastName.trim()) {
+        setErrorMessage('Please provide your full legal first and last name.');
+        return;
+      }
+      if (!regEmail || !regEmail.includes('@')) {
+        setErrorMessage('Please provide a valid email address.');
+        return;
+      }
+      if (regPassword.length < 8) {
+        setErrorMessage('Password must be at least 8 characters long.');
+        return;
+      }
+      if (regPassword !== regConfirmPassword) {
+        setErrorMessage('Passwords do not match. Please re-enter.');
+        return;
+      }
+      if (regPan && !/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/i.test(regPan.trim())) {
+        setErrorMessage('Invalid PAN format. PAN must be 10 characters (e.g. ABCDE1234F).');
+        return;
+      }
+      if (!regConsent) {
+        setErrorMessage('You must consent to identity verification and credit assessment.');
+        return;
+      }
+
+      setIsLoading(true);
+      setErrorMessage(null);
+      const res = await registerApplicant({
+        email: regEmail.trim(),
+        password: regPassword,
+        firstName: regFirstName.trim(),
+        lastName: regLastName.trim(),
+        phone: regPhone.trim() || undefined,
+        pan: regPan.trim().toUpperCase() || undefined,
+      });
+      setIsLoading(false);
+      if (!res.success) {
+        setErrorMessage(res.error || 'Registration failed.');
+      }
+      return;
+    }
 
     if (activeTab === 'staff') {
       if (!email || !email.includes('@')) {
@@ -209,15 +262,17 @@ export const LoginPage: React.FC = () => {
               {/* Header Title */}
               <div className="mb-6">
                 <h3 className="text-xl font-bold text-slate-900">
-                  Sign In to CredVidhi
+                  {activeTab === 'register' ? 'Register as New Borrower' : 'Sign In to CredVidhi'}
                 </h3>
                 <p className="text-xs text-slate-500 mt-1">
-                  Select your portal and enter your credentials to access your active queue.
+                  {activeTab === 'register'
+                    ? 'Create your applicant account to select loan products, upload proof, and track live status.'
+                    : 'Select your portal and enter your credentials to access your active queue.'}
                 </p>
               </div>
 
               {/* Segmented Tab Switcher with gliding pill */}
-              <div className="grid grid-cols-2 p-1 bg-slate-100 rounded-lg border border-slate-200 mb-6 font-mono text-xs relative">
+              <div className="grid grid-cols-3 p-1 bg-slate-100 rounded-lg border border-slate-200 mb-6 font-mono text-xs relative">
                 <button
                   type="button"
                   onClick={() => {
@@ -225,7 +280,7 @@ export const LoginPage: React.FC = () => {
                     setEmail('d.vance@credvidhi.com');
                     setErrorMessage(null);
                   }}
-                  className={`relative py-2 rounded-md font-semibold transition-colors cursor-pointer z-10 ${
+                  className={`relative py-2 rounded-md font-semibold transition-colors cursor-pointer z-10 text-center ${
                     activeTab === 'staff'
                       ? 'text-orange-600'
                       : 'text-slate-600 hover:text-slate-900'
@@ -238,7 +293,7 @@ export const LoginPage: React.FC = () => {
                       transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
                     />
                   )}
-                  <span>Staff SSO Portal</span>
+                  <span>Staff SSO</span>
                 </button>
                 <button
                   type="button"
@@ -247,7 +302,7 @@ export const LoginPage: React.FC = () => {
                     setApplicantRef('APP-2026-0891');
                     setErrorMessage(null);
                   }}
-                  className={`relative py-2 rounded-md font-semibold transition-colors cursor-pointer z-10 ${
+                  className={`relative py-2 rounded-md font-semibold transition-colors cursor-pointer z-10 text-center ${
                     activeTab === 'borrower'
                       ? 'text-orange-600'
                       : 'text-slate-600 hover:text-slate-900'
@@ -260,7 +315,31 @@ export const LoginPage: React.FC = () => {
                       transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
                     />
                   )}
-                  <span>Borrower Portal</span>
+                  <span>Sign In</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setActiveTab('register');
+                    setErrorMessage(null);
+                  }}
+                  className={`relative py-2 rounded-md font-semibold transition-colors cursor-pointer z-10 text-center ${
+                    activeTab === 'register'
+                      ? 'text-orange-600'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  {activeTab === 'register' && (
+                    <motion.div
+                      layoutId={shouldReduceMotion ? undefined : 'auth-tab-pill'}
+                      className="absolute inset-0 bg-white rounded-md shadow-xs -z-10"
+                      transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+                    />
+                  )}
+                  <span className="flex items-center justify-center gap-1">
+                    <span>Register</span>
+                    <span className="text-[9px] bg-orange-600 text-white px-1 py-0.2 rounded font-sans">NEW</span>
+                  </span>
                 </button>
               </div>
 
@@ -351,7 +430,7 @@ export const LoginPage: React.FC = () => {
                       Authenticate with Bank SSO
                     </Button>
                   </>
-                ) : (
+                ) : activeTab === 'borrower' ? (
                   <>
                     <Input
                       label="Application Reference Number"
@@ -388,6 +467,153 @@ export const LoginPage: React.FC = () => {
                     >
                       Access Borrower Portal
                     </Button>
+                  </>
+                ) : (
+                  <>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <Input
+                        label="Legal First Name"
+                        value={regFirstName}
+                        onChange={(e) => {
+                          setRegFirstName(e.target.value);
+                          if (errorMessage) setErrorMessage(null);
+                        }}
+                        placeholder="e.g. Aarav"
+                        required
+                      />
+                      <Input
+                        label="Legal Last Name"
+                        value={regLastName}
+                        onChange={(e) => {
+                          setRegLastName(e.target.value);
+                          if (errorMessage) setErrorMessage(null);
+                        }}
+                        placeholder="e.g. Sharma"
+                        required
+                      />
+                    </div>
+
+                    <Input
+                      label="Email Address"
+                      type="email"
+                      value={regEmail}
+                      onChange={(e) => {
+                        setRegEmail(e.target.value);
+                        if (errorMessage) setErrorMessage(null);
+                      }}
+                      placeholder="e.g. aarav.sharma@gmail.com"
+                      autoComplete="email"
+                      required
+                    />
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <Input
+                        label="Mobile (+91)"
+                        value={regPhone}
+                        onChange={(e) => {
+                          setRegPhone(e.target.value);
+                          if (errorMessage) setErrorMessage(null);
+                        }}
+                        placeholder="+91 98765 43210"
+                        autoComplete="tel"
+                        isMono
+                      />
+                      <Input
+                        label="PAN Number"
+                        value={regPan}
+                        onChange={(e) => {
+                          setRegPan(e.target.value.toUpperCase());
+                          if (errorMessage) setErrorMessage(null);
+                        }}
+                        placeholder="ABCDE1234F"
+                        maxLength={10}
+                        isMono
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label className="text-[10px] font-mono font-semibold text-slate-500 uppercase tracking-wider block mb-1">
+                          Password (Min 8 chars)
+                        </label>
+                        <div className="relative">
+                          <input
+                            type={showPassword ? 'text' : 'password'}
+                            value={regPassword}
+                            onChange={(e) => {
+                              setRegPassword(e.target.value);
+                              if (errorMessage) setErrorMessage(null);
+                            }}
+                            placeholder="Create password"
+                            autoComplete="new-password"
+                            required
+                            className="w-full text-xs p-2.5 bg-slate-50 border border-slate-300 rounded focus:outline-none focus:ring-2 focus:ring-orange-500 focus:bg-white pr-10 font-mono transition-colors"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600 focus:outline-none cursor-pointer"
+                            aria-label="Toggle password visibility"
+                          >
+                            {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                          </button>
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="text-[10px] font-mono font-semibold text-slate-500 uppercase tracking-wider block mb-1">
+                          Confirm Password
+                        </label>
+                        <input
+                          type={showPassword ? 'text' : 'password'}
+                          value={regConfirmPassword}
+                          onChange={(e) => {
+                            setRegConfirmPassword(e.target.value);
+                            if (errorMessage) setErrorMessage(null);
+                          }}
+                          placeholder="Re-enter password"
+                          autoComplete="new-password"
+                          required
+                          className="w-full text-xs p-2.5 bg-slate-50 border border-slate-300 rounded focus:outline-none focus:ring-2 focus:ring-orange-500 focus:bg-white font-mono transition-colors"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="p-3 bg-orange-50/70 border border-orange-200 rounded text-xs text-orange-950">
+                      <label className="flex items-start gap-2 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={regConsent}
+                          onChange={(e) => setRegConsent(e.target.checked)}
+                          className="rounded border-slate-300 text-orange-600 focus:ring-orange-500 accent-orange-600 mt-0.5 shrink-0"
+                          required
+                        />
+                        <span className="text-[11px] text-orange-900 leading-normal">
+                          I declare that the information provided is accurate and consent to identity verification and deterministic credit assessment under RBI regulations.
+                        </span>
+                      </label>
+                    </div>
+
+                    <Button
+                      type="submit"
+                      variant="primary"
+                      className="w-full justify-center mt-2"
+                      size="md"
+                      isLoading={isLoading}
+                      icon={<ArrowRight className="w-4 h-4" />}
+                    >
+                      Complete Registration & Open Application
+                    </Button>
+
+                    <div className="text-center pt-2">
+                      <button
+                        type="button"
+                        onClick={() => setActiveTab('borrower')}
+                        className="text-xs text-slate-500 hover:text-orange-600 cursor-pointer"
+                      >
+                        Already registered? <span className="font-semibold underline">Sign In to Borrower Portal</span>
+                      </button>
+                    </div>
                   </>
                 )}
               </form>
