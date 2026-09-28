@@ -42,16 +42,24 @@ const MainContent: React.FC = () => {
         >
           <LandingPage />
         </motion.div>
-      ) : activeView === 'login' ? (
+      ) : activeView === 'login' || activeView === 'register' || activeView === 'login-staff' || activeView === 'login-borrower' ? (
         <motion.div
-          key="login"
+          key={activeView}
           variants={activePageVariants}
           initial="initial"
           animate="animate"
           exit="exit"
           className="w-full"
         >
-          <LoginPage />
+          <LoginPage
+            initialTab={
+              activeView === 'register'
+                ? 'register'
+                : activeView === 'login-staff'
+                ? 'staff'
+                : 'borrower'
+            }
+          />
         </motion.div>
       ) : (
         <motion.div

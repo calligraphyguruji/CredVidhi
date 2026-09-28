@@ -17,11 +17,15 @@ import { INITIAL_USERS } from '../../services/mockData';
 import type { UserRole } from '../../types';
 import { scaleInVariants, formErrorVariants } from '../../utils/motion';
 
-export const LoginPage: React.FC = () => {
+interface LoginPageProps {
+  initialTab?: 'staff' | 'borrower' | 'register';
+}
+
+export const LoginPage: React.FC<LoginPageProps> = ({ initialTab = 'staff' }) => {
   const { setActiveView, switchRole, registerApplicant } = useApp();
   const shouldReduceMotion = useReducedMotion();
 
-  const [activeTab, setActiveTab] = useState<'staff' | 'borrower' | 'register'>('staff');
+  const [activeTab, setActiveTab] = useState<'staff' | 'borrower' | 'register'>(initialTab);
 
   // Form states
   const [email, setEmail] = useState('d.vance@credvidhi.com');
@@ -45,17 +49,6 @@ export const LoginPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [forgotModalOpen, setForgotModalOpen] = useState(false);
-
-  // Quick Demo Logins
-  const handleQuickLogin = (role: UserRole) => {
-    const user = INITIAL_USERS.find((u) => u.role === role) || INITIAL_USERS[0];
-    setEmail(user.email);
-    setPassword('demoSecure2026!');
-    setErrorMessage(null);
-
-    // Auto submit after a micro-delay for smooth UX
-    triggerLogin(user.role, user.email);
-  };
 
   const triggerLogin = (role: UserRole, userEmail: string) => {
     setIsLoading(true);
@@ -166,9 +159,6 @@ export const LoginPage: React.FC = () => {
           <span className="font-extrabold text-sm tracking-tight text-slate-900 font-sans">
             CREDVIDHI GATEWAY
           </span>
-          <span className="text-[10px] font-mono bg-orange-50 text-orange-700 px-1.5 py-0.5 rounded border border-orange-200">
-            PORT 443
-          </span>
         </div>
 
         <div className="hidden sm:flex items-center gap-1.5 text-[11px] font-mono text-emerald-700">
@@ -272,9 +262,11 @@ export const LoginPage: React.FC = () => {
               </div>
 
               {/* Segmented Tab Switcher with gliding pill */}
-              <div className="grid grid-cols-3 p-1 bg-slate-100 rounded-lg border border-slate-200 mb-6 font-mono text-xs relative">
+              <div role="tablist" aria-label="Authentication Options" className="grid grid-cols-3 p-1 bg-slate-100 rounded-lg border border-slate-200 mb-6 font-mono text-xs relative">
                 <button
                   type="button"
+                  role="tab"
+                  aria-selected={activeTab === 'staff'}
                   onClick={() => {
                     setActiveTab('staff');
                     setEmail('d.vance@credvidhi.com');
@@ -297,6 +289,8 @@ export const LoginPage: React.FC = () => {
                 </button>
                 <button
                   type="button"
+                  role="tab"
+                  aria-selected={activeTab === 'borrower'}
                   onClick={() => {
                     setActiveTab('borrower');
                     setApplicantRef('APP-2026-0891');
@@ -319,6 +313,8 @@ export const LoginPage: React.FC = () => {
                 </button>
                 <button
                   type="button"
+                  role="tab"
+                  aria-selected={activeTab === 'register'}
                   onClick={() => {
                     setActiveTab('register');
                     setErrorMessage(null);
@@ -338,7 +334,7 @@ export const LoginPage: React.FC = () => {
                   )}
                   <span className="flex items-center justify-center gap-1">
                     <span>Register</span>
-                    <span className="text-[9px] bg-orange-600 text-white px-1 py-0.2 rounded font-sans">NEW</span>
+                    <span className="text-[9px] bg-orange-600 text-white px-1 py-0.5 rounded font-sans">NEW</span>
                   </span>
                 </button>
               </div>
@@ -618,91 +614,6 @@ export const LoginPage: React.FC = () => {
                 )}
               </form>
 
-              {/* QUICK DEMO CREDENTIAL SELECTOR */}
-              <div className="mt-8 pt-6 border-t border-slate-200">
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-500">
-                    1-Click Demo Personas (Evaluation Mode)
-                  </span>
-                  <span className="text-[10px] font-mono text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">
-                    INSTANT LOGIN
-                  </span>
-                </div>
-
-                <div className="grid grid-cols-2 gap-2">
-                  <motion.button
-                    type="button"
-                    whileHover={!shouldReduceMotion ? { y: -2, scale: 1.01 } : undefined}
-                    whileTap={!shouldReduceMotion ? { scale: 0.98 } : undefined}
-                    onClick={() => handleQuickLogin('LOAN_OFFICER')}
-                    className="p-2.5 bg-slate-50 hover:bg-orange-50/60 border border-slate-200 hover:border-orange-300 rounded text-left transition-all cursor-pointer group"
-                  >
-                    <div className="text-xs font-bold text-slate-800 group-hover:text-orange-700 flex items-center justify-between">
-                      <span>David Vance</span>
-                      <span className="text-[9px] font-mono bg-orange-100 text-orange-800 px-1.5 py-0.2 rounded">
-                        OFFICER
-                      </span>
-                    </div>
-                    <div className="text-[10px] text-slate-500 font-mono mt-0.5">
-                      Officer Queue & Docs
-                    </div>
-                  </motion.button>
-
-                  <motion.button
-                    type="button"
-                    whileHover={!shouldReduceMotion ? { y: -2, scale: 1.01 } : undefined}
-                    whileTap={!shouldReduceMotion ? { scale: 0.98 } : undefined}
-                    onClick={() => handleQuickLogin('RISK_ANALYST')}
-                    className="p-2.5 bg-slate-50 hover:bg-orange-50/60 border border-slate-200 hover:border-orange-300 rounded text-left transition-all cursor-pointer group"
-                  >
-                    <div className="text-xs font-bold text-slate-800 group-hover:text-orange-700 flex items-center justify-between">
-                      <span>Katherine Reed</span>
-                      <span className="text-[9px] font-mono bg-indigo-100 text-indigo-800 px-1.5 py-0.2 rounded">
-                        ANALYST
-                      </span>
-                    </div>
-                    <div className="text-[10px] text-slate-500 font-mono mt-0.5">
-                      Underwriting Cockpit
-                    </div>
-                  </motion.button>
-
-                  <motion.button
-                    type="button"
-                    whileHover={!shouldReduceMotion ? { y: -2, scale: 1.01 } : undefined}
-                    whileTap={!shouldReduceMotion ? { scale: 0.98 } : undefined}
-                    onClick={() => handleQuickLogin('ADMIN')}
-                    className="p-2.5 bg-slate-50 hover:bg-orange-50/60 border border-slate-200 hover:border-orange-300 rounded text-left transition-all cursor-pointer group"
-                  >
-                    <div className="text-xs font-bold text-slate-800 group-hover:text-orange-700 flex items-center justify-between">
-                      <span>Sarah Sterling</span>
-                      <span className="text-[9px] font-mono bg-amber-100 text-amber-800 px-1.5 py-0.2 rounded">
-                        ADMIN
-                      </span>
-                    </div>
-                    <div className="text-[10px] text-slate-500 font-mono mt-0.5">
-                      Audit Logs & Matrix
-                    </div>
-                  </motion.button>
-
-                  <motion.button
-                    type="button"
-                    whileHover={!shouldReduceMotion ? { y: -2, scale: 1.01 } : undefined}
-                    whileTap={!shouldReduceMotion ? { scale: 0.98 } : undefined}
-                    onClick={() => handleQuickLogin('APPLICANT')}
-                    className="p-2.5 bg-slate-50 hover:bg-orange-50/60 border border-slate-200 hover:border-orange-300 rounded text-left transition-all cursor-pointer group"
-                  >
-                    <div className="text-xs font-bold text-slate-800 group-hover:text-orange-700 flex items-center justify-between">
-                      <span>Alex Taylor</span>
-                      <span className="text-[9px] font-mono bg-emerald-100 text-emerald-800 px-1.5 py-0.2 rounded">
-                        APPLICANT
-                      </span>
-                    </div>
-                    <div className="text-[10px] text-slate-500 font-mono mt-0.5">
-                      Loan Tracker Portal
-                    </div>
-                  </motion.button>
-                </div>
-              </div>
             </div>
 
             {/* Bottom Footnote */}
@@ -737,7 +648,7 @@ export const LoginPage: React.FC = () => {
       >
         <p className="text-xs text-slate-600 leading-relaxed">
           Staff passwords are managed via your institution's LDAP / Active Directory service.
-          Please reach out to the IT Security Administrator or click below to use the 1-click evaluation personas.
+          Please contact your IT Security Administrator for password resets.
         </p>
       </Modal>
     </div>

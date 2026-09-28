@@ -9,7 +9,7 @@ interface NavbarProps {
 }
 
 export const Navbar: React.FC<NavbarProps> = ({ onNavigateSection }) => {
-  const { setActiveView, switchRole, theme, toggleTheme } = useApp();
+  const { setActiveView, theme, toggleTheme } = useApp();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const shouldReduceMotion = useReducedMotion();
 
@@ -99,7 +99,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onNavigateSection }) => {
           <motion.button
             whileHover={!shouldReduceMotion ? { scale: 1.02 } : undefined}
             whileTap={!shouldReduceMotion ? { scale: 0.98 } : undefined}
-            onClick={() => setActiveView('login')}
+            onClick={() => setActiveView('login-staff')}
             className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:text-orange-600 rounded-md hover:bg-slate-100 transition-colors cursor-pointer"
           >
             <Lock className="w-3.5 h-3.5 text-slate-500" />
@@ -110,8 +110,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onNavigateSection }) => {
             variant="outline"
             size="sm"
             onClick={() => {
-              switchRole('APPLICANT');
-              setActiveView('borrower-portal');
+              setActiveView('login');
             }}
           >
             Track Application
@@ -121,8 +120,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onNavigateSection }) => {
             variant="primary"
             size="sm"
             onClick={() => {
-              switchRole('APPLICANT');
-              setActiveView('borrower-portal');
+              setActiveView('register');
             }}
             icon={<ArrowRight className="w-3.5 h-3.5" />}
           >
@@ -180,16 +178,22 @@ export const Navbar: React.FC<NavbarProps> = ({ onNavigateSection }) => {
                 variant="primary"
                 className="w-full justify-center"
                 onClick={() => {
-                  switchRole('APPLICANT');
-                  setActiveView('borrower-portal');
+                  setActiveView('register');
                 }}
               >
-                Apply for Loan (Applicant Portal)
+                Apply for Loan
               </Button>
               <Button
                 variant="outline"
                 className="w-full justify-center"
                 onClick={() => setActiveView('login')}
+              >
+                Track Application
+              </Button>
+              <Button
+                variant="outline"
+                className="w-full justify-center"
+                onClick={() => setActiveView('login-staff')}
               >
                 Sign In (Staff & Underwriters)
               </Button>

@@ -116,8 +116,7 @@ export const HeroSection: React.FC = () => {
                 variant="primary"
                 size="lg"
                 onClick={() => {
-                  switchRole('APPLICANT');
-                  setActiveView('borrower-portal');
+                  setActiveView('register');
                 }}
                 icon={<ArrowRight className="w-4 h-4" />}
                 className="shadow-sm"
@@ -276,8 +275,7 @@ export const HeroSection: React.FC = () => {
                   variant="primary"
                   className="w-full justify-center"
                   onClick={() => {
-                    switchRole('APPLICANT');
-                    setActiveView('borrower-portal');
+                    setActiveView('register');
                   }}
                   icon={<ArrowRight className="w-4 h-4" />}
                 >

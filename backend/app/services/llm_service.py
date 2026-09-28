@@ -79,6 +79,8 @@ class LLMService:
         }
         if self.api_key:
             headers["Authorization"] = f"Bearer {self.api_key}"
+            if self.provider == "gemini":
+                headers["x-goog-api-key"] = self.api_key
 
         # OpenRouter optional identification headers
         if self.provider == "openrouter":

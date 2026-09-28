@@ -38,6 +38,24 @@ export const ROUTE_SEO_MAP: Record<string, RouteSEOMetadata> = {
     ogDescription:
       'Access the CredVidhi institutional lending console for officer queues, risk underwriting, and borrower applications.',
   },
+  register: {
+    title: 'Borrower Registration | CredVidhi Lending Platform',
+    description:
+      'Register for a CredVidhi applicant account to apply for retail, SME, and home loan facilities with automated KYC.',
+    canonicalPath: '/register',
+    robots: 'index, follow',
+    isPublic: true,
+    ogTitle: 'Register as New Borrower | CredVidhi',
+    ogDescription:
+      'Start your digital loan application with deterministic risk underwriting and instant KYC verification.',
+  },
+  'login-staff': {
+    title: 'Staff SSO Portal | CredVidhi Workspace',
+    description: 'Authorized single sign-on access for loan officers, risk analysts, and administrators.',
+    canonicalPath: '/login',
+    robots: 'noindex, nofollow',
+    isPublic: true,
+  },
   'officer-queue': {
     title: 'Loan Officer Application Queue | CredVidhi Workspace',
     description: 'Internal triage and queue management for active retail and commercial credit applications.',

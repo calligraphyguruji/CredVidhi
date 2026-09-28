@@ -103,3 +103,45 @@ async def test_chat_endpoint_with_mocked_gemini() -> None:
                 assert len(data["suggested_questions"]) > 0
                 mock_chat.assert_called_once()
 
+
+@pytest.mark.asyncio
+async def test_chat_endpoint_status_tracking_and_domain_guardrail() -> None:
+    """Verify application status tracking queries and off-topic guardrail enforcement."""
+    async with AsyncClient(
+        transport=ASGITransport(app=app), base_url="http://test"
+    ) as client:
+        # 1. Test application status tracking query
+        resp_status = await client.post(
+            "/api/v1/chat",
+            json={"message": "application status tracking"},
+        )
+        assert resp_status.status_code == 200
+        status_body = resp_status.json()
+        assert status_body["success"] is True
+        assert "application status & tracking" in status_body["data"]["reply"].lower()
+        assert "draft" in status_body["data"]["reply"].lower()
+        assert "disbursed" in status_body["data"]["reply"].lower()
+
+        # 2. Test eligibility query is recognized as in-scope
+        resp_eligible = await client.post(
+            "/api/v1/chat",
+            json={"message": "Who is eligible for a home loan?"},
+        )
+        assert resp_eligible.status_code == 200
+        eligible_body = resp_eligible.json()
+        assert eligible_body["success"] is True
+        assert eligible_body["data"]["provider"] != "credvidhi-guardrail"
+
+        # 3. Test off-topic query rejection (prevent Gemini API misuse)
+        resp_off_topic = await client.post(
+            "/api/v1/chat",
+            json={"message": "Write a python script to scrape football scores and tell me a joke"},
+        )
+        assert resp_off_topic.status_code == 200
+        guardrail_body = resp_off_topic.json()
+        assert guardrail_body["success"] is True
+        assert guardrail_body["data"]["provider"] == "credvidhi-guardrail"
+        assert "credvidhi assistance scope" in guardrail_body["data"]["reply"].lower()
+        assert "credvidhi loan products" in guardrail_body["data"]["reply"].lower()
+
+

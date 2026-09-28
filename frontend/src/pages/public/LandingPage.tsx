@@ -79,7 +79,7 @@ export const LandingPage: React.FC = () => {
               <Button
                 variant="outline"
                 size="lg"
-                onClick={() => setActiveView('login')}
+                onClick={() => setActiveView('login-staff')}
                 icon={<Lock className="w-4 h-4" />}
                 className="border-slate-700 text-slate-200 hover:bg-slate-800"
               >

@@ -86,11 +86,14 @@ export const ChatbotWidget: React.FC<UIProps> = ({ initialOpen = false }) => {
       }
     } catch {
       // Offline fallback handling
-      const fallbackReply = getLocalOfflineResponse(query);
+      const fallback = getLocalOfflineResponse(query);
       setMessages((prev) => [
         ...prev,
-        { role: 'assistant', content: fallbackReply },
+        { role: 'assistant', content: fallback.reply },
       ]);
+      if (fallback.suggestions && fallback.suggestions.length > 0) {
+        setSuggestions(fallback.suggestions);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -357,48 +360,322 @@ function renderBoldSpans(str: string): React.ReactNode {
   });
 }
 
-function getLocalOfflineResponse(query: string): string {
+interface OfflineResponse {
+  reply: string;
+  suggestions?: string[];
+}
+
+const FINANCIAL_INTENT_TERMS = [
+  'loan', 'emi', 'interest', 'cibil', 'credit', 'rate', 'apr', 'dti', 'tenor', 'kyc',
+  'pan', 'aadhaar', 'document', 'borrow', 'borrower', 'borrowing', 'apply', 'application',
+  'status', 'track', 'credvidhi', 'bank', 'account', 'register', 'salary', 'income', 'money',
+  'rupee', 'inr', 'approval', 'disbursed', 'statement', 'slip', 'itr', 'login', 'support', 'helpline',
+  'eligible', 'eligibility', 'finance', 'financial', 'lender', 'lending', 'mortgage', 'prepayment',
+];
+
+const OFF_TOPIC_TERMS = [
+  'python', 'javascript', 'code', 'programming', 'html', 'css', 'react', 'bug',
+  'algorithm', 'poem', 'poetry', 'story', 'joke', 'riddle', 'recipe', 'cook',
+  'movie', 'song', 'lyrics', 'cricket', 'football', 'weather', 'forecast',
+  'homework', 'essay', 'president', 'prime minister', 'capital of',
+];
+
+function getLocalOfflineResponse(query: string): OfflineResponse {
   const q = query.toLowerCase();
+  const qWords = q.replace(/[?!.,]/g, ' ').split(/\s+/);
 
-  if (q.includes('rate') || q.includes('interest') || q.includes('apr')) {
-    return (
-      '### 📊 Current Loan Interest Rates\n\n' +
-      '- **Home Prime Loan:** Starting at **8.5% p.a.**\n' +
-      '- **Education Ascent:** Starting at **9.0% p.a.**\n' +
-      '- **Auto Express:** Starting at **9.5% p.a.**\n' +
-      '- **SME Growth:** Starting at **11.0% p.a.**\n' +
-      '- **Personal Flexi Credit:** Starting at **12.5% p.a.**\n\n' +
-      'All loans feature zero prepayment penalties on floating rates.'
-    );
+  // 0. Off-topic domain guardrail: do not answer random questions
+  const hasFinancialContext = FINANCIAL_INTENT_TERMS.some((term) => q.includes(term));
+  const hasOffTopicContext = OFF_TOPIC_TERMS.some((term) => qWords.includes(term) || q.includes(term));
+
+  if (!hasFinancialContext && hasOffTopicContext) {
+    return {
+      reply:
+        '### 🛡️ CredVidhi Assistance Scope\n\n' +
+        'I am CredVidhi\'s specialized loan and customer support assistant. ' +
+        'I am dedicated exclusively to queries regarding our lending platform:\n\n' +
+        '- **CredVidhi Loan Products** (Home, Auto, SME, Personal, Education)\n' +
+        '- **Interest Rates & Tenors** (Starting from 8.5% p.a.)\n' +
+        '- **Application Status & Tracking** (Real-time lifecycle stages)\n' +
+        '- **Mandatory KYC Documents** (PAN, Aadhaar, Payslips, Bank Statements)\n' +
+        '- **EMI & DTI Calculations** (Deterministic compound formulas)\n' +
+        '- **Borrower Registration & Sign-in**\n\n' +
+        'How can I assist you with your loan application or credit requirements today?',
+      suggestions: [
+        'What are your loan interest rates?',
+        'How do I track my application status?',
+        'What documents are required?',
+        'How is my EMI calculated?',
+      ],
+    };
   }
 
-  if (q.includes('document') || q.includes('kyc') || q.includes('pan')) {
-    return (
-      '### 📑 Required Documents\n\n' +
-      '1. **PAN Card** (Mandatory for credit bureau lookup)\n' +
-      '2. **Aadhaar Card** or Passport (Proof of Address)\n' +
-      '3. **3 Months Salary Slips** (Income proof)\n' +
-      '4. **6 Months Bank Statement** (PDF banking verification)'
-    );
+  // 1. Application Status & Tracking
+  if (
+    q.includes('status') ||
+    q.includes('track') ||
+    q.includes('stage') ||
+    q.includes('lifecycle') ||
+    q.includes('timeline') ||
+    q.includes('progress') ||
+    q.includes('where is my')
+  ) {
+    return {
+      reply:
+        '### ⏱️ Application Status & Tracking\n\n' +
+        'You can track your CredVidhi loan application in real-time across our 5 automated stages:\n\n' +
+        '1. **DRAFT:** Application created, loan amount and tenor selected.\n' +
+        '2. **SUBMITTED:** KYC documents uploaded and queued for verification.\n' +
+        '3. **UNDER_REVIEW:** Loan Officer verifies your identity and documents (approx. 2–4 hours).\n' +
+        '4. **APPROVED / REJECTED:** Deterministic underwriting assessment (CIBIL score & DTI evaluation).\n' +
+        '5. **DISBURSED:** Immediate funds release to your bank account via NEFT/RTGS.\n\n' +
+        '**How to track:** Click **"Track Application"** in the top navigation bar and enter your registered Application Reference Number (e.g., `APP-2026-0891`).',
+      suggestions: [
+        'What documents are required?',
+        'What are the interest rates?',
+        'How long does approval take?',
+        'Contact customer support',
+      ],
+    };
   }
 
-  if (q.includes('emi') || q.includes('calculate') || q.includes('dti')) {
-    return (
-      '### 🧮 EMI & DTI Calculation\n\n' +
-      'CredVidhi uses the deterministic standard compound interest amortization formula. ' +
-      'Your Debt-to-Income (DTI) must be under **45% - 50%** for instant approval.'
-    );
+  // 2. Registration & How to Apply
+  if (
+    q.includes('register') ||
+    q.includes('sign up') ||
+    q.includes('signup') ||
+    q.includes('apply') ||
+    q.includes('new account') ||
+    q.includes('create account') ||
+    q.includes('how to apply')
+  ) {
+    return {
+      reply:
+        '### 📝 How to Apply & Register with CredVidhi\n\n' +
+        'Applying for a loan is 100% digital and takes less than 5 minutes:\n\n' +
+        '1. **Click "Apply for Loan":** Located in the top header or hero section to open the registration view.\n' +
+        '2. **Create Account:** Provide your full name, email, phone number, and a secure password.\n' +
+        '3. **Select Loan Product:** Choose from Home Prime, Auto Express, SME Growth, Personal Flexi, or Education Ascent.\n' +
+        '4. **Upload KYC Documents:** Submit your PAN Card, Aadhaar, and income proof.\n' +
+        '5. **Instant Underwriting:** Our automated engine calculates your DTI and generates a decision.\n\n' +
+        'Click **"Apply for Loan"** at the top right to start your registration immediately!',
+      suggestions: [
+        'What documents do I need to prepare?',
+        'What are the interest rates?',
+        'How is my EMI calculated?',
+        'What is the minimum CIBIL score?',
+      ],
+    };
   }
 
-  return (
-    '### Welcome to CredVidhi Support! 🇮🇳\n\n' +
-    'I can answer questions regarding:\n' +
-    '- **Interest rates & loan products**\n' +
-    '- **KYC verification & documents**\n' +
-    '- **EMI calculation & DTI limits**\n' +
-    '- **Application status tracking**\n\n' +
-    'How can I help you today?'
-  );
+  // 3. Sign In & Login
+  if (q.includes('login') || q.includes('sign in') || q.includes('signin') || q.includes('portal') || q.includes('staff sso')) {
+    return {
+      reply:
+        '### 🔐 CredVidhi Portal Sign In\n\n' +
+        '- **Borrowers & Applicants:** Click **"Track Application"** in the navigation header to sign in with your Application Reference Number or credentials.\n' +
+        '- **Staff & Loan Officers:** Click **"Staff SSO"** to access the staff verification cockpit and risk triage queue.\n\n' +
+        'If you do not have an account yet, click **"Apply for Loan"** to create a new profile.',
+      suggestions: [
+        'How do I track my application status?',
+        'How do I register a new account?',
+        'What documents are required?',
+        'Contact customer support',
+      ],
+    };
+  }
+
+  // 4. Interest Rates & APR
+  if (q.includes('rate') || q.includes('interest') || q.includes('apr') || q.includes('cost') || q.includes('charge')) {
+    return {
+      reply:
+        '### 📊 Current CredVidhi Loan Interest Rates (APR)\n\n' +
+        '- **Home Prime Loan:** Starting at **8.5% p.a.** (Tenor up to 30 years)\n' +
+        '- **Education Ascent:** Starting at **9.0% p.a.** (Tenor up to 10 years)\n' +
+        '- **Auto Express:** Starting at **9.5% p.a.** (Tenor up to 7 years)\n' +
+        '- **SME Growth:** Starting at **11.0% p.a.** (Tenor up to 5 years)\n' +
+        '- **Personal Flexi Credit:** Starting at **12.5% p.a.** (Tenor up to 4 years)\n\n' +
+        'All loans feature zero prepayment penalties on floating interest rates.',
+      suggestions: [
+        'What documents are required?',
+        'How is EMI calculated?',
+        'What is the maximum loan amount?',
+        'How do I apply for a loan?',
+      ],
+    };
+  }
+
+  // 5. Mandatory KYC & Documents
+  if (
+    q.includes('document') ||
+    q.includes('doc') ||
+    q.includes('kyc') ||
+    q.includes('pan') ||
+    q.includes('aadhaar') ||
+    q.includes('upload') ||
+    q.includes('salary') ||
+    q.includes('statement')
+  ) {
+    return {
+      reply:
+        '### 📑 Required KYC Documents\n\n' +
+        '1. **PAN Card** (Mandatory identity and credit bureau evaluation)\n' +
+        '2. **Aadhaar Card or Passport** (Proof of current address)\n' +
+        '3. **3 Months Salary Slips** (Income verification for salaried individuals)\n' +
+        '4. **6 Months Bank Statement** (PDF format showing monthly cash flows)\n' +
+        '5. **Product-Specific:** Property deeds (Home Loan), Dealer Invoice (Auto Loan), GST/ITR (SME Loan).\n\n' +
+        'All documents can be uploaded directly in your applicant portal with instant OCR verification.',
+      suggestions: [
+        'What are the interest rates?',
+        'How long does loan approval take?',
+        'What is the minimum CIBIL score?',
+        'How do I track my application status?',
+      ],
+    };
+  }
+
+  // 6. EMI & DTI Calculation
+  if (q.includes('emi') || q.includes('calculate') || q.includes('calculator') || q.includes('dti') || q.includes('formula')) {
+    return {
+      reply:
+        '### 🧮 EMI & DTI Calculation at CredVidhi\n\n' +
+        'We use the deterministic standard compound interest amortization formula:\n\n' +
+        '$$\\text{EMI} = \\frac{P \\times r \\times (1 + r)^n}{(1 + r)^n - 1}$$\n\n' +
+        '- **P:** Principal loan amount\n' +
+        '- **r:** Monthly interest rate (Annual Rate / 12 / 100)\n' +
+        '- **n:** Loan duration in months\n\n' +
+        '**Debt-to-Income (DTI) Ceiling:**\n' +
+        'Your total monthly debt obligations (including the new EMI) must not exceed **45% to 50%** of your verified monthly net income.',
+      suggestions: [
+        'What interest rates do you offer?',
+        'Can I apply if my CIBIL score is 680?',
+        'What is the Home Loan eligibility?',
+        'How do I apply for a loan?',
+      ],
+    };
+  }
+
+  // 7. CIBIL & Credit Score
+  if (q.includes('cibil') || q.includes('credit score') || q.includes('score') || q.includes('experian')) {
+    return {
+      reply:
+        '### 📈 Credit Score (CIBIL) Guidelines\n\n' +
+        '- **750+ (Prime Tier):** Instant digital fast-track approval with our lowest interest rates.\n' +
+        '- **700 - 749 (Standard Tier):** Eligible for standard retail rates with standard DTI criteria.\n' +
+        '- **650 - 699 (Conditional Tier):** Requires manual underwriter review, co-applicant, or collateral.\n' +
+        '- **Below 650:** High risk tier; we recommend resolving outstanding defaults prior to applying.',
+      suggestions: [
+        'What interest rates are available?',
+        'What documents do I need to prepare?',
+        'How do I apply for a loan?',
+        'Contact customer support',
+      ],
+    };
+  }
+
+  // 8. Specific Loan Products
+  if (q.includes('home') || q.includes('housing') || q.includes('property')) {
+    return {
+      reply:
+        '### 🏠 Home Prime Loan\n\n' +
+        '- **Loan Range:** ₹5,00,000 to ₹1,00,00,000 (1 Crore)\n' +
+        '- **Interest Rate:** Starting from **8.5% p.a.**\n' +
+        '- **Tenor:** 12 to 360 months (up to 30 years)\n' +
+        '- **Max DTI:** 45.0%\n' +
+        '- **Key Documents:** PAN, Aadhaar, 3 Months Salary Slips, 6 Months Bank Statement, Property Title Deeds',
+      suggestions: ['How do I apply for Home Loan?', 'What are the interest rates?', 'How is EMI calculated?'],
+    };
+  }
+
+  if (q.includes('auto') || q.includes('car') || q.includes('vehicle')) {
+    return {
+      reply:
+        '### 🚗 Auto Express Loan\n\n' +
+        '- **Loan Range:** ₹1,00,000 to ₹30,00,000\n' +
+        '- **Interest Rate:** Starting from **9.5% p.a.**\n' +
+        '- **Tenor:** 12 to 84 months (up to 7 years)\n' +
+        '- **Max DTI:** 50.0%\n' +
+        '- **Key Documents:** PAN, Aadhaar, 3 Months Salary Slips, 6 Months Bank Statement, Vehicle Proforma',
+      suggestions: ['How do I apply for Auto Loan?', 'What are the interest rates?', 'How is EMI calculated?'],
+    };
+  }
+
+  if (q.includes('sme') || q.includes('business') || q.includes('commercial')) {
+    return {
+      reply:
+        '### 🏢 SME Growth Term Loan\n\n' +
+        '- **Loan Range:** ₹2,00,000 to ₹50,00,000\n' +
+        '- **Interest Rate:** Starting from **11.0% p.a.**\n' +
+        '- **Tenor:** 6 to 60 months (up to 5 years)\n' +
+        '- **Max DTI:** 45.0%\n' +
+        '- **Key Documents:** PAN, GST Registration / Udyam Certificate, 2 Years ITR, 12 Months Bank Statement',
+      suggestions: ['How do I apply for SME Loan?', 'What are the interest rates?', 'What documents are required?'],
+    };
+  }
+
+  if (q.includes('personal') || q.includes('flexi')) {
+    return {
+      reply:
+        '### 💳 Personal Flexi Credit\n\n' +
+        '- **Loan Range:** ₹50,000 to ₹10,00,000\n' +
+        '- **Interest Rate:** Starting from **12.5% p.a.**\n' +
+        '- **Tenor:** 6 to 48 months (up to 4 years)\n' +
+        '- **Max DTI:** 50.0%\n' +
+        '- **Key Documents:** PAN, Aadhaar, 3 Months Salary Slips, 6 Months Bank Statement',
+      suggestions: ['How do I apply for Personal Loan?', 'What are the interest rates?', 'How is EMI calculated?'],
+    };
+  }
+
+  if (q.includes('education') || q.includes('student') || q.includes('study')) {
+    return {
+      reply:
+        '### 🎓 Education Ascent Loan\n\n' +
+        '- **Loan Range:** ₹1,00,000 to ₹40,00,000\n' +
+        '- **Interest Rate:** Starting from **9.0% p.a.**\n' +
+        '- **Tenor:** 12 to 120 months (up to 10 years)\n' +
+        '- **Max DTI:** 45.0%\n' +
+        '- **Key Documents:** PAN, Aadhaar, University Admission Offer, Fee Structure, Co-applicant Income Proof',
+      suggestions: ['How do I apply for Education Loan?', 'What are the interest rates?', 'How is EMI calculated?'],
+    };
+  }
+
+  // 9. Customer Support & Helpline
+  if (q.includes('contact') || q.includes('support') || q.includes('help') || q.includes('phone') || q.includes('email') || q.includes('helpline')) {
+    return {
+      reply:
+        '### 📞 CredVidhi Customer Support\n\n' +
+        'Our dedicated loan support team is available to assist you:\n\n' +
+        '- **Toll-Free Helpline:** 1800-CRED-VIDHI (1800-2733-8434)\n' +
+        '- **Support Email:** `support@credvidhi.in`\n' +
+        '- **Hours:** Monday to Saturday, 9:00 AM – 7:00 PM IST\n' +
+        '- **Corporate Office:** CredVidhi Tower, G Block, BKC, Mumbai 400051\n\n' +
+        'You can also track status and submit inquiry tickets directly inside the applicant portal.',
+      suggestions: [
+        'What are your loan interest rates?',
+        'How do I register for an account?',
+        'What documents are required?',
+        'How do I track my application status?',
+      ],
+    };
+  }
+
+  // 10. Contextual Fallback for general greetings or broad questions (no repetitive loop)
+  return {
+    reply:
+      '### 🇮🇳 CredVidhi AI Financial Assistant\n\n' +
+      'I can answer any question regarding CredVidhi lending services and applications:\n\n' +
+      '- **Loan Products & Interest Rates:** Home (from 8.5%), Auto (from 9.5%), SME (from 11%), Personal (from 12.5%)\n' +
+      '- **Application Tracking:** Real-time lifecycle status from submission to NEFT/RTGS bank disbursement\n' +
+      '- **KYC & Eligibility:** PAN card, Aadhaar, payslips, CIBIL score (>= 700), DTI limits (45-50%)\n' +
+      '- **Calculations:** Deterministic compound EMI and disposable income analysis\n\n' +
+      'Please select one of the suggested topics below or ask your specific question!',
+    suggestions: [
+      'What loan products do you offer?',
+      'What are the current interest rates?',
+      'How do I track my application status?',
+      'How do I apply for a loan?',
+    ],
+  };
 }
 
 export default ChatbotWidget;
