@@ -17,15 +17,15 @@ export interface RouteSEOMetadata {
 
 export const ROUTE_SEO_MAP: Record<string, RouteSEOMetadata> = {
   landing: {
-    title: 'CredVidhi — Enterprise Loan Processing & Approval Management System',
+    title: 'CredVidhi — Loan Processing & Approval Management System',
     description:
-      'Institutional digital loan processing and deterministic underwriting platform featuring automated KYC verification, mathematical DTI calculations, and immutable audit compliance.',
+      'CredVidhi is a loan processing and approval management system designed to streamline loan applications, verification, risk assessment, and approval workflows.',
     canonicalPath: '/',
     robots: 'index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1',
     isPublic: true,
-    ogTitle: 'CredVidhi — Enterprise Loan Processing & Approval Management System',
+    ogTitle: 'CredVidhi — Loan Processing & Approval Management System',
     ogDescription:
-      'Deterministic credit underwriting sanctioned in minutes. Automated document verification, transparent risk rules, and audit-ready operations.',
+      'CredVidhi is a loan processing and approval management system designed to streamline loan applications, verification, risk assessment, and approval workflows.',
   },
   login: {
     title: 'Sign In | CredVidhi Lending Staff & Borrower Portal',

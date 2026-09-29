@@ -74,7 +74,7 @@ export const HeroSection: React.FC = () => {
               variants={fadeUpVariants}
               className="text-3xl sm:text-5xl lg:text-5xl font-extrabold tracking-tight text-slate-900 leading-[1.12]"
             >
-              Deterministic credit underwriting.{' '}
+              CredVidhi — Loan Processing & Approval Management System.{' '}
               <span className="text-orange-600 block sm:inline">
                 Sanctioned in minutes, not days.
               </span>

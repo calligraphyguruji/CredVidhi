@@ -256,9 +256,9 @@ export const LoginPage: React.FC<LoginPageProps> = ({ initialTab = 'staff' }) =>
             <div>
               {/* Header Title */}
               <div className="mb-6">
-                <h3 className="text-xl font-bold text-slate-900">
-                  {activeTab === 'register' ? 'Register as New Borrower' : 'Sign In to CredVidhi'}
-                </h3>
+                <h1 className="text-xl font-bold text-slate-900">
+                  {activeTab === 'register' ? 'Register as New Borrower | CredVidhi' : 'Sign In to CredVidhi'}
+                </h1>
                 <p className="text-xs text-slate-500 mt-1">
                   {activeTab === 'register'
                     ? 'Create your applicant account to select loan products, upload proof, and track live status.'
