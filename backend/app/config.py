@@ -104,6 +104,11 @@ class Settings(BaseSettings):
                 "postgresql://", "postgresql+asyncpg://", 1
             )
 
+        # asyncpg requires ?ssl= instead of ?sslmode= (commonly provided by Supabase/Neon)
+        if "?" in self.DATABASE_URL and "sslmode=" in self.DATABASE_URL:
+            base_url, query_params = self.DATABASE_URL.split("?", 1)
+            self.DATABASE_URL = f"{base_url}?{query_params.replace('sslmode=', 'ssl=')}"
+
         if self.ENVIRONMENT.lower() in ("production", "staging"):
             if "development" in self.JWT_SECRET.lower():
                 raise ValueError(

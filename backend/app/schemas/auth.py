@@ -3,8 +3,9 @@
 import uuid
 from typing import Optional
 
-from pydantic import BaseModel, ConfigDict, EmailStr, Field
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
 
+from app.core.email_validation import validate_email_not_disposable
 from app.models.user import UserRole
 
 
@@ -23,6 +24,12 @@ class UserRegisterRequest(BaseModel):
         pattern=r"^[A-Z]{5}[0-9]{4}[A-Z]$",
         description="Standard Indian 10-character Permanent Account Number",
     )
+
+    @field_validator("email")
+    @classmethod
+    def reject_disposable_email(cls, v: str) -> str:
+        """Block disposable/temporary email domains and undeliverable addresses."""
+        return validate_email_not_disposable(v)
 
 
 class UserLoginRequest(BaseModel):

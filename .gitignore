@@ -35,6 +35,8 @@ backend/uv.lock
 # Internal agent configs & skills
 .agents/
 AGENTS.md
+skills-lock.json
+.gemini/
 
 # Internal planning & governance specifications
 .planning/

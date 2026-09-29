@@ -41,4 +41,6 @@ The backend is containerized via a multi-stage Docker build with non-root securi
 - **Port Binding:** Automatically adapts to the host environment port (`$PORT` dynamically assigned by Render, defaulting to `8000`).
 - **Boot Sequence:** `docker-entrypoint.sh` executes migrations (`alembic upgrade head`), verifies/seeds institutional accounts and benchmark loan data in a non-blocking loop, and starts `uvicorn` on `0.0.0.0:${PORT}`.
 - **Healthcheck:** Liveness probe exposed at `/api/v1/health/live`.
+- **Database Pooler & Supabase Compatibility:** Automatically normalizes `sslmode=` query params for `asyncpg` compatibility and configures `statement_cache_size=0` for transaction connection poolers (e.g. Supabase Supavisor/PgBouncer on port 6543).
+- **Borrower Registration Security:** Incorporates disposable/temporary email filtering (`python-disposable`) and DNS deliverability checks with bounded caching resolvers.
 

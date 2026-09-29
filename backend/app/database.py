@@ -22,12 +22,22 @@ from app.core.logging import logger
 settings = get_settings()
 
 
+# Configure connect_args for external connection poolers (e.g. Supabase Supavisor/PgBouncer)
+connect_args = {}
+if (
+    "pooler.supabase.com" in settings.DATABASE_URL
+    or ":6543" in settings.DATABASE_URL
+    or "pgbouncer=true" in settings.DATABASE_URL.lower()
+):
+    connect_args["statement_cache_size"] = 0
+
 # Global engine and session factory
 engine: AsyncEngine = create_async_engine(
     settings.DATABASE_URL,
     pool_pre_ping=True,
     echo=settings.DEBUG,
     future=True,
+    connect_args=connect_args,
 )
 
 async_session_factory = async_sessionmaker(
