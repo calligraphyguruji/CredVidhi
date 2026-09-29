@@ -28,8 +28,8 @@ export const LoginPage: React.FC<LoginPageProps> = ({ initialTab = 'staff' }) =>
   const [activeTab, setActiveTab] = useState<'staff' | 'borrower' | 'register'>(initialTab);
 
   // Form states
-  const [email, setEmail] = useState('d.vance@credvidhi.com');
-  const [password, setPassword] = useState('••••••••••••');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
   const [applicantRef, setApplicantRef] = useState('APP-2026-0891');
@@ -269,7 +269,6 @@ export const LoginPage: React.FC<LoginPageProps> = ({ initialTab = 'staff' }) =>
                   aria-selected={activeTab === 'staff'}
                   onClick={() => {
                     setActiveTab('staff');
-                    setEmail('d.vance@credvidhi.com');
                     setErrorMessage(null);
                   }}
                   className={`relative py-2 rounded-md font-semibold transition-colors cursor-pointer z-10 text-center ${
