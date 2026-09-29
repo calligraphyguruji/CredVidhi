@@ -66,6 +66,7 @@ export const INITIAL_USERS: User[] = [
     fullName: 'David Vance',
     role: 'LOAN_OFFICER',
     phone: '+1 (555) 234-5678',
+    password: 'credvidhi4497',
     isActive: true,
   },
   {

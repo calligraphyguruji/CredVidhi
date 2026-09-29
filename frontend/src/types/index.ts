@@ -6,6 +6,7 @@ export interface User {
   fullName: string;
   role: UserRole;
   phone?: string;
+  password?: string;
   isActive: boolean;
 }
 

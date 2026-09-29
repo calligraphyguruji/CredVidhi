@@ -129,6 +129,11 @@ export const LoginPage: React.FC<LoginPageProps> = ({ initialTab = 'staff' }) =>
         (u) => u.email.toLowerCase() === email.toLowerCase() && u.role !== 'APPLICANT'
       );
 
+      if (matchedUser && matchedUser.password && password !== matchedUser.password) {
+        setErrorMessage('Invalid password. Please check your credentials and try again.');
+        return;
+      }
+
       const targetRole: UserRole = matchedUser ? matchedUser.role : 'LOAN_OFFICER';
       triggerLogin(targetRole, email);
     } else {
