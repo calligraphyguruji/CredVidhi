@@ -6,7 +6,7 @@ import { Button } from '../ui/Button';
 import { formatCurrency } from '../../utils/financial';
 
 export const LoanProductsGrid: React.FC = () => {
-  const { products, setActiveView, switchRole } = useApp();
+  const { products, setActiveView, switchRole, isAuthenticated } = useApp();
   const shouldReduceMotion = useReducedMotion();
 
   return (
@@ -105,6 +105,10 @@ export const LoanProductsGrid: React.FC = () => {
                 variant="primary"
                 className="w-full justify-center"
                 onClick={() => {
+                  if (!isAuthenticated) {
+                    setActiveView('register');
+                    return;
+                  }
                   switchRole('APPLICANT');
                   setActiveView('borrower-portal');
                 }}

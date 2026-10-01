@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import type {
   LoanApplication,
   LoanProduct,
@@ -17,7 +17,7 @@ import {
 } from '../services/mockData';
 import { calculateEmi, calculateDti, calculateDisposableIncome } from '../utils/financial';
 import { ToastContainer, type ToastMessage } from '../components/ui/Toast';
-import { applyRouteSEO, resolveViewFromUrl } from '../utils/seo';
+import { applyRouteSEO, resolveViewFromUrl, isPublicRoute } from '../utils/seo';
 import {
   healthApi,
   authApi,
@@ -37,7 +37,7 @@ import {
 interface AppContextType {
   currentUser: User;
   currentRole: UserRole;
-  switchRole: (role: UserRole) => void;
+  switchRole: (role: UserRole, targetView?: string) => void;
   applications: LoanApplication[];
   products: LoanProduct[];
   auditLogs: AuditLog[];
@@ -47,6 +47,10 @@ interface AppContextType {
   setActiveView: (view: string) => void;
   selectedDocId: string | null;
   setSelectedDocId: (id: string | null) => void;
+  // Authentication & Session
+  isAuthenticated: boolean;
+  login: (role: UserRole, userEmail?: string, redirectView?: string) => void;
+  logout: (redirectView?: string) => Promise<void>;
   // Backend Live Connectivity
   isBackendConnected: boolean;
   backendHealth: { database: boolean; redis: boolean } | null;
@@ -117,6 +121,7 @@ const STORAGE_KEYS = {
   CURRENT_ROLE: 'credvidhi_current_role_v1',
   PRODUCTS: 'credvidhi_products_v1',
   USERS: 'credvidhi_users_v1',
+  IS_AUTHENTICATED: 'credvidhi_is_authenticated_v1',
 };
 
 const isUUID = (str: string): boolean =>
@@ -143,6 +148,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const toggleTheme = () => {
     setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'));
   };
+
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
+    const hasToken = typeof window !== 'undefined' && !!localStorage.getItem(AUTH_TOKEN_KEY);
+    const hasAuth = typeof window !== 'undefined' && localStorage.getItem(STORAGE_KEYS.IS_AUTHENTICATED) === 'true';
+    return hasToken || hasAuth;
+  });
 
   const [currentRole, setCurrentRole] = useState<UserRole>(() => {
     const saved = localStorage.getItem(STORAGE_KEYS.CURRENT_ROLE);
@@ -201,7 +212,62 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const [activeApplicationId, setActiveApplicationId] = useState<string>('app-001');
   const [selectedDocId, setSelectedDocId] = useState<string | null>('doc-002');
-  const [activeView, setActiveView] = useState<string>(() => resolveViewFromUrl());
+  const [activeView, setActiveViewState] = useState<string>(() => {
+    const initialView = resolveViewFromUrl();
+    const hasToken = typeof window !== 'undefined' && !!localStorage.getItem(AUTH_TOKEN_KEY);
+    const hasAuth = typeof window !== 'undefined' && localStorage.getItem(STORAGE_KEYS.IS_AUTHENTICATED) === 'true';
+    const isAuth = hasToken || hasAuth;
+    if (!isPublicRoute(initialView) && !isAuth) {
+      return 'register';
+    }
+    return initialView;
+  });
+
+  const setActiveView = (view: string) => {
+    const isAuthed =
+      isAuthenticated ||
+      (typeof window !== 'undefined' &&
+        (!!localStorage.getItem(AUTH_TOKEN_KEY) ||
+          localStorage.getItem(STORAGE_KEYS.IS_AUTHENTICATED) === 'true'));
+    if (!isPublicRoute(view) && !isAuthed) {
+      setActiveViewState('register');
+      return;
+    }
+    setActiveViewState(view);
+  };
+
+  const login = (role: UserRole, userEmail?: string, redirectView?: string) => {
+    setIsAuthenticated(true);
+    localStorage.setItem(STORAGE_KEYS.IS_AUTHENTICATED, 'true');
+    setCurrentRole(role);
+    if (userEmail) {
+      const matched = users.find((u) => u.email.toLowerCase() === userEmail.toLowerCase());
+      if (matched) {
+        // user recognized
+      }
+    }
+    if (redirectView) {
+      setActiveViewState(redirectView);
+    }
+  };
+
+  const logout = async (redirectView = 'landing') => {
+    try {
+      if (isBackendConnected) {
+        await authApi.logout();
+      }
+    } catch (err) {
+      console.warn('Backend logout failed:', err);
+    } finally {
+      setIsAuthenticated(false);
+      localStorage.removeItem(STORAGE_KEYS.IS_AUTHENTICATED);
+      localStorage.removeItem(AUTH_TOKEN_KEY);
+      localStorage.removeItem(REFRESH_TOKEN_KEY);
+      const safeRedirect = isPublicRoute(redirectView) ? redirectView : 'landing';
+      setActiveViewState(safeRedirect);
+    }
+  };
+
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
   const [isBackendConnected, setIsBackendConnected] = useState<boolean>(false);
   const [backendHealth, setBackendHealth] = useState<{ database: boolean; redis: boolean } | null>(null);
@@ -281,22 +347,31 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   }, []);
 
   // Dynamic Route SEO and Meta Tag Synchronization
+  const isInitialMount = useRef(true);
   useEffect(() => {
-    applyRouteSEO(activeView);
+    const shouldReplace = isInitialMount.current && !isPublicRoute(resolveViewFromUrl());
+    applyRouteSEO(activeView, true, shouldReplace);
+    isInitialMount.current = false;
   }, [activeView]);
 
   // Handle browser back/forward navigation
   useEffect(() => {
     const handlePopState = (event: PopStateEvent) => {
-      if (event.state && event.state.view) {
-        setActiveView(event.state.view);
+      const targetView = (event.state && event.state.view) || resolveViewFromUrl();
+      const isAuthed =
+        isAuthenticated ||
+        (typeof window !== 'undefined' &&
+          (!!localStorage.getItem(AUTH_TOKEN_KEY) ||
+            localStorage.getItem(STORAGE_KEYS.IS_AUTHENTICATED) === 'true'));
+      if (!isPublicRoute(targetView) && !isAuthed) {
+        setActiveViewState('register');
       } else {
-        setActiveView(resolveViewFromUrl());
+        setActiveViewState(targetView);
       }
     };
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
-  }, []);
+  }, [isAuthenticated]);
 
   const addToast = (toast: Omit<ToastMessage, 'id'>) => {
     const id = `toast-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
@@ -345,8 +420,21 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setAuditLogs((prev) => [newLog, ...prev]);
   };
 
-  const switchRole = (role: UserRole) => {
+  const switchRole = (role: UserRole, targetView?: string) => {
+    const isAuthed =
+      isAuthenticated ||
+      (typeof window !== 'undefined' &&
+        (!!localStorage.getItem(AUTH_TOKEN_KEY) ||
+          localStorage.getItem(STORAGE_KEYS.IS_AUTHENTICATED) === 'true'));
+    if (!isAuthed) {
+      setActiveViewState('register');
+      return;
+    }
     setCurrentRole(role);
+    if (targetView) {
+      setActiveViewState(targetView);
+      return;
+    }
     if (role === 'LOAN_OFFICER') setActiveView('officer-queue');
     else if (role === 'RISK_ANALYST') setActiveView('underwriting-cockpit');
     else if (role === 'APPLICANT') setActiveView('borrower-portal');
@@ -919,6 +1007,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       // Prepend so newUser becomes the active user for APPLICANT role
       setUsers((prev) => [newUser, ...prev.filter((u) => u.email.toLowerCase() !== newUser.email.toLowerCase())]);
       setCurrentRole('APPLICANT');
+      setIsAuthenticated(true);
+      localStorage.setItem(STORAGE_KEYS.IS_AUTHENTICATED, 'true');
       addAuditLog({
         eventType: 'USER_REGISTERED',
         notes: `Borrower self-registration: '${fullName}' (${payload.email}) registered and authenticated.`,
@@ -928,7 +1018,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         title: 'Account Registered',
         message: `Welcome ${fullName}! Your borrower account is ready.`,
       });
-      setActiveView('borrower-portal');
+      setActiveViewState('borrower-portal');
       return { success: true };
     } catch (err: any) {
       const msg = err?.message || 'Registration failed. Please check your details.';
@@ -942,13 +1032,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     localStorage.removeItem(STORAGE_KEYS.CURRENT_ROLE);
     localStorage.removeItem(STORAGE_KEYS.PRODUCTS);
     localStorage.removeItem(STORAGE_KEYS.USERS);
+    localStorage.removeItem(STORAGE_KEYS.IS_AUTHENTICATED);
+    localStorage.removeItem(AUTH_TOKEN_KEY);
+    localStorage.removeItem(REFRESH_TOKEN_KEY);
+    setIsAuthenticated(false);
     setApplications(INITIAL_APPLICATIONS);
     setAuditLogs(INITIAL_AUDIT_LOGS);
     setProducts(INITIAL_PRODUCTS);
     setUsers(INITIAL_USERS);
     setCurrentRole('LOAN_OFFICER');
     setActiveApplicationId('app-001');
-    setActiveView('officer-queue');
+    setActiveViewState('landing');
     addToast({
       type: 'info',
       title: 'Data Reset',
@@ -972,6 +1066,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setActiveView,
         selectedDocId,
         setSelectedDocId,
+        isAuthenticated,
+        login,
+        logout,
         isBackendConnected,
         backendHealth,
         isSyncing,

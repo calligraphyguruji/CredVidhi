@@ -56,6 +56,13 @@ export const ROUTE_SEO_MAP: Record<string, RouteSEOMetadata> = {
     robots: 'noindex, nofollow',
     isPublic: true,
   },
+  'login-borrower': {
+    title: 'Borrower Sign In | CredVidhi Lending Portal',
+    description: 'Access your active loan application, track review status, and upload KYC proofs.',
+    canonicalPath: '/login',
+    robots: 'noindex, nofollow',
+    isPublic: true,
+  },
   'officer-queue': {
     title: 'Loan Officer Application Queue | CredVidhi Workspace',
     description: 'Internal triage and queue management for active retail and commercial credit applications.',
@@ -111,7 +118,7 @@ export const ROUTE_SEO_MAP: Record<string, RouteSEOMetadata> = {
  * Dynamically updates DOM head elements based on current view.
  * Ensures search crawlers and client transitions reflect accurate metadata.
  */
-export function applyRouteSEO(viewName: string, syncHistory = true): void {
+export function applyRouteSEO(viewName: string, syncHistory = true, replaceHistory = false): void {
   const meta = ROUTE_SEO_MAP[viewName] || ROUTE_SEO_MAP.landing;
 
   // 1. Update Title
@@ -174,7 +181,11 @@ export function applyRouteSEO(viewName: string, syncHistory = true): void {
     const currentPath = window.location.pathname;
     const targetPath = meta.canonicalPath;
     if (currentPath !== targetPath && currentPath !== `${targetPath}/`) {
-      window.history.pushState({ view: viewName }, meta.title, targetPath);
+      if (replaceHistory) {
+        window.history.replaceState({ view: viewName }, meta.title, targetPath);
+      } else {
+        window.history.pushState({ view: viewName }, meta.title, targetPath);
+      }
     }
   }
 }
@@ -193,3 +204,21 @@ export function resolveViewFromUrl(): string {
   }
   return 'landing';
 }
+
+/**
+ * Determines whether a route/view is public (accessible without authentication).
+ */
+export function isPublicRoute(viewName: string): boolean {
+  if (
+    viewName === 'landing' ||
+    viewName === 'login' ||
+    viewName === 'register' ||
+    viewName === 'login-staff' ||
+    viewName === 'login-borrower'
+  ) {
+    return true;
+  }
+  const meta = ROUTE_SEO_MAP[viewName];
+  return meta ? meta.isPublic : false;
+}
+

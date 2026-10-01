@@ -17,7 +17,7 @@ import { useApp } from '../../context/AppContext';
 import { formatCurrency } from '../../utils/financial';
 
 export const Sidebar: React.FC = () => {
-  const { activeView, setActiveView, applications, activeApplicationId, resetAllData } = useApp();
+  const { activeView, setActiveView, applications, activeApplicationId, resetAllData, logout } = useApp();
   const shouldReduceMotion = useReducedMotion();
 
   const activeApp = applications.find((a) => a.id === activeApplicationId) || applications[0];
@@ -100,7 +100,13 @@ export const Sidebar: React.FC = () => {
                 return (
                   <button
                     key={item.id}
-                    onClick={() => setActiveView(item.id)}
+                    onClick={() => {
+                      if (item.id === 'login') {
+                        void logout('login');
+                      } else {
+                        setActiveView(item.id);
+                      }
+                    }}
                     className={`relative w-full flex items-center gap-2.5 px-2.5 py-2 rounded text-xs font-medium transition-colors cursor-pointer ${
                       isActive
                         ? 'text-white'

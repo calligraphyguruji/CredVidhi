@@ -3,7 +3,16 @@ import { ShieldCheck, Lock } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 
 export const Footer: React.FC = () => {
-  const { setActiveView, switchRole } = useApp();
+  const { setActiveView, switchRole, isAuthenticated } = useApp();
+
+  const handleInternalNavigate = (role: Parameters<typeof switchRole>[0], view: string) => {
+    if (!isAuthenticated) {
+      setActiveView('register');
+      return;
+    }
+    switchRole(role);
+    setActiveView(view);
+  };
 
   return (
     <footer className="bg-slate-950 text-slate-400 text-xs border-t border-slate-800">
@@ -94,10 +103,7 @@ export const Footer: React.FC = () => {
             <ul className="space-y-2 text-slate-400">
               <li>
                 <button
-                  onClick={() => {
-                    switchRole('LOAN_OFFICER');
-                    setActiveView('officer-queue');
-                  }}
+                  onClick={() => handleInternalNavigate('LOAN_OFFICER', 'officer-queue')}
                   className="hover:text-white transition-colors cursor-pointer"
                 >
                   Officer Queue (Triage)
@@ -105,10 +111,7 @@ export const Footer: React.FC = () => {
               </li>
               <li>
                 <button
-                  onClick={() => {
-                    switchRole('LOAN_OFFICER');
-                    setActiveView('document-workbench');
-                  }}
+                  onClick={() => handleInternalNavigate('LOAN_OFFICER', 'document-workbench')}
                   className="hover:text-white transition-colors cursor-pointer"
                 >
                   Document Verification Workbench
@@ -116,10 +119,7 @@ export const Footer: React.FC = () => {
               </li>
               <li>
                 <button
-                  onClick={() => {
-                    switchRole('RISK_ANALYST');
-                    setActiveView('underwriting-cockpit');
-                  }}
+                  onClick={() => handleInternalNavigate('RISK_ANALYST', 'underwriting-cockpit')}
                   className="hover:text-white transition-colors cursor-pointer"
                 >
                   Underwriting & Risk Cockpit
@@ -127,10 +127,7 @@ export const Footer: React.FC = () => {
               </li>
               <li>
                 <button
-                  onClick={() => {
-                    switchRole('APPLICANT');
-                    setActiveView('borrower-portal');
-                  }}
+                  onClick={() => handleInternalNavigate('APPLICANT', 'borrower-portal')}
                   className="hover:text-white transition-colors cursor-pointer"
                 >
                   Borrower Self-Service Portal
@@ -147,10 +144,7 @@ export const Footer: React.FC = () => {
             <ul className="space-y-2 text-slate-400">
               <li>
                 <button
-                  onClick={() => {
-                    switchRole('ADMIN');
-                    setActiveView('compliance-audit');
-                  }}
+                  onClick={() => handleInternalNavigate('ADMIN', 'compliance-audit')}
                   className="hover:text-white transition-colors cursor-pointer"
                 >
                   Compliance Audit Logs
@@ -158,10 +152,7 @@ export const Footer: React.FC = () => {
               </li>
               <li>
                 <button
-                  onClick={() => {
-                    switchRole('ADMIN');
-                    setActiveView('loan-products');
-                  }}
+                  onClick={() => handleInternalNavigate('ADMIN', 'loan-products')}
                   className="hover:text-white transition-colors cursor-pointer"
                 >
                   Loan Product Matrix

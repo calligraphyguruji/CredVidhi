@@ -22,7 +22,7 @@ interface LoginPageProps {
 }
 
 export const LoginPage: React.FC<LoginPageProps> = ({ initialTab = 'staff' }) => {
-  const { setActiveView, switchRole, registerApplicant } = useApp();
+  const { setActiveView, registerApplicant, login } = useApp();
   const shouldReduceMotion = useReducedMotion();
 
   const [activeTab, setActiveTab] = useState<'staff' | 'borrower' | 'register'>(initialTab);
@@ -57,18 +57,17 @@ export const LoginPage: React.FC<LoginPageProps> = ({ initialTab = 'staff' }) =>
     setTimeout(() => {
       setIsLoading(false);
       console.info(`[CredVidhi Gateway] Authenticated ${userEmail} as ${role}`);
-      switchRole(role);
 
-      // Route based on role
+      let targetView = 'borrower-portal';
       if (role === 'LOAN_OFFICER') {
-        setActiveView('officer-queue');
+        targetView = 'officer-queue';
       } else if (role === 'RISK_ANALYST') {
-        setActiveView('underwriting-cockpit');
+        targetView = 'underwriting-cockpit';
       } else if (role === 'ADMIN') {
-        setActiveView('compliance-audit');
-      } else {
-        setActiveView('borrower-portal');
+        targetView = 'compliance-audit';
       }
+
+      login(role, userEmail, targetView);
     }, 500);
   };
 

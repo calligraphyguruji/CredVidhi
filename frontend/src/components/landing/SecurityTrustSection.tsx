@@ -4,7 +4,7 @@ import { ShieldCheck, Lock, EyeOff, FileText, Database, Key } from 'lucide-react
 import { useApp } from '../../context/AppContext';
 
 export const SecurityTrustSection: React.FC = () => {
-  const { setActiveView, switchRole } = useApp();
+  const { setActiveView, switchRole, isAuthenticated } = useApp();
   const shouldReduceMotion = useReducedMotion();
 
   const trustPillars = [
@@ -122,6 +122,10 @@ export const SecurityTrustSection: React.FC = () => {
             whileHover={!shouldReduceMotion ? { scale: 1.02 } : undefined}
             whileTap={!shouldReduceMotion ? { scale: 0.98 } : undefined}
             onClick={() => {
+              if (!isAuthenticated) {
+                setActiveView('register');
+                return;
+              }
               switchRole('ADMIN');
               setActiveView('compliance-audit');
             }}

@@ -13,7 +13,7 @@ import {
 import { useApp } from '../../context/AppContext';
 
 export const WorkflowSection: React.FC = () => {
-  const { setActiveView, switchRole } = useApp();
+  const { setActiveView, switchRole, isAuthenticated } = useApp();
   const [activeStep, setActiveStep] = useState(2); // Default to Document Verification step
   const shouldReduceMotion = useReducedMotion();
 
@@ -244,6 +244,10 @@ export const WorkflowSection: React.FC = () => {
                   whileHover={!shouldReduceMotion ? { scale: 1.02 } : undefined}
                   whileTap={!shouldReduceMotion ? { scale: 0.98 } : undefined}
                   onClick={() => {
+                    if (!isAuthenticated) {
+                      setActiveView('register');
+                      return;
+                    }
                     switchRole(current.targetRole);
                     setActiveView(current.targetView);
                   }}

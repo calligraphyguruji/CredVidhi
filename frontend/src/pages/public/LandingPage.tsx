@@ -13,7 +13,7 @@ import { Footer } from '../../components/landing/Footer';
 import { Button } from '../../components/ui/Button';
 
 export const LandingPage: React.FC = () => {
-  const { setActiveView, switchRole } = useApp();
+  const { setActiveView, switchRole, isAuthenticated } = useApp();
 
   return (
     <div className="min-h-screen bg-white text-slate-900 flex flex-col font-sans selection:bg-orange-100 selection:text-orange-900">
@@ -67,6 +67,10 @@ export const LandingPage: React.FC = () => {
                 variant="primary"
                 size="lg"
                 onClick={() => {
+                  if (!isAuthenticated) {
+                    setActiveView('register');
+                    return;
+                  }
                   switchRole('LOAN_OFFICER');
                   setActiveView('officer-queue');
                 }}

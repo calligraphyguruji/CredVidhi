@@ -7,7 +7,7 @@ import { calculateEmi, calculateDti, formatCurrency } from '../../utils/financia
 import { fadeUpVariants, scaleInVariants } from '../../utils/motion';
 
 export const HeroSection: React.FC = () => {
-  const { setActiveView, switchRole, products } = useApp();
+  const { setActiveView, switchRole, products, isAuthenticated } = useApp();
   const shouldReduceMotion = useReducedMotion();
 
   // Dynamic loan calculator state in Hero
@@ -128,6 +128,10 @@ export const HeroSection: React.FC = () => {
                 variant="outline"
                 size="lg"
                 onClick={() => {
+                  if (!isAuthenticated) {
+                    setActiveView('register');
+                    return;
+                  }
                   switchRole('LOAN_OFFICER');
                   setActiveView('officer-queue');
                 }}

@@ -12,7 +12,7 @@ import {
 import { useApp } from '../../context/AppContext';
 
 export const KeyCapabilities: React.FC = () => {
-  const { setActiveView, switchRole } = useApp();
+  const { setActiveView, switchRole, isAuthenticated } = useApp();
   const shouldReduceMotion = useReducedMotion();
 
   const capabilities = [
@@ -132,6 +132,10 @@ export const KeyCapabilities: React.FC = () => {
                 <div className="pt-6 mt-4 border-t border-slate-100 flex items-center justify-between">
                   <button
                     onClick={() => {
+                      if (!isAuthenticated) {
+                        setActiveView('register');
+                        return;
+                      }
                       switchRole(cap.actionRole);
                       setActiveView(cap.actionView);
                     }}

@@ -459,6 +459,7 @@ The frontend features a **Dual-Mode Hybrid Architecture**:
 1. **Live REST Mode:** Connects directly to the FastAPI `/api/v1` backend using a zero-dependency native `fetch` client with JWT authentication, standardized error envelopes, and automated optimistic mutations.
 2. **Autonomous Local Engine Mode:** If the backend is not running or network connectivity drops, the client autonomously falls back to its local deterministic financial math, in-memory FSM state machine, and localStorage persistence without white-screens or degraded UX.
 3. **Live Indicator & Re-Probe:** The application header displays a live `Live API` (green) / `Local Mode` (gray) badge that users can click at any time to re-probe backend health.
+4. **Protected Route Architecture & Auth Guards:** All internal application, queue, and workbench views (`/officer-queue`, `/document-workbench`, `/underwriting-cockpit`, `/borrower-portal`, `/compliance-audit`, `/loan-products`, `/user-admin`) are strictly protected via multi-layered route guards (`ProtectedRoute` component, URL resolver checks, and authenticated session state). Unauthenticated visitors attempting to access internal features from landing page CTAs, direct URLs, or page reloads are securely routed to `/register`.
 
 ```bash
 # 1. Enter frontend directory
@@ -479,6 +480,12 @@ Open [http://localhost:5173](http://localhost:5173) in your browser.
 #### Frontend Quality & Build Verification
 
 ```bash
+# Run unit test suite (routing & authentication guards)
+npm test
+
+# Run TypeScript static type check
+npm run typecheck
+
 # Run production build and TypeScript compilation
 npm run build
 

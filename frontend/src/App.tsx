@@ -15,6 +15,7 @@ import { UserAdministration } from './pages/admin/UserAdministration';
 import { pageTransitionVariants } from './utils/motion';
 import { ChatbotWidget } from './components/chat/ChatbotWidget';
 import { Analytics } from '@vercel/analytics/react';
+import { ProtectedRoute } from './components/auth/ProtectedRoute';
 
 const MainContent: React.FC = () => {
 
@@ -62,43 +63,45 @@ const MainContent: React.FC = () => {
           />
         </motion.div>
       ) : (
-        <motion.div
-          key="app-shell"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1, transition: { duration: 0.2 } }}
-          exit={{ opacity: 0, transition: { duration: 0.15 } }}
-          className="min-h-screen bg-slate-50 flex"
-        >
-          {/* Navigation Sidebar */}
-          <Sidebar />
+        <ProtectedRoute>
+          <motion.div
+            key="app-shell"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1, transition: { duration: 0.2 } }}
+            exit={{ opacity: 0, transition: { duration: 0.15 } }}
+            className="min-h-screen bg-slate-50 flex"
+          >
+            {/* Navigation Sidebar */}
+            <Sidebar />
 
-          {/* Main App Container */}
-          <div className="flex-1 flex flex-col pl-64 min-w-0">
-            <Header />
+            {/* Main App Container */}
+            <div className="flex-1 flex flex-col pl-64 min-w-0">
+              <Header />
 
-            {/* Dynamic Viewport Container with Page Transition */}
-            <main className="flex-1 pt-14 p-6 overflow-y-auto max-w-7xl w-full mx-auto">
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={activeView}
-                  variants={activePageVariants}
-                  initial="initial"
-                  animate="animate"
-                  exit="exit"
-                  className="w-full"
-                >
-                  {activeView === 'officer-queue' && <OfficerQueue />}
-                  {activeView === 'document-workbench' && <DocumentWorkbench />}
-                  {activeView === 'underwriting-cockpit' && <UnderwritingCockpit />}
-                  {activeView === 'borrower-portal' && <BorrowerPortal />}
-                  {activeView === 'compliance-audit' && <ComplianceAudit />}
-                  {activeView === 'loan-products' && <LoanProducts />}
-                  {activeView === 'user-admin' && <UserAdministration />}
-                </motion.div>
-              </AnimatePresence>
-            </main>
-          </div>
-        </motion.div>
+              {/* Dynamic Viewport Container with Page Transition */}
+              <main className="flex-1 pt-14 p-6 overflow-y-auto max-w-7xl w-full mx-auto">
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={activeView}
+                    variants={activePageVariants}
+                    initial="initial"
+                    animate="animate"
+                    exit="exit"
+                    className="w-full"
+                  >
+                    {activeView === 'officer-queue' && <OfficerQueue />}
+                    {activeView === 'document-workbench' && <DocumentWorkbench />}
+                    {activeView === 'underwriting-cockpit' && <UnderwritingCockpit />}
+                    {activeView === 'borrower-portal' && <BorrowerPortal />}
+                    {activeView === 'compliance-audit' && <ComplianceAudit />}
+                    {activeView === 'loan-products' && <LoanProducts />}
+                    {activeView === 'user-admin' && <UserAdministration />}
+                  </motion.div>
+                </AnimatePresence>
+              </main>
+            </div>
+          </motion.div>
+        </ProtectedRoute>
       )}
     </AnimatePresence>
   );

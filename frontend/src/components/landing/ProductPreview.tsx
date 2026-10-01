@@ -12,7 +12,7 @@ import { Badge } from '../ui/Badge';
 import { formatCurrency } from '../../utils/financial';
 
 export const ProductPreview: React.FC = () => {
-  const { setActiveView, switchRole, applications } = useApp();
+  const { setActiveView, switchRole, applications, isAuthenticated } = useApp();
   const [previewTab, setPreviewTab] = useState<'workbench' | 'underwriting' | 'borrower'>('workbench');
   const shouldReduceMotion = useReducedMotion();
 
@@ -128,6 +128,10 @@ export const ProductPreview: React.FC = () => {
                 whileHover={!shouldReduceMotion ? { scale: 1.03 } : undefined}
                 whileTap={!shouldReduceMotion ? { scale: 0.97 } : undefined}
                 onClick={() => {
+                  if (!isAuthenticated) {
+                    setActiveView('register');
+                    return;
+                  }
                   if (previewTab === 'workbench') {
                     switchRole('LOAN_OFFICER');
                     setActiveView('document-workbench');

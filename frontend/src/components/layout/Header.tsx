@@ -18,6 +18,7 @@ export const Header: React.FC = () => {
     refreshFromBackend,
     theme,
     toggleTheme,
+    logout,
   } = useApp();
   const shouldReduceMotion = useReducedMotion();
   const [showNotifications, setShowNotifications] = useState(false);
@@ -211,7 +212,7 @@ export const Header: React.FC = () => {
           <motion.button
             whileHover={!shouldReduceMotion ? { scale: 1.05 } : undefined}
             whileTap={!shouldReduceMotion ? { scale: 0.95 } : undefined}
-            onClick={() => setActiveView(currentUser.role === 'APPLICANT' ? 'login' : 'login-staff')}
+            onClick={() => void logout(currentUser.role === 'APPLICANT' ? 'login' : 'login-staff')}
             className="p-1.5 text-slate-400 hover:text-rose-600 rounded hover:bg-slate-100 transition-colors cursor-pointer"
             title="Sign Out / Switch Account"
           >
