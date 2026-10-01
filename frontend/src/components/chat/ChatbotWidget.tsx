@@ -1,5 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import ReactMarkdown from 'react-markdown';
+import remarkMath from 'remark-math';
+import rehypeKatex from 'rehype-katex';
+import { preprocessLaTeX, chatMarkdownComponents } from '../../utils/mathRenderer';
 import {
   Sparkles,
   Send,
@@ -285,80 +289,30 @@ export const ChatbotWidget: React.FC<UIProps> = ({ initialOpen = false }) => {
 };
 
 /**
- * Lightweight markdown-like formatter for structured AI responses.
+ * Robust markdown and LaTeX math formatter for AI responses.
+ * Memoized to eliminate costly LaTeX parsing during keystroke typing.
  */
-const FormattedMarkdown: React.FC<{ text: string; isUser: boolean }> = ({ text, isUser }) => {
+const FormattedMarkdown = React.memo<{ text: string; isUser: boolean }>(({ text, isUser }) => {
   if (isUser) {
     return <span>{text}</span>;
   }
 
-  const lines = text.split('\n');
+  const processed = preprocessLaTeX(text);
 
   return (
-    <div className="space-y-1.5">
-      {lines.map((line, idx) => {
-        const trimmed = line.trim();
-        if (!trimmed) {
-          return <div key={idx} className="h-1" />;
-        }
-
-        // Headers
-        if (trimmed.startsWith('### ')) {
-          return (
-            <h4 key={idx} className="font-bold text-xs sm:text-sm text-slate-900 dark:text-white mt-1 mb-0.5">
-              {trimmed.replace('### ', '')}
-            </h4>
-          );
-        }
-        if (trimmed.startsWith('## ')) {
-          return (
-            <h3 key={idx} className="font-bold text-sm text-orange-600 dark:text-orange-400 mt-1 mb-0.5">
-              {trimmed.replace('## ', '')}
-            </h3>
-          );
-        }
-
-        // Bullet point
-        if (trimmed.startsWith('- ') || trimmed.startsWith('* ')) {
-          const bulletText = trimmed.slice(2);
-          return (
-            <div key={idx} className="flex items-start gap-1.5 pl-1">
-              <span className="text-orange-500 font-bold leading-tight">•</span>
-              <span>{renderBoldSpans(bulletText)}</span>
-            </div>
-          );
-        }
-
-        // Numbered list
-        const numMatch = trimmed.match(/^(\d+)\.\s+(.*)/);
-        if (numMatch) {
-          return (
-            <div key={idx} className="flex items-start gap-1.5 pl-1">
-              <span className="text-orange-600 dark:text-orange-400 font-semibold">{numMatch[1]}.</span>
-              <span>{renderBoldSpans(numMatch[2])}</span>
-            </div>
-          );
-        }
-
-        return <p key={idx}>{renderBoldSpans(trimmed)}</p>;
-      })}
+    <div className="space-y-1 text-xs sm:text-sm leading-relaxed break-words">
+      <ReactMarkdown
+        remarkPlugins={[remarkMath]}
+        rehypePlugins={[[rehypeKatex, { throwOnError: false, errorColor: '#ea580c' }]]}
+        components={chatMarkdownComponents}
+      >
+        {processed}
+      </ReactMarkdown>
     </div>
   );
-};
+});
 
-function renderBoldSpans(str: string): React.ReactNode {
-  const parts = str.split(/(\*\*.*?\*\*)/g);
-  return parts.map((part, i) => {
-    if (part.startsWith('**') && part.endsWith('**')) {
-      return (
-        <strong key={i} className="font-semibold text-slate-900 dark:text-white">
-          {part.slice(2, -2)}
-        </strong>
-      );
-    }
-    return part;
-  });
-}
+FormattedMarkdown.displayName = 'FormattedMarkdown';
 
 interface OfflineResponse {
   reply: string;

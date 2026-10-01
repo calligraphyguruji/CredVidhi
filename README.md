@@ -74,6 +74,7 @@ Experience the complete end-to-end loan origination and underwriting flow live i
 3. **AI Customer Support & Financial Advisor Chatbot:**
    - Open the floating **CredVidhi AI** assistant in the bottom right corner.
    - Powered by Google Gemini with domain boundaries and offline NLP fallbacks for interest rates, documents, CIBIL tiers, and application tracking.
+   - Native **KaTeX LaTeX math typesetting** (`react-markdown` + `remark-math` + `rehype-katex`) for beautifully rendered mathematical amortization formulas (EMI, DTI, compounding schedules, Greek letters, superscripts, and fractions) alongside full Markdown support.
 4. **Staff Verification & Underwriting Workspaces:**
    - Access **Staff SSO** to experience the Loan Officer triage queue, document verification checklists, quantitative underwriting cockpits, and immutable audit streams.
 5. **Theme Switching:**
