@@ -39,10 +39,6 @@
 [Quickstart](#getting-started) •
 [Design System](#design-system)
 
----
-
-<img src="docs/credvidhi-preview.png" alt="CredVidhi Platform Preview" width="100%" style="border-radius: 12px; border: 1px solid #e2e8f0; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05);" />
-
 </div>
 
 ---
