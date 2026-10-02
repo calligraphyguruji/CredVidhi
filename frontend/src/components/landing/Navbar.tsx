@@ -72,9 +72,10 @@ export const Navbar: React.FC<NavbarProps> = ({ onNavigateSection }) => {
             <button
               key={link.id}
               onClick={() => scrollTo(link.id)}
-              className="text-xs font-semibold text-slate-600 hover:text-orange-600 transition-colors cursor-pointer"
+              className="group relative py-1 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:text-orange-600 dark:hover:text-orange-400 transition-colors duration-200 cursor-pointer"
             >
-              {link.label}
+              <span>{link.label}</span>
+              <span className="absolute bottom-0 left-0 w-0 h-[1.5px] bg-orange-600/80 dark:bg-orange-500 rounded-full transition-all duration-200 ease-out group-hover:w-full pointer-events-none" />
             </button>
           ))}
         </nav>

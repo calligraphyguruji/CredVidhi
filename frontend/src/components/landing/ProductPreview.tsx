@@ -45,19 +45,22 @@ export const ProductPreview: React.FC = () => {
           </div>
 
           {/* Interactive Workspace Tab Switcher */}
-          <div className="flex items-center bg-slate-100 p-1 rounded-lg border border-slate-200 shrink-0 relative">
+          <div role="tablist" aria-label="Operational Workspaces" className="flex items-center bg-slate-100 dark:bg-slate-950/70 p-1 rounded-lg border border-slate-200 dark:border-slate-800/80 shrink-0 relative">
             <button
+              type="button"
+              role="tab"
+              aria-selected={previewTab === 'workbench'}
               onClick={() => setPreviewTab('workbench')}
               className={`relative flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-colors cursor-pointer ${
                 previewTab === 'workbench'
-                  ? 'text-orange-600'
-                  : 'text-slate-600 hover:text-slate-900'
+                  ? 'text-orange-600 dark:text-orange-400'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'
               }`}
             >
               {previewTab === 'workbench' && (
                 <motion.div
                   layoutId={shouldReduceMotion ? undefined : 'preview-tab-pill'}
-                  className="absolute inset-0 bg-white rounded-md shadow-xs"
+                  className="absolute inset-0 bg-white dark:bg-slate-800/90 rounded-md shadow-xs dark:shadow-none border border-transparent dark:border-slate-700/60"
                   transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
                 />
               )}
@@ -65,17 +68,20 @@ export const ProductPreview: React.FC = () => {
               <span className="relative z-10">Doc Workbench</span>
             </button>
             <button
+              type="button"
+              role="tab"
+              aria-selected={previewTab === 'underwriting'}
               onClick={() => setPreviewTab('underwriting')}
               className={`relative flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-colors cursor-pointer ${
                 previewTab === 'underwriting'
-                  ? 'text-orange-600'
-                  : 'text-slate-600 hover:text-slate-900'
+                  ? 'text-orange-600 dark:text-orange-400'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'
               }`}
             >
               {previewTab === 'underwriting' && (
                 <motion.div
                   layoutId={shouldReduceMotion ? undefined : 'preview-tab-pill'}
-                  className="absolute inset-0 bg-white rounded-md shadow-xs"
+                  className="absolute inset-0 bg-white dark:bg-slate-800/90 rounded-md shadow-xs dark:shadow-none border border-transparent dark:border-slate-700/60"
                   transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
                 />
               )}
@@ -83,17 +89,20 @@ export const ProductPreview: React.FC = () => {
               <span className="relative z-10">Risk Cockpit</span>
             </button>
             <button
+              type="button"
+              role="tab"
+              aria-selected={previewTab === 'borrower'}
               onClick={() => setPreviewTab('borrower')}
               className={`relative flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-colors cursor-pointer ${
                 previewTab === 'borrower'
-                  ? 'text-orange-600'
-                  : 'text-slate-600 hover:text-slate-900'
+                  ? 'text-orange-600 dark:text-orange-400'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'
               }`}
             >
               {previewTab === 'borrower' && (
                 <motion.div
                   layoutId={shouldReduceMotion ? undefined : 'preview-tab-pill'}
-                  className="absolute inset-0 bg-white rounded-md shadow-xs"
+                  className="absolute inset-0 bg-white dark:bg-slate-800/90 rounded-md shadow-xs dark:shadow-none border border-transparent dark:border-slate-700/60"
                   transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
                 />
               )}

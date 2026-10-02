@@ -81,6 +81,10 @@
     color: #94A3B8 !important;
   }
 
+  html.dark header nav button:hover {
+    color: #FB923C !important;
+  }
+
   html.dark .border-slate-200 {
     border-color: rgba(255, 255, 255, 0.12) !important;
   }
