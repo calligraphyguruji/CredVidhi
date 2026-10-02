@@ -281,7 +281,7 @@ def _generate_fallback_response(query: str) -> tuple[str, List[str]]:
             "3. **UNDER_REVIEW:** Loan Officer verifies your identity and documents (approx. 2–4 hours).\n"
             "4. **APPROVED / REJECTED:** Deterministic underwriting assessment (CIBIL score & DTI evaluation).\n"
             "5. **DISBURSED:** Immediate funds release to your bank account via NEFT/RTGS.\n\n"
-            "**How to track:** Click **'Track Application'** in the top navigation and enter your Application Reference Number (e.g., `APP-2026-0891`)."
+            "**How to track:** Click **'Track Application'** in the top navigation and enter your Application Reference Number (e.g., `APP-YYYY-XXXX`)."
         )
         suggestions = [
             "What documents are required?",

@@ -128,6 +128,37 @@ export const authApi = {
   },
 
   getMe: () => request('/auth/me'),
+
+  forgotRegistration: (payload: {
+    fullName: string;
+    mobile: string;
+    dateOfBirth: string;
+    email?: string;
+  }) =>
+    request<{
+      step: 'OTP_REQUIRED';
+      verification_token: string;
+      masked_destination: string;
+      message: string;
+      demo_code?: string;
+    }>('/auth/forgot-registration', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    }),
+
+  verifyRegistrationOtp: (payload: {
+    verificationToken: string;
+    otp: string;
+  }) =>
+    request<{
+      success: boolean;
+      message: string;
+      masked_contact: string;
+      reference_number: string;
+    }>('/auth/verify-registration-otp', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    }),
 };
 
 // ==========================================
@@ -392,7 +423,7 @@ export function mapBackendApplication(app: any, fallbackProduct?: LoanProduct): 
     personal: {
       fullName: personal.fullName || personal.full_name || 'Applicant',
       email: personal.email || 'applicant@credvidhi.in',
-      phone: personal.phone || '+91 98765 43210',
+      phone: personal.phone || personal.phone_number || '',
       dateOfBirth: personal.dateOfBirth || personal.date_of_birth || '1990-01-01',
       residentialAddress: personal.residentialAddress || personal.residential_address || '',
       taxIdMasked: personal.taxIdMasked || personal.tax_id_masked || '***-**-7721',

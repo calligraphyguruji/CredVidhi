@@ -13,6 +13,7 @@ import { useApp } from '../../context/AppContext';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { Modal } from '../../components/ui/Modal';
+import { ForgotRegistrationModal } from '../../components/auth/ForgotRegistrationModal';
 import { INITIAL_USERS } from '../../services/mockData';
 import type { UserRole } from '../../types';
 import { scaleInVariants, formErrorVariants } from '../../utils/motion';
@@ -24,18 +25,26 @@ interface LoginPageProps {
 }
 
 export const LoginPage: React.FC<LoginPageProps> = ({ initialTab = 'staff' }) => {
-  const { setActiveView, registerApplicant, login, pendingRedirectView } = useApp();
+  const {
+    setActiveView,
+    registerApplicant,
+    login,
+    pendingRedirectView,
+    applications,
+    setActiveApplicationId,
+  } = useApp();
   const shouldReduceMotion = useReducedMotion();
 
   const [activeTab, setActiveTab] = useState<'staff' | 'borrower' | 'register'>(initialTab);
 
-  // Form states
+  // Form states - completely empty by default for all new users (no demo/dummy prefill)
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
-  const [applicantRef, setApplicantRef] = useState('APP-2026-0891');
-  const [applicantPhone, setApplicantPhone] = useState('+91 98765 43210');
+  const [applicantRef, setApplicantRef] = useState('');
+  const [applicantPhone, setApplicantPhone] = useState('');
+  const [forgotRegistrationOpen, setForgotRegistrationOpen] = useState(false);
 
   // Registration form states
   const [regFirstName, setRegFirstName] = useState('');
@@ -134,11 +143,32 @@ export const LoginPage: React.FC<LoginPageProps> = ({ initialTab = 'staff' }) =>
       const targetRole: UserRole = matchedUser ? matchedUser.role : 'LOAN_OFFICER';
       triggerLogin(targetRole, email);
     } else {
-      if (!applicantRef && !applicantPhone) {
-        setErrorMessage('Please provide your application reference number or registered mobile.');
+      const cleanRef = applicantRef.trim();
+      const cleanPhone = applicantPhone.trim();
+
+      if (!cleanRef || !cleanPhone) {
+        setErrorMessage('Please enter both your Application Reference Number and Registered Mobile Number.');
         return;
       }
-      triggerLogin('APPLICANT', applicantRef || 'alex.taylor@gmail.com');
+
+      // Check credentials against active borrower applications
+      const cleanInputDigits = cleanPhone.replace(/\D/g, '').slice(-10);
+      const matchedApp = applications.find((a) => {
+        const refMatch = a.referenceNumber.trim().toUpperCase() === cleanRef.toUpperCase();
+        const appPhoneDigits = (a.personal.phone || '').replace(/\D/g, '').slice(-10);
+        const phoneMatch = appPhoneDigits.length >= 8 && appPhoneDigits === cleanInputDigits;
+        return refMatch && phoneMatch;
+      });
+
+      if (!matchedApp) {
+        setErrorMessage(
+          'Invalid Application Reference Number or Mobile Number. Please check your information or use Forgot Registration Number.'
+        );
+        return;
+      }
+
+      setActiveApplicationId(matchedApp.id);
+      triggerLogin('APPLICANT', matchedApp.personal.email || matchedApp.referenceNumber);
     }
   };
 
@@ -232,7 +262,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ initialTab = 'staff' }) =>
                     <span className="text-orange-400">[03:14:02]</span> AUTH_SUCCESS: d.vance@credvidhi.com
                   </div>
                   <div className="truncate">
-                    <span className="text-emerald-400">[03:12:45]</span> SANCTION_ISSUED: Ref APP-2026-0891 (₹45,000)
+                    <span className="text-emerald-400">[03:12:45]</span> SANCTION_ISSUED: Ref APP-2026-**** (₹45,000)
                   </div>
                   <div className="truncate">
                     <span className="text-amber-400">[03:10:19]</span> DOC_VERIFIED: W2_ApexIndustrial_2025.pdf
@@ -294,7 +324,6 @@ export const LoginPage: React.FC<LoginPageProps> = ({ initialTab = 'staff' }) =>
                   aria-selected={activeTab === 'borrower'}
                   onClick={() => {
                     setActiveTab('borrower');
-                    setApplicantRef('APP-2026-0891');
                     setErrorMessage(null);
                   }}
                   className={`relative py-2 rounded-md font-semibold transition-colors cursor-pointer z-10 text-center ${
@@ -432,8 +461,11 @@ export const LoginPage: React.FC<LoginPageProps> = ({ initialTab = 'staff' }) =>
                     <Input
                       label="Application Reference Number"
                       value={applicantRef}
-                      onChange={(e) => setApplicantRef(e.target.value)}
-                      placeholder="e.g. APP-2026-0891"
+                      onChange={(e) => {
+                        setApplicantRef(e.target.value);
+                        if (errorMessage) setErrorMessage(null);
+                      }}
+                      placeholder="Enter application reference number"
                       isMono
                       required
                     />
@@ -441,8 +473,11 @@ export const LoginPage: React.FC<LoginPageProps> = ({ initialTab = 'staff' }) =>
                     <Input
                       label="Registered Mobile Number"
                       value={applicantPhone}
-                      onChange={(e) => setApplicantPhone(e.target.value)}
-                      placeholder="+91 98765 43210"
+                      onChange={(e) => {
+                        setApplicantPhone(e.target.value);
+                        if (errorMessage) setErrorMessage(null);
+                      }}
+                      placeholder="Enter registered mobile number"
                       isMono
                       required
                     />
@@ -450,7 +485,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ initialTab = 'staff' }) =>
                     <div className="p-3 bg-orange-50/70 border border-orange-200 rounded text-xs text-orange-950">
                       <div className="font-semibold mb-0.5">Quick Self-Service Access:</div>
                       <p className="text-[11px] text-orange-700 leading-normal">
-                        No permanent password needed. Real-time application tracker is secured via reference matching.
+                        No permanent password needed. Real-time application tracker is secured via reference and mobile matching.
                       </p>
                     </div>
 
@@ -464,6 +499,29 @@ export const LoginPage: React.FC<LoginPageProps> = ({ initialTab = 'staff' }) =>
                     >
                       Access Borrower Portal
                     </Button>
+
+                    <div className="flex items-center justify-between pt-3">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setErrorMessage(null);
+                          setForgotRegistrationOpen(true);
+                        }}
+                        className="text-xs font-semibold text-orange-600 hover:text-orange-700 underline cursor-pointer"
+                      >
+                        Forgot Registration Number?
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setActiveTab('register');
+                          setErrorMessage(null);
+                        }}
+                        className="text-xs text-slate-500 hover:text-orange-600 cursor-pointer"
+                      >
+                        New borrower? <span className="font-semibold underline">Register</span>
+                      </button>
+                    </div>
                   </>
                 ) : (
                   <>
@@ -511,7 +569,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ initialTab = 'staff' }) =>
                           setRegPhone(e.target.value);
                           if (errorMessage) setErrorMessage(null);
                         }}
-                        placeholder="+91 98765 43210"
+                        placeholder="Enter mobile number"
                         autoComplete="tel"
                         isMono
                       />
@@ -652,6 +710,16 @@ export const LoginPage: React.FC<LoginPageProps> = ({ initialTab = 'staff' }) =>
           Please contact your IT Security Administrator for password resets.
         </p>
       </Modal>
+
+      {/* Borrower Application Reference Recovery Modal */}
+      <ForgotRegistrationModal
+        isOpen={forgotRegistrationOpen}
+        onClose={() => setForgotRegistrationOpen(false)}
+        onReturnToSignIn={() => {
+          setActiveTab('borrower');
+          setErrorMessage(null);
+        }}
+      />
     </div>
   );
 };

@@ -74,3 +74,25 @@ class UserProfileResponse(BaseModel):
     masked_pan: Optional[str] = None
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class ForgotRegistrationRequest(BaseModel):
+    """Payload to initiate recovery of application/registration reference number."""
+
+    full_name: str = Field(..., min_length=2, max_length=150, alias="fullName")
+    mobile: str = Field(..., min_length=8, max_length=20)
+    date_of_birth: str = Field(
+        ..., min_length=8, max_length=20, alias="dateOfBirth", description="Date of birth e.g. YYYY-MM-DD"
+    )
+    email: Optional[EmailStr] = None
+
+    model_config = ConfigDict(populate_by_name=True)
+
+
+class VerifyRegistrationOtpRequest(BaseModel):
+    """Payload to verify OTP and complete registration reference recovery."""
+
+    verification_token: str = Field(..., min_length=10, alias="verificationToken")
+    otp: str = Field(..., min_length=4, max_length=10)
+
+    model_config = ConfigDict(populate_by_name=True)

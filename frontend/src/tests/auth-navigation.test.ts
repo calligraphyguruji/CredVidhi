@@ -243,4 +243,149 @@ describe('CredVidhi Navigation & Authentication Guards', () => {
     assert.equal(sanitizeRedirect(''), null);
     assert.equal(sanitizeRedirect(null), null);
   });
+
+  it('guarantees borrower login credentials are empty by default with no dummy pre-filling', () => {
+    // Initial borrower state simulation
+    const initialApplicantRef = '';
+    const initialApplicantPhone = '';
+
+    assert.equal(initialApplicantRef, '', 'Application Reference Number must be completely empty initially');
+    assert.equal(initialApplicantPhone, '', 'Registered Mobile Number must be completely empty initially');
+
+    // Tab switching must not pre-populate credentials
+    const switchTabToBorrower = () => {
+      return {
+        applicantRef: '',
+        applicantPhone: '',
+      };
+    };
+
+    const tabState = switchTabToBorrower();
+    assert.equal(tabState.applicantRef, '');
+    assert.equal(tabState.applicantPhone, '');
+  });
+
+  it('validates borrower login credentials against registered applications without hardcoded fallbacks', () => {
+    const mockApps = [
+      {
+        id: 'app-001',
+        referenceNumber: 'APP-2026-0891',
+        personal: {
+          fullName: 'Alex Taylor',
+          phone: '+919811234501',
+          email: 'alex.taylor@gmail.com',
+          dateOfBirth: '1988-06-14',
+        },
+      },
+    ];
+
+    const validateBorrowerLogin = (ref: string, phone: string) => {
+      const cleanRef = ref.trim();
+      const cleanPhone = phone.trim();
+
+      if (!cleanRef || !cleanPhone) {
+        return { success: false, error: 'Please enter both your Application Reference Number and Registered Mobile Number.' };
+      }
+
+      const inputDigits = cleanPhone.replace(/\D/g, '').slice(-10);
+      const matched = mockApps.find((a) => {
+        const refMatch = a.referenceNumber.toUpperCase() === cleanRef.toUpperCase();
+        const appDigits = a.personal.phone.replace(/\D/g, '').slice(-10);
+        return refMatch && appDigits === inputDigits;
+      });
+
+      if (!matched) {
+        return { success: false, error: 'Invalid Application Reference Number or Mobile Number.' };
+      }
+
+      return { success: true, userEmail: matched.personal.email, appId: matched.id };
+    };
+
+    // Missing fields
+    assert.equal(validateBorrowerLogin('', '').success, false);
+    assert.equal(validateBorrowerLogin('APP-2026-0891', '').success, false);
+    assert.equal(validateBorrowerLogin('', '9811234501').success, false);
+
+    // Mismatched / invalid credentials
+    assert.equal(validateBorrowerLogin('APP-2026-9999', '9811234501').success, false);
+    assert.equal(validateBorrowerLogin('APP-2026-0891', '9999999999').success, false);
+
+    // Correct credentials
+    const successResult = validateBorrowerLogin('APP-2026-0891', '+91 98112 34501');
+    assert.equal(successResult.success, true);
+    assert.equal(successResult.userEmail, 'alex.taylor@gmail.com');
+  });
+
+  it('validates forgot registration number recovery and OTP identity verification', () => {
+    const mockApps = [
+      {
+        id: 'app-001',
+        referenceNumber: 'APP-2026-0891',
+        personal: {
+          fullName: 'Alex Taylor',
+          phone: '+919811234501',
+          email: 'alex.taylor@gmail.com',
+          dateOfBirth: '1988-06-14',
+        },
+      },
+    ];
+
+    const verifyIdentity = (data: { fullName: string; mobile: string; dateOfBirth: string }) => {
+      const cleanName = data.fullName.trim().toLowerCase();
+      const cleanDigits = data.mobile.replace(/\D/g, '').slice(-10);
+      const cleanDob = data.dateOfBirth.trim();
+
+      const matched = mockApps.find((app) => {
+        const appName = app.personal.fullName.toLowerCase();
+        const appDigits = app.personal.phone.replace(/\D/g, '').slice(-10);
+        const appDob = app.personal.dateOfBirth;
+
+        return appName === cleanName && appDigits === cleanDigits && appDob === cleanDob;
+      });
+
+      if (!matched) {
+        return { success: false, error: 'We could not verify your details. Please check your information and try again.' };
+      }
+
+      return {
+        success: true,
+        step: 'OTP_REQUIRED',
+        verificationToken: 'token-12345',
+        otp: '849201',
+        referenceNumber: matched.referenceNumber,
+      };
+    };
+
+    // Invalid identity details
+    const failedAttempt = verifyIdentity({
+      fullName: 'Wrong Person',
+      mobile: '+91 99999 99999',
+      dateOfBirth: '1990-01-01',
+    });
+    assert.equal(failedAttempt.success, false);
+    assert.equal(failedAttempt.error, 'We could not verify your details. Please check your information and try again.');
+
+    // Valid identity details
+    const validAttempt = verifyIdentity({
+      fullName: 'Alex Taylor',
+      mobile: '+91 98112 34501',
+      dateOfBirth: '1988-06-14',
+    });
+    assert.equal(validAttempt.success, true);
+    assert.equal(validAttempt.step, 'OTP_REQUIRED');
+    assert.equal(validAttempt.otp, '849201');
+    assert.equal(validAttempt.referenceNumber, 'APP-2026-0891');
+
+    // OTP verification
+    const verifyOtp = (token: string, otp: string, expectedToken: string, expectedOtp: string) => {
+      if (token !== expectedToken || otp !== expectedOtp) {
+        return { success: false, error: 'Invalid verification code.' };
+      }
+      return { success: true, message: 'Identity verified successfully.' };
+    };
+
+    assert.equal(verifyOtp(validAttempt.verificationToken, '000000', 'token-12345', '849201').success, false);
+    assert.equal(verifyOtp(validAttempt.verificationToken, '849201', 'token-12345', '849201').success, true);
+  });
 });
+

@@ -320,6 +320,8 @@ All client-server communication utilizes predictable HTTP response codes and a s
 | :--- | :--- | :--- | :--- | :--- |
 | **Auth** | `POST` | `/api/v1/auth/register` | Public | Register new borrower account |
 | **Auth** | `POST` | `/api/v1/auth/login` | Public | Authenticate user & issue JWT tokens |
+| **Auth** | `POST` | `/api/v1/auth/forgot-registration` | Public (Rate Limited) | Verify borrower identity & issue OTP challenge for reference recovery |
+| **Auth** | `POST` | `/api/v1/auth/verify-registration-otp` | Public (Rate Limited) | Validate OTP & securely deliver application reference number |
 | **Auth** | `POST` | `/api/v1/auth/refresh` | Authenticated | Rotate refresh token & issue new access token |
 | **Auth** | `POST` | `/api/v1/auth/logout` | Authenticated | Revoke tokens via Redis JTI blacklist |
 | **Auth** | `GET` | `/api/v1/auth/me` | Authenticated | Get current authenticated profile |

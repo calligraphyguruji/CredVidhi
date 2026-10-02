@@ -34,12 +34,31 @@ TestingSessionLocal = async_sessionmaker(
 
 @pytest.fixture(scope="function", autouse=True)
 async def setup_test_database() -> AsyncGenerator[None, None]:
-    """Create fresh in-memory SQLite schema for each test run."""
+    """Create fresh in-memory SQLite schema and reset rate limits for each test run."""
+    from app.core.redis import _memory_rate_limits, _memory_recovery_sessions, _memory_revoked_tokens
+    from app.database import get_redis_client, close_redis_client
+
+    _memory_rate_limits.clear()
+    _memory_recovery_sessions.clear()
+    _memory_revoked_tokens.clear()
+
+    try:
+        r_client = await get_redis_client()
+        rate_keys = await r_client.keys("rate:*")
+        if rate_keys:
+            await r_client.delete(*rate_keys)
+        rec_keys = await r_client.keys("reg_recovery:*")
+        if rec_keys:
+            await r_client.delete(*rec_keys)
+    except Exception:
+        pass
+
     async with test_engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
     yield
     async with test_engine.begin() as conn:
         await conn.run_sync(Base.metadata.drop_all)
+    await close_redis_client()
 
 
 @pytest.fixture

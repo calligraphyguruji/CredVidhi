@@ -127,6 +127,11 @@ def create_application() -> FastAPI:
     # Mount API v1 router
     app.include_router(api_v1_router, prefix=settings.API_V1_PREFIX)
 
+    # Mount /api/auth alias for top-level authentication requests
+    from app.api.v1.auth import router as auth_router
+
+    app.include_router(auth_router, prefix="/api", include_in_schema=False)
+
     return app
 
 

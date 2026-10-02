@@ -56,15 +56,26 @@ redis_lock = asyncio.Lock()
 async def get_redis_client() -> aioredis.Redis:
     """Retrieve or safely initialize the async Redis connection."""
     global redis_client
+    try:
+        current_loop = asyncio.get_running_loop()
+    except RuntimeError:
+        current_loop = None
+
+    if redis_client is not None:
+        try:
+            client_loop = getattr(redis_client.connection_pool, "_loop", None)
+            if client_loop is not None and (client_loop.is_closed() or (current_loop and client_loop is not current_loop)):
+                redis_client = None
+        except Exception:
+            redis_client = None
+
     if redis_client is None:
-        async with redis_lock:
-            if redis_client is None:
-                redis_client = aioredis.from_url(
-                    settings.REDIS_URL,
-                    decode_responses=True,
-                    socket_timeout=3.0,
-                    socket_connect_timeout=3.0,
-                )
+        redis_client = aioredis.from_url(
+            settings.REDIS_URL,
+            decode_responses=True,
+            socket_timeout=3.0,
+            socket_connect_timeout=3.0,
+        )
     return redis_client
 
 
