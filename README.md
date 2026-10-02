@@ -267,8 +267,12 @@ CredVidhi implements granular, defense-in-depth role authorization:
 | **Trigger Deterministic Risk Assessment** | ❌ | ❌ | ✅ | ✅ |
 | **Issue Final Approval / Rejection** | ❌ | ❌ | ✅ | ✅ |
 | **Record Disbursement Milestone** | ❌ | ❌ | ❌ | ✅ |
-| **Inspect Immutable Audit Trail** | ❌ | ❌ | ❌ | ✅ |
 | **Configure Loan Products & Limits** | ❌ | ❌ | ❌ | ✅ |
+
+### Protected Routes & Redirect Intent Preservation:
+- **Zero Authentication Bypass:** All internal workflow interfaces, staff workbenches, and borrower dashboards are strictly guarded. Unauthenticated visitors clicking workflow CTAs (e.g., *Launch Digital Application Interface*, *Launch Queue Triage & Locking Interface*) are securely routed to `/register` (with instant toggle to `/login`).
+- **Target Intent Persistence:** The user's intended destination is preserved across the registration or sign-in flow (`?redirect=...` and session state). Upon successful authentication, authorized users are automatically directed to their requested interface.
+- **Strict Persona Verification:** Authenticated users attempting to enter workbenches outside their authorized role are prevented from bypassing RBAC and shown an explicit access denial notification without silent role mutation.
 
 ---
 

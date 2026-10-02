@@ -17,12 +17,14 @@ import { INITIAL_USERS } from '../../services/mockData';
 import type { UserRole } from '../../types';
 import { scaleInVariants, formErrorVariants } from '../../utils/motion';
 
+import { canRoleAccessView, getDefaultViewForRole } from '../../utils/rbac';
+
 interface LoginPageProps {
   initialTab?: 'staff' | 'borrower' | 'register';
 }
 
 export const LoginPage: React.FC<LoginPageProps> = ({ initialTab = 'staff' }) => {
-  const { setActiveView, registerApplicant, login } = useApp();
+  const { setActiveView, registerApplicant, login, pendingRedirectView } = useApp();
   const shouldReduceMotion = useReducedMotion();
 
   const [activeTab, setActiveTab] = useState<'staff' | 'borrower' | 'register'>(initialTab);
@@ -58,13 +60,9 @@ export const LoginPage: React.FC<LoginPageProps> = ({ initialTab = 'staff' }) =>
       setIsLoading(false);
       console.info(`[CredVidhi Gateway] Authenticated ${userEmail} as ${role}`);
 
-      let targetView = 'borrower-portal';
-      if (role === 'LOAN_OFFICER') {
-        targetView = 'officer-queue';
-      } else if (role === 'RISK_ANALYST') {
-        targetView = 'underwriting-cockpit';
-      } else if (role === 'ADMIN') {
-        targetView = 'compliance-audit';
+      let targetView = getDefaultViewForRole(role);
+      if (pendingRedirectView && canRoleAccessView(role, pendingRedirectView)) {
+        targetView = pendingRedirectView;
       }
 
       login(role, userEmail, targetView);

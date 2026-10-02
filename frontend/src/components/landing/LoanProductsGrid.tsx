@@ -4,9 +4,10 @@ import { ArrowRight, Check } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { Button } from '../ui/Button';
 import { formatCurrency } from '../../utils/financial';
+import { canRoleAccessView } from '../../utils/rbac';
 
 export const LoanProductsGrid: React.FC = () => {
-  const { products, setActiveView, switchRole, isAuthenticated } = useApp();
+  const { products, setActiveView, currentRole, isAuthenticated, addToast } = useApp();
   const shouldReduceMotion = useReducedMotion();
 
   return (
@@ -106,11 +107,18 @@ export const LoanProductsGrid: React.FC = () => {
                 className="w-full justify-center"
                 onClick={() => {
                   if (!isAuthenticated) {
-                    setActiveView('register');
+                    setActiveView('register', 'borrower-portal');
                     return;
                   }
-                  switchRole('APPLICANT');
-                  setActiveView('borrower-portal');
+                  if (canRoleAccessView(currentRole, 'borrower-portal')) {
+                    setActiveView('borrower-portal');
+                  } else {
+                    addToast({
+                      type: 'error',
+                      title: 'Access Restricted (RBAC)',
+                      message: `Your account role (${currentRole}) is not authorized for the borrower application portal.`,
+                    });
+                  }
                 }}
                 icon={<ArrowRight className="w-4 h-4" />}
               >

@@ -5,9 +5,10 @@ import { useApp } from '../../context/AppContext';
 import { Button } from '../ui/Button';
 import { calculateEmi, calculateDti, formatCurrency } from '../../utils/financial';
 import { fadeUpVariants, scaleInVariants } from '../../utils/motion';
+import { canRoleAccessView } from '../../utils/rbac';
 
 export const HeroSection: React.FC = () => {
-  const { setActiveView, switchRole, products, isAuthenticated } = useApp();
+  const { setActiveView, currentRole, products, isAuthenticated, addToast } = useApp();
   const shouldReduceMotion = useReducedMotion();
 
   // Dynamic loan calculator state in Hero
@@ -129,11 +130,18 @@ export const HeroSection: React.FC = () => {
                 size="lg"
                 onClick={() => {
                   if (!isAuthenticated) {
-                    setActiveView('register');
+                    setActiveView('register', 'officer-queue');
                     return;
                   }
-                  switchRole('LOAN_OFFICER');
-                  setActiveView('officer-queue');
+                  if (canRoleAccessView(currentRole, 'officer-queue')) {
+                    setActiveView('officer-queue');
+                  } else {
+                    addToast({
+                      type: 'error',
+                      title: 'Access Restricted (RBAC)',
+                      message: `Your account role (${currentRole}) is not authorized to access the officer queue.`,
+                    });
+                  }
                 }}
                 icon={<Activity className="w-4 h-4 text-orange-600" />}
               >

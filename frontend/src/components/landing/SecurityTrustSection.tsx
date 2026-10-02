@@ -2,9 +2,10 @@ import React from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 import { ShieldCheck, Lock, EyeOff, FileText, Database, Key } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
+import { canRoleAccessView } from '../../utils/rbac';
 
 export const SecurityTrustSection: React.FC = () => {
-  const { setActiveView, switchRole, isAuthenticated } = useApp();
+  const { setActiveView, currentRole, isAuthenticated, addToast } = useApp();
   const shouldReduceMotion = useReducedMotion();
 
   const trustPillars = [
@@ -123,11 +124,18 @@ export const SecurityTrustSection: React.FC = () => {
             whileTap={!shouldReduceMotion ? { scale: 0.98 } : undefined}
             onClick={() => {
               if (!isAuthenticated) {
-                setActiveView('register');
+                setActiveView('register', 'compliance-audit');
                 return;
               }
-              switchRole('ADMIN');
-              setActiveView('compliance-audit');
+              if (canRoleAccessView(currentRole, 'compliance-audit')) {
+                setActiveView('compliance-audit');
+              } else {
+                addToast({
+                  type: 'error',
+                  title: 'Access Restricted (RBAC)',
+                  message: `Your account role (${currentRole}) is not authorized to access the compliance audit ledger.`,
+                });
+              }
             }}
             className="shrink-0 px-4 py-2 bg-orange-600 hover:bg-orange-500 text-white text-xs font-semibold rounded-md transition-colors cursor-pointer shadow-xs shadow-orange-950/40"
           >

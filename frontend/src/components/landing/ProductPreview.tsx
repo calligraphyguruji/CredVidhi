@@ -10,9 +10,10 @@ import {
 import { useApp } from '../../context/AppContext';
 import { Badge } from '../ui/Badge';
 import { formatCurrency } from '../../utils/financial';
+import { canRoleAccessView } from '../../utils/rbac';
 
 export const ProductPreview: React.FC = () => {
-  const { setActiveView, switchRole, applications, isAuthenticated } = useApp();
+  const { setActiveView, currentRole, applications, isAuthenticated, addToast } = useApp();
   const [previewTab, setPreviewTab] = useState<'workbench' | 'underwriting' | 'borrower'>('workbench');
   const shouldReduceMotion = useReducedMotion();
 
@@ -128,19 +129,26 @@ export const ProductPreview: React.FC = () => {
                 whileHover={!shouldReduceMotion ? { scale: 1.03 } : undefined}
                 whileTap={!shouldReduceMotion ? { scale: 0.97 } : undefined}
                 onClick={() => {
+                  const targetView =
+                    previewTab === 'workbench'
+                      ? 'document-workbench'
+                      : previewTab === 'underwriting'
+                      ? 'underwriting-cockpit'
+                      : 'borrower-portal';
+
                   if (!isAuthenticated) {
-                    setActiveView('register');
+                    setActiveView('register', targetView);
                     return;
                   }
-                  if (previewTab === 'workbench') {
-                    switchRole('LOAN_OFFICER');
-                    setActiveView('document-workbench');
-                  } else if (previewTab === 'underwriting') {
-                    switchRole('RISK_ANALYST');
-                    setActiveView('underwriting-cockpit');
+
+                  if (canRoleAccessView(currentRole, targetView)) {
+                    setActiveView(targetView);
                   } else {
-                    switchRole('APPLICANT');
-                    setActiveView('borrower-portal');
+                    addToast({
+                      type: 'error',
+                      title: 'Access Restricted (RBAC)',
+                      message: `Your account role (${currentRole}) is not authorized to access this workspace.`,
+                    });
                   }
                 }}
                 className="inline-flex items-center gap-1 bg-orange-600 hover:bg-orange-500 text-white px-2.5 py-1 rounded text-xs font-sans font-semibold transition-colors cursor-pointer"

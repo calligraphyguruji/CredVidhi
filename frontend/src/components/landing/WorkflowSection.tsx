@@ -11,9 +11,10 @@ import {
   ShieldCheck,
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
+import { canRoleAccessView } from '../../utils/rbac';
 
 export const WorkflowSection: React.FC = () => {
-  const { setActiveView, switchRole, isAuthenticated } = useApp();
+  const { setActiveView, currentRole, isAuthenticated, addToast } = useApp();
   const [activeStep, setActiveStep] = useState(2); // Default to Document Verification step
   const shouldReduceMotion = useReducedMotion();
 
@@ -245,11 +246,18 @@ export const WorkflowSection: React.FC = () => {
                   whileTap={!shouldReduceMotion ? { scale: 0.98 } : undefined}
                   onClick={() => {
                     if (!isAuthenticated) {
-                      setActiveView('register');
+                      setActiveView('register', current.targetView);
                       return;
                     }
-                    switchRole(current.targetRole);
-                    setActiveView(current.targetView);
+                    if (canRoleAccessView(currentRole, current.targetView)) {
+                      setActiveView(current.targetView);
+                    } else {
+                      addToast({
+                        type: 'error',
+                        title: 'Access Restricted (RBAC)',
+                        message: `Your account role (${currentRole}) is not authorized to access the ${current.title} interface.`,
+                      });
+                    }
                   }}
                   className="inline-flex items-center gap-2 px-4 py-2 bg-orange-600 hover:bg-orange-500 text-white rounded text-xs font-semibold transition-colors shadow-xs cursor-pointer"
                 >

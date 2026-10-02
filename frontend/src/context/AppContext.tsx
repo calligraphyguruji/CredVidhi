@@ -18,6 +18,7 @@ import {
 import { calculateEmi, calculateDti, calculateDisposableIncome } from '../utils/financial';
 import { ToastContainer, type ToastMessage } from '../components/ui/Toast';
 import { applyRouteSEO, resolveViewFromUrl, isPublicRoute } from '../utils/seo';
+import { canRoleAccessView, getDefaultViewForRole } from '../utils/rbac';
 import {
   healthApi,
   authApi,
@@ -44,7 +45,9 @@ interface AppContextType {
   activeApplicationId: string;
   setActiveApplicationId: (id: string) => void;
   activeView: string;
-  setActiveView: (view: string) => void;
+  setActiveView: (view: string, redirectTarget?: string) => void;
+  pendingRedirectView: string | null;
+  setPendingRedirectView: (view: string | null) => void;
   selectedDocId: string | null;
   setSelectedDocId: (id: string | null) => void;
   // Authentication & Session
@@ -122,6 +125,7 @@ const STORAGE_KEYS = {
   PRODUCTS: 'credvidhi_products_v1',
   USERS: 'credvidhi_users_v1',
   IS_AUTHENTICATED: 'credvidhi_is_authenticated_v1',
+  PENDING_REDIRECT: 'credvidhi_pending_redirect_v1',
 };
 
 const isUUID = (str: string): boolean =>
@@ -210,6 +214,26 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return INITIAL_AUDIT_LOGS;
   });
 
+  const [pendingRedirectView, setPendingRedirectViewState] = useState<string | null>(() => {
+    if (typeof window === 'undefined') return null;
+    const urlRedirect = new URLSearchParams(window.location.search).get('redirect');
+    if (urlRedirect && !isPublicRoute(urlRedirect)) {
+      return urlRedirect;
+    }
+    return localStorage.getItem(STORAGE_KEYS.PENDING_REDIRECT);
+  });
+
+  const setPendingRedirectView = (view: string | null) => {
+    setPendingRedirectViewState(view);
+    if (typeof window !== 'undefined') {
+      if (view) {
+        localStorage.setItem(STORAGE_KEYS.PENDING_REDIRECT, view);
+      } else {
+        localStorage.removeItem(STORAGE_KEYS.PENDING_REDIRECT);
+      }
+    }
+  };
+
   const [activeApplicationId, setActiveApplicationId] = useState<string>('app-001');
   const [selectedDocId, setSelectedDocId] = useState<string | null>('doc-002');
   const [activeView, setActiveViewState] = useState<string>(() => {
@@ -218,21 +242,32 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const hasAuth = typeof window !== 'undefined' && localStorage.getItem(STORAGE_KEYS.IS_AUTHENTICATED) === 'true';
     const isAuth = hasToken || hasAuth;
     if (!isPublicRoute(initialView) && !isAuth) {
+      if (typeof window !== 'undefined') {
+        localStorage.setItem(STORAGE_KEYS.PENDING_REDIRECT, initialView);
+      }
       return 'register';
     }
     return initialView;
   });
 
-  const setActiveView = (view: string) => {
+  const setActiveView = (view: string, redirectTarget?: string) => {
     const isAuthed =
       isAuthenticated ||
       (typeof window !== 'undefined' &&
         (!!localStorage.getItem(AUTH_TOKEN_KEY) ||
           localStorage.getItem(STORAGE_KEYS.IS_AUTHENTICATED) === 'true'));
+
     if (!isPublicRoute(view) && !isAuthed) {
+      const target = redirectTarget || view;
+      setPendingRedirectView(target);
       setActiveViewState('register');
       return;
     }
+
+    if (isPublicRoute(view) && redirectTarget) {
+      setPendingRedirectView(redirectTarget);
+    }
+
     setActiveViewState(view);
   };
 
@@ -246,8 +281,30 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         // user recognized
       }
     }
+
+    const target = redirectView || pendingRedirectView;
+    setPendingRedirectView(null);
+
+    if (target && !isPublicRoute(target)) {
+      if (canRoleAccessView(role, target)) {
+        setActiveViewState(target);
+        return;
+      }
+      // Role not permitted to target view: route to role default and toast warning
+      const fallbackView = getDefaultViewForRole(role);
+      setActiveViewState(fallbackView);
+      addToast({
+        type: 'error',
+        title: 'Access Restricted (RBAC)',
+        message: `Your account (${role}) does not have permission for the requested view. Navigated to your primary workspace.`,
+      });
+      return;
+    }
+
     if (redirectView) {
       setActiveViewState(redirectView);
+    } else {
+      setActiveViewState(getDefaultViewForRole(role));
     }
   };
 
@@ -263,6 +320,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       localStorage.removeItem(STORAGE_KEYS.IS_AUTHENTICATED);
       localStorage.removeItem(AUTH_TOKEN_KEY);
       localStorage.removeItem(REFRESH_TOKEN_KEY);
+      localStorage.removeItem(STORAGE_KEYS.PENDING_REDIRECT);
+      setPendingRedirectViewState(null);
       const safeRedirect = isPublicRoute(redirectView) ? redirectView : 'landing';
       setActiveViewState(safeRedirect);
     }
@@ -1013,12 +1072,25 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         eventType: 'USER_REGISTERED',
         notes: `Borrower self-registration: '${fullName}' (${payload.email}) registered and authenticated.`,
       });
-      addToast({
-        type: 'success',
-        title: 'Account Registered',
-        message: `Welcome ${fullName}! Your borrower account is ready.`,
-      });
-      setActiveViewState('borrower-portal');
+      // Determine target redirect after registration
+      const target = pendingRedirectView;
+      setPendingRedirectView(null);
+
+      if (target && !isPublicRoute(target)) {
+        if (canRoleAccessView('APPLICANT', target)) {
+          setActiveViewState(target);
+        } else {
+          setActiveViewState('borrower-portal');
+          addToast({
+            type: 'error',
+            title: 'Access Restricted (RBAC)',
+            message: 'Your applicant account is not authorized for that staff workspace. Navigated to borrower portal.',
+          });
+        }
+      } else {
+        setActiveViewState('borrower-portal');
+      }
+
       return { success: true };
     } catch (err: any) {
       const msg = err?.message || 'Registration failed. Please check your details.';
@@ -1033,8 +1105,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     localStorage.removeItem(STORAGE_KEYS.PRODUCTS);
     localStorage.removeItem(STORAGE_KEYS.USERS);
     localStorage.removeItem(STORAGE_KEYS.IS_AUTHENTICATED);
+    localStorage.removeItem(STORAGE_KEYS.PENDING_REDIRECT);
     localStorage.removeItem(AUTH_TOKEN_KEY);
     localStorage.removeItem(REFRESH_TOKEN_KEY);
+    setPendingRedirectViewState(null);
     setIsAuthenticated(false);
     setApplications(INITIAL_APPLICATIONS);
     setAuditLogs(INITIAL_AUDIT_LOGS);
@@ -1064,6 +1138,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setActiveApplicationId,
         activeView,
         setActiveView,
+        pendingRedirectView,
+        setPendingRedirectView,
         selectedDocId,
         setSelectedDocId,
         isAuthenticated,

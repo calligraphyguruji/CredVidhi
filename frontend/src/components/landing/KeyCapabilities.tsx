@@ -10,9 +10,10 @@ import {
   ArrowRight,
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
+import { canRoleAccessView } from '../../utils/rbac';
 
 export const KeyCapabilities: React.FC = () => {
-  const { setActiveView, switchRole, isAuthenticated } = useApp();
+  const { setActiveView, currentRole, isAuthenticated, addToast } = useApp();
   const shouldReduceMotion = useReducedMotion();
 
   const capabilities = [
@@ -133,11 +134,18 @@ export const KeyCapabilities: React.FC = () => {
                   <button
                     onClick={() => {
                       if (!isAuthenticated) {
-                        setActiveView('register');
+                        setActiveView('register', cap.actionView);
                         return;
                       }
-                      switchRole(cap.actionRole);
-                      setActiveView(cap.actionView);
+                      if (canRoleAccessView(currentRole, cap.actionView)) {
+                        setActiveView(cap.actionView);
+                      } else {
+                        addToast({
+                          type: 'error',
+                          title: 'Access Restricted (RBAC)',
+                          message: `Your account role (${currentRole}) is not authorized to inspect this internal capability.`,
+                        });
+                      }
                     }}
                     className="inline-flex items-center gap-1.5 text-xs font-semibold text-orange-600 hover:text-orange-800 cursor-pointer"
                   >

@@ -1,6 +1,8 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { isPublicRoute, resolveViewFromUrl, ROUTE_SEO_MAP } from '../utils/seo.ts';
+import { canRoleAccessView, getDefaultViewForRole } from '../utils/rbac.ts';
+import type { UserRole } from '../types/index.ts';
 
 describe('CredVidhi Navigation & Authentication Guards', () => {
   it('correctly classifies public routes', () => {
@@ -57,27 +59,149 @@ describe('CredVidhi Navigation & Authentication Guards', () => {
     assert.equal(simulateRouteResolution('login', false), 'login');
   });
 
-  it('ensures Launch Digital Application Interface CTA targets register when unauthenticated', () => {
-    const step1 = {
-      title: 'Digital Application',
-      targetRole: 'APPLICANT',
-      targetView: 'borrower-portal',
-    };
+  it('enforces RBAC permissions correctly across views and roles', () => {
+    // Applicant permissions
+    assert.equal(canRoleAccessView('APPLICANT', 'borrower-portal'), true);
+    assert.equal(canRoleAccessView('APPLICANT', 'officer-queue'), false);
+    assert.equal(canRoleAccessView('APPLICANT', 'document-workbench'), false);
+    assert.equal(canRoleAccessView('APPLICANT', 'underwriting-cockpit'), false);
+    assert.equal(canRoleAccessView('APPLICANT', 'compliance-audit'), false);
 
-    const handleWorkflowLaunch = (targetView: string, targetRole: string, isAuthenticated: boolean) => {
+    // Loan Officer permissions
+    assert.equal(canRoleAccessView('LOAN_OFFICER', 'officer-queue'), true);
+    assert.equal(canRoleAccessView('LOAN_OFFICER', 'document-workbench'), true);
+    assert.equal(canRoleAccessView('LOAN_OFFICER', 'underwriting-cockpit'), false);
+    assert.equal(canRoleAccessView('LOAN_OFFICER', 'borrower-portal'), false);
+    assert.equal(canRoleAccessView('LOAN_OFFICER', 'compliance-audit'), false);
+
+    // Risk Analyst permissions
+    assert.equal(canRoleAccessView('RISK_ANALYST', 'underwriting-cockpit'), true);
+    assert.equal(canRoleAccessView('RISK_ANALYST', 'officer-queue'), false);
+    assert.equal(canRoleAccessView('RISK_ANALYST', 'borrower-portal'), false);
+
+    // Admin permissions
+    assert.equal(canRoleAccessView('ADMIN', 'compliance-audit'), true);
+    assert.equal(canRoleAccessView('ADMIN', 'officer-queue'), true);
+    assert.equal(canRoleAccessView('ADMIN', 'underwriting-cockpit'), true);
+
+    // Default views per role
+    assert.equal(getDefaultViewForRole('APPLICANT'), 'borrower-portal');
+    assert.equal(getDefaultViewForRole('LOAN_OFFICER'), 'officer-queue');
+    assert.equal(getDefaultViewForRole('RISK_ANALYST'), 'underwriting-cockpit');
+    assert.equal(getDefaultViewForRole('ADMIN'), 'compliance-audit');
+  });
+
+  it('ensures Stage 01 (Digital Application) preserves redirect intent to borrower-portal', () => {
+    const handleStageLaunch = (
+      targetView: string,
+      isAuthenticated: boolean,
+      userRole?: UserRole
+    ) => {
       if (!isAuthenticated) {
-        return { view: 'register', roleSwitched: false };
+        return {
+          view: 'register',
+          pendingRedirect: targetView,
+          roleSwitched: false,
+        };
       }
-      return { view: targetView, roleSwitched: true, role: targetRole };
+
+      if (userRole && canRoleAccessView(userRole, targetView)) {
+        return {
+          view: targetView,
+          pendingRedirect: null,
+          roleSwitched: false,
+        };
+      }
+
+      return {
+        view: userRole ? getDefaultViewForRole(userRole) : 'register',
+        pendingRedirect: null,
+        error: 'RBAC_FORBIDDEN',
+      };
     };
 
-    const unauthenticatedResult = handleWorkflowLaunch(step1.targetView, step1.targetRole, false);
-    assert.equal(unauthenticatedResult.view, 'register', 'Unauthenticated CTA must redirect to register');
-    assert.equal(unauthenticatedResult.roleSwitched, false, 'Role must not switch for unauthenticated visitor');
+    // Unauthenticated click on Stage 01
+    const unauthed = handleStageLaunch('borrower-portal', false);
+    assert.equal(unauthed.view, 'register');
+    assert.equal(unauthed.pendingRedirect, 'borrower-portal');
 
-    const authenticatedResult = handleWorkflowLaunch(step1.targetView, step1.targetRole, true);
-    assert.equal(authenticatedResult.view, 'borrower-portal', 'Authenticated CTA must open borrower-portal');
-    assert.equal(authenticatedResult.roleSwitched, true);
-    assert.equal(authenticatedResult.role, 'APPLICANT');
+    // Authenticated applicant click
+    const authedApplicant = handleStageLaunch('borrower-portal', true, 'APPLICANT');
+    assert.equal(authedApplicant.view, 'borrower-portal');
+    assert.equal(authedApplicant.pendingRedirect, null);
+  });
+
+  it('ensures Stage 02 (Queue Triage) preserves redirect intent and enforces RBAC without mutating role', () => {
+    const handleStageLaunch = (
+      targetView: string,
+      isAuthenticated: boolean,
+      userRole?: UserRole
+    ) => {
+      if (!isAuthenticated) {
+        return {
+          view: 'register',
+          pendingRedirect: targetView,
+          roleSwitched: false,
+        };
+      }
+
+      if (userRole && canRoleAccessView(userRole, targetView)) {
+        return {
+          view: targetView,
+          pendingRedirect: null,
+          roleSwitched: false,
+        };
+      }
+
+      return {
+        view: userRole ? getDefaultViewForRole(userRole) : 'register',
+        pendingRedirect: null,
+        error: 'RBAC_FORBIDDEN',
+      };
+    };
+
+    // 1. Unauthenticated visitor clicking Stage 02
+    const unauthed = handleStageLaunch('officer-queue', false);
+    assert.equal(unauthed.view, 'register', 'Must route unauthenticated visitor to /register');
+    assert.equal(unauthed.pendingRedirect, 'officer-queue', 'Must save pending redirect to officer-queue');
+    assert.equal(unauthed.roleSwitched, false, 'Must not change or grant roles');
+
+    // 2. Authenticated Loan Officer clicking Stage 02
+    const authedOfficer = handleStageLaunch('officer-queue', true, 'LOAN_OFFICER');
+    assert.equal(authedOfficer.view, 'officer-queue', 'Authorized officer enters officer-queue');
+    assert.equal(authedOfficer.error, undefined);
+
+    // 3. Authenticated Applicant clicking Stage 02 (unauthorized role)
+    const authedApplicant = handleStageLaunch('officer-queue', true, 'APPLICANT');
+    assert.equal(authedApplicant.error, 'RBAC_FORBIDDEN', 'Applicant is not permitted to enter officer queue');
+    assert.equal(authedApplicant.view, 'borrower-portal', 'Routes to authorized primary workspace');
+  });
+
+  it('post-login / post-register redirects to intended target if authorized', () => {
+    const resolvePostAuthRedirect = (role: UserRole, pendingTarget: string | null) => {
+      if (pendingTarget && !isPublicRoute(pendingTarget)) {
+        if (canRoleAccessView(role, pendingTarget)) {
+          return { target: pendingTarget, allowed: true };
+        }
+        return { target: getDefaultViewForRole(role), allowed: false, rbacWarning: true };
+      }
+      return { target: getDefaultViewForRole(role), allowed: true };
+    };
+
+    // Applicant logs in with pending borrower-portal redirect
+    const res1 = resolvePostAuthRedirect('APPLICANT', 'borrower-portal');
+    assert.equal(res1.target, 'borrower-portal');
+    assert.equal(res1.allowed, true);
+
+    // Loan Officer logs in with pending officer-queue redirect
+    const res2 = resolvePostAuthRedirect('LOAN_OFFICER', 'officer-queue');
+    assert.equal(res2.target, 'officer-queue');
+    assert.equal(res2.allowed, true);
+
+    // Applicant logs in with pending officer-queue redirect (unauthorized)
+    const res3 = resolvePostAuthRedirect('APPLICANT', 'officer-queue');
+    assert.equal(res3.target, 'borrower-portal');
+    assert.equal(res3.allowed, false);
+    assert.equal(res3.rbacWarning, true);
   });
 });

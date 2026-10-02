@@ -1,17 +1,25 @@
 import React from 'react';
 import { ShieldCheck, Lock } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
+import { canRoleAccessView } from '../../utils/rbac';
 
 export const Footer: React.FC = () => {
-  const { setActiveView, switchRole, isAuthenticated } = useApp();
+  const { setActiveView, currentRole, isAuthenticated, addToast } = useApp();
 
-  const handleInternalNavigate = (role: Parameters<typeof switchRole>[0], view: string) => {
+  const handleInternalNavigate = (view: string) => {
     if (!isAuthenticated) {
-      setActiveView('register');
+      setActiveView('register', view);
       return;
     }
-    switchRole(role);
-    setActiveView(view);
+    if (canRoleAccessView(currentRole, view)) {
+      setActiveView(view);
+    } else {
+      addToast({
+        type: 'error',
+        title: 'Access Restricted (RBAC)',
+        message: `Your account role (${currentRole}) is not authorized to access this internal section.`,
+      });
+    }
   };
 
   return (
@@ -103,7 +111,7 @@ export const Footer: React.FC = () => {
             <ul className="space-y-2 text-slate-400">
               <li>
                 <button
-                  onClick={() => handleInternalNavigate('LOAN_OFFICER', 'officer-queue')}
+                  onClick={() => handleInternalNavigate('officer-queue')}
                   className="hover:text-white transition-colors cursor-pointer"
                 >
                   Officer Queue (Triage)
@@ -111,7 +119,7 @@ export const Footer: React.FC = () => {
               </li>
               <li>
                 <button
-                  onClick={() => handleInternalNavigate('LOAN_OFFICER', 'document-workbench')}
+                  onClick={() => handleInternalNavigate('document-workbench')}
                   className="hover:text-white transition-colors cursor-pointer"
                 >
                   Document Verification Workbench
@@ -119,7 +127,7 @@ export const Footer: React.FC = () => {
               </li>
               <li>
                 <button
-                  onClick={() => handleInternalNavigate('RISK_ANALYST', 'underwriting-cockpit')}
+                  onClick={() => handleInternalNavigate('underwriting-cockpit')}
                   className="hover:text-white transition-colors cursor-pointer"
                 >
                   Underwriting & Risk Cockpit
@@ -127,7 +135,7 @@ export const Footer: React.FC = () => {
               </li>
               <li>
                 <button
-                  onClick={() => handleInternalNavigate('APPLICANT', 'borrower-portal')}
+                  onClick={() => handleInternalNavigate('borrower-portal')}
                   className="hover:text-white transition-colors cursor-pointer"
                 >
                   Borrower Self-Service Portal
@@ -144,7 +152,7 @@ export const Footer: React.FC = () => {
             <ul className="space-y-2 text-slate-400">
               <li>
                 <button
-                  onClick={() => handleInternalNavigate('ADMIN', 'compliance-audit')}
+                  onClick={() => handleInternalNavigate('compliance-audit')}
                   className="hover:text-white transition-colors cursor-pointer"
                 >
                   Compliance Audit Logs
@@ -152,7 +160,7 @@ export const Footer: React.FC = () => {
               </li>
               <li>
                 <button
-                  onClick={() => handleInternalNavigate('ADMIN', 'loan-products')}
+                  onClick={() => handleInternalNavigate('loan-products')}
                   className="hover:text-white transition-colors cursor-pointer"
                 >
                   Loan Product Matrix
