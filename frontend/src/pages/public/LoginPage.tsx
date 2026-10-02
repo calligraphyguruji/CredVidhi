@@ -294,7 +294,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ initialTab = 'staff' }) =>
               </div>
 
               {/* Segmented Tab Switcher with gliding pill */}
-              <div role="tablist" aria-label="Authentication Options" className="grid grid-cols-3 p-1 bg-slate-100 rounded-lg border border-slate-200 mb-6 font-mono text-xs relative">
+              <div role="tablist" aria-label="Authentication Options" className="grid grid-cols-3 p-1 bg-slate-100 dark:bg-slate-950/70 rounded-lg border border-slate-200 dark:border-slate-800/80 mb-6 font-mono text-xs relative">
                 <button
                   type="button"
                   role="tab"
@@ -305,14 +305,14 @@ export const LoginPage: React.FC<LoginPageProps> = ({ initialTab = 'staff' }) =>
                   }}
                   className={`relative py-2 rounded-md font-semibold transition-colors cursor-pointer z-10 text-center ${
                     activeTab === 'staff'
-                      ? 'text-orange-600'
-                      : 'text-slate-600 hover:text-slate-900'
+                      ? 'text-orange-600 dark:text-orange-400'
+                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
                   }`}
                 >
                   {activeTab === 'staff' && (
                     <motion.div
                       layoutId={shouldReduceMotion ? undefined : 'auth-tab-pill'}
-                      className="absolute inset-0 bg-white rounded-md shadow-xs -z-10"
+                      className="absolute inset-0 bg-white dark:bg-slate-800/90 rounded-md shadow-xs dark:shadow-none border border-transparent dark:border-slate-700/60 -z-10"
                       transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
                     />
                   )}
@@ -328,14 +328,14 @@ export const LoginPage: React.FC<LoginPageProps> = ({ initialTab = 'staff' }) =>
                   }}
                   className={`relative py-2 rounded-md font-semibold transition-colors cursor-pointer z-10 text-center ${
                     activeTab === 'borrower'
-                      ? 'text-orange-600'
-                      : 'text-slate-600 hover:text-slate-900'
+                      ? 'text-orange-600 dark:text-orange-400'
+                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
                   }`}
                 >
                   {activeTab === 'borrower' && (
                     <motion.div
                       layoutId={shouldReduceMotion ? undefined : 'auth-tab-pill'}
-                      className="absolute inset-0 bg-white rounded-md shadow-xs -z-10"
+                      className="absolute inset-0 bg-white dark:bg-slate-800/90 rounded-md shadow-xs dark:shadow-none border border-transparent dark:border-slate-700/60 -z-10"
                       transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
                     />
                   )}
@@ -351,14 +351,14 @@ export const LoginPage: React.FC<LoginPageProps> = ({ initialTab = 'staff' }) =>
                   }}
                   className={`relative py-2 rounded-md font-semibold transition-colors cursor-pointer z-10 text-center ${
                     activeTab === 'register'
-                      ? 'text-orange-600'
-                      : 'text-slate-600 hover:text-slate-900'
+                      ? 'text-orange-600 dark:text-orange-400'
+                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
                   }`}
                 >
                   {activeTab === 'register' && (
                     <motion.div
                       layoutId={shouldReduceMotion ? undefined : 'auth-tab-pill'}
-                      className="absolute inset-0 bg-white rounded-md shadow-xs -z-10"
+                      className="absolute inset-0 bg-white dark:bg-slate-800/90 rounded-md shadow-xs dark:shadow-none border border-transparent dark:border-slate-700/60 -z-10"
                       transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
                     />
                   )}
@@ -420,7 +420,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ initialTab = 'staff' }) =>
                           placeholder="Enter your security password"
                           autoComplete="current-password"
                           required
-                          className="w-full text-xs p-2.5 bg-slate-50 border border-slate-300 rounded focus:outline-none focus:ring-2 focus:ring-orange-500 focus:bg-white pr-10 font-mono transition-colors"
+                          className="w-full text-xs p-2.5 bg-white dark:bg-slate-900/80 border border-slate-300 dark:border-slate-700/80 text-slate-900 dark:text-slate-100 placeholder-slate-400 rounded focus:outline-none focus:ring-1 focus:ring-orange-500 focus:border-orange-500 pr-10 font-mono transition-colors"
                         />
                         <button
                           type="button"
@@ -602,7 +602,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ initialTab = 'staff' }) =>
                             placeholder="Create password"
                             autoComplete="new-password"
                             required
-                            className="w-full text-xs p-2.5 bg-slate-50 border border-slate-300 rounded focus:outline-none focus:ring-2 focus:ring-orange-500 focus:bg-white pr-10 font-mono transition-colors"
+                            className="w-full text-xs p-2.5 bg-white dark:bg-slate-900/80 border border-slate-300 dark:border-slate-700/80 text-slate-900 dark:text-slate-100 placeholder-slate-400 rounded focus:outline-none focus:ring-1 focus:ring-orange-500 focus:border-orange-500 pr-10 font-mono transition-colors"
                           />
                           <button
                             type="button"
@@ -629,7 +629,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ initialTab = 'staff' }) =>
                           placeholder="Re-enter password"
                           autoComplete="new-password"
                           required
-                          className="w-full text-xs p-2.5 bg-slate-50 border border-slate-300 rounded focus:outline-none focus:ring-2 focus:ring-orange-500 focus:bg-white font-mono transition-colors"
+                          className="w-full text-xs p-2.5 bg-white dark:bg-slate-900/80 border border-slate-300 dark:border-slate-700/80 text-slate-900 dark:text-slate-100 placeholder-slate-400 rounded focus:outline-none focus:ring-1 focus:ring-orange-500 focus:border-orange-500 font-mono transition-colors"
                         />
                       </div>
                     </div>

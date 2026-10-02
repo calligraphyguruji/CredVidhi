@@ -92,6 +92,24 @@
     border-color: rgba(255, 255, 255, 0.12) !important;
   }
 
+  /* Segmented tab switcher dark blend */
+  html.dark [role="tablist"].bg-slate-100 {
+    background-color: rgba(2, 6, 23, 0.6) !important;
+    border-color: rgba(255, 255, 255, 0.08) !important;
+  }
+
+  /* Prevent browser autofill and password managers from flashing bright white in dark mode */
+  html.dark input:-webkit-autofill,
+  html.dark input:-webkit-autofill:hover,
+  html.dark input:-webkit-autofill:focus,
+  html.dark input:-webkit-autofill:active {
+    -webkit-text-fill-color: #F8FAFC !important;
+    -webkit-box-shadow: 0 0 0px 1000px rgba(15, 23, 42, 0.95) inset !important;
+    box-shadow: 0 0 0px 1000px rgba(15, 23, 42, 0.95) inset !important;
+    transition: background-color 5000s ease-in-out 0s;
+    caret-color: #F8FAFC !important;
+  }
+
   #root {
     min-height: 100%;
     display: flex;
