@@ -130,22 +130,22 @@ export const FAQSection: React.FC = () => {
         </div>
 
         {/* Bottom Documentation Anchor Card */}
-        <div className="mt-10 p-5 rounded-lg bg-orange-50/70 border border-orange-200/80 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="mt-10 p-5 rounded-lg bg-orange-50/70 dark:bg-slate-900/90 border border-orange-200/80 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-lg bg-orange-600 text-white flex items-center justify-center shrink-0">
               <FileText className="w-5 h-5" />
             </div>
             <div>
-              <h4 className="text-xs sm:text-sm font-bold text-slate-900">
+              <h4 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-slate-100">
                 Need more architectural specifications?
               </h4>
-              <p className="text-xs text-slate-600">
+              <p className="text-xs text-slate-600 dark:text-slate-400">
                 Explore our comprehensive PRD, underwriting formulas, and security compliance matrices.
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-2 text-xs font-semibold text-orange-800 shrink-0">
-            <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+          <div className="flex items-center gap-2 text-xs font-semibold text-orange-800 dark:text-emerald-400 shrink-0">
+            <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
             <span>100% Deterministic & Audit-Ready</span>
           </div>
         </div>
