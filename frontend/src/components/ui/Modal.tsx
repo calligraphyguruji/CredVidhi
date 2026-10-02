@@ -67,16 +67,16 @@ export const Modal: React.FC<ModalProps> = ({
             initial="initial"
             animate="animate"
             exit="exit"
-            className={`relative w-full ${widthClasses} bg-white rounded-lg border border-slate-200 shadow-xl overflow-hidden z-10`}
+            className={`relative w-full ${widthClasses} bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 shadow-xl overflow-hidden z-10 transition-colors`}
           >
-            <div className="px-5 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50/60">
+            <div className="px-5 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50/60 dark:bg-slate-950/60">
               <div>
-                <h3 className="text-base font-semibold text-slate-900 leading-tight">{title}</h3>
-                {description && <p className="text-xs text-slate-500 mt-0.5">{description}</p>}
+                <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100 leading-tight">{title}</h3>
+                {description && <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{description}</p>}
               </div>
               <button
                 onClick={onClose}
-                className="text-slate-400 hover:text-slate-600 rounded p-1 hover:bg-slate-100 transition-colors cursor-pointer"
+                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded p-1 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
                 aria-label="Close modal"
               >
                 <X className="w-4 h-4" />
@@ -86,7 +86,7 @@ export const Modal: React.FC<ModalProps> = ({
             <div className="p-5 max-h-[75vh] overflow-y-auto">{children}</div>
 
             {footer && (
-              <div className="px-5 py-3.5 bg-slate-50 border-t border-slate-200 flex items-center justify-end gap-2.5">
+              <div className="px-5 py-3.5 bg-slate-50 dark:bg-slate-950/60 border-t border-slate-200 dark:border-slate-800 flex items-center justify-end gap-2.5">
                 {footer}
               </div>
             )}

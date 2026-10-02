@@ -69,7 +69,7 @@ export const UserAdministration: React.FC = () => {
       sortValue: (u) => u.fullName,
       render: (u) => (
         <div>
-          <div className="font-semibold text-slate-900 flex items-center gap-1.5">
+          <div className="font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-1.5">
             {u.fullName}
           </div>
           <div className="text-[11px] text-slate-400 font-mono">{u.email}</div>
@@ -83,15 +83,15 @@ export const UserAdministration: React.FC = () => {
       sortValue: (u) => u.role,
       render: (u) => {
         const roleColors: Record<UserRole, string> = {
-          ADMIN: 'bg-purple-50 text-purple-700 border-purple-300',
-          LOAN_OFFICER: 'bg-blue-50 text-blue-700 border-blue-300',
-          RISK_ANALYST: 'bg-orange-50 text-orange-700 border-orange-300',
-          APPLICANT: 'bg-slate-100 text-slate-700 border-slate-300',
+          ADMIN: 'bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 border-purple-300 dark:border-purple-800/60',
+          LOAN_OFFICER: 'bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border-blue-300 dark:border-blue-800/60',
+          RISK_ANALYST: 'bg-orange-50 dark:bg-orange-950/40 text-orange-700 dark:text-orange-300 border-orange-300 dark:border-orange-800/60',
+          APPLICANT: 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-700',
         };
         return (
           <span
             className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded border ${
-              roleColors[u.role] || 'bg-slate-100 text-slate-700'
+              roleColors[u.role] || 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300'
             }`}
           >
             {u.role.replace('_', ' ')}
@@ -103,7 +103,7 @@ export const UserAdministration: React.FC = () => {
       key: 'phone',
       header: 'Direct Phone',
       render: (u) => (
-        <span className="font-mono text-[11px] text-slate-600">
+        <span className="font-mono text-[11px] text-slate-600 dark:text-slate-300">
           {u.phone || '—'}
         </span>
       ),
@@ -117,17 +117,17 @@ export const UserAdministration: React.FC = () => {
         <span
           className={`inline-flex items-center gap-1 text-[10px] font-mono font-bold px-2 py-0.5 rounded border ${
             u.isActive
-              ? 'bg-emerald-50 text-emerald-700 border-emerald-300'
-              : 'bg-rose-50 text-rose-700 border-rose-300'
+              ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800/60'
+              : 'bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border-rose-300 dark:border-rose-800/60'
           }`}
         >
           {u.isActive ? (
             <>
-              <CheckCircle2 className="w-3 h-3 text-emerald-600" /> ACTIVE
+              <CheckCircle2 className="w-3 h-3 text-emerald-600 dark:text-emerald-400" /> ACTIVE
             </>
           ) : (
             <>
-              <XCircle className="w-3 h-3 text-rose-500" /> SUSPENDED
+              <XCircle className="w-3 h-3 text-rose-500 dark:text-rose-400" /> SUSPENDED
             </>
           )}
         </span>
@@ -143,7 +143,7 @@ export const UserAdministration: React.FC = () => {
             value={u.role}
             onChange={(e) => updateUser(u.id, { role: e.target.value as UserRole })}
             aria-label={`Change role for ${u.fullName}`}
-            className="text-[11px] font-mono py-1 px-1.5 bg-slate-50 border border-slate-200 rounded font-medium text-slate-700 hover:bg-white cursor-pointer"
+            className="text-[11px] font-mono py-1 px-1.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded font-medium text-slate-700 dark:text-slate-200 hover:bg-white dark:hover:bg-slate-800 cursor-pointer"
           >
             <option value="APPLICANT">APPLICANT</option>
             <option value="LOAN_OFFICER">LOAN_OFFICER</option>
@@ -167,15 +167,15 @@ export const UserAdministration: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Page Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-5 rounded-md border border-slate-200 shadow-xs">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-slate-900 p-5 rounded-md border border-slate-200 dark:border-slate-800 shadow-xs">
         <div>
-          <span className="text-xs font-mono uppercase text-orange-600 font-semibold tracking-wider">
+          <span className="text-xs font-mono uppercase text-orange-600 dark:text-orange-400 font-semibold tracking-wider">
             Identity & Access Management (RBAC)
           </span>
-          <h1 className="text-xl font-bold tracking-tight text-slate-900 mt-0.5">
+          <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100 mt-0.5">
             User Administration & System Roles
           </h1>
-          <p className="text-xs text-slate-500 mt-1">
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
             Provision staff profiles, assign cryptographic roles, and manage active session authorization policies.
           </p>
         </div>
@@ -191,49 +191,49 @@ export const UserAdministration: React.FC = () => {
 
       {/* KPI Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-white p-4 rounded-md border border-slate-200 shadow-xs">
+        <div className="bg-white dark:bg-slate-900 p-4 rounded-md border border-slate-200 dark:border-slate-800 shadow-xs">
           <div className="text-[10px] font-mono uppercase text-slate-400 font-semibold">
             Total Identities
           </div>
-          <div className="text-2xl font-bold font-mono text-slate-900 mt-1">
+          <div className="text-2xl font-bold font-mono text-slate-900 dark:text-slate-100 mt-1">
             {totalCount}
           </div>
-          <div className="text-[11px] text-slate-500 mt-0.5">Configured profiles</div>
+          <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Configured profiles</div>
         </div>
 
-        <div className="bg-white p-4 rounded-md border border-slate-200 shadow-xs">
+        <div className="bg-white dark:bg-slate-900 p-4 rounded-md border border-slate-200 dark:border-slate-800 shadow-xs">
           <div className="text-[10px] font-mono uppercase text-slate-400 font-semibold">
             Active Accounts
           </div>
-          <div className="text-2xl font-bold font-mono text-emerald-600 mt-1">
+          <div className="text-2xl font-bold font-mono text-emerald-600 dark:text-emerald-400 mt-1">
             {activeCount}
           </div>
-          <div className="text-[11px] text-emerald-700 mt-0.5">Authorized for login</div>
+          <div className="text-[11px] text-emerald-700 dark:text-emerald-400 mt-0.5">Authorized for login</div>
         </div>
 
-        <div className="bg-white p-4 rounded-md border border-slate-200 shadow-xs">
+        <div className="bg-white dark:bg-slate-900 p-4 rounded-md border border-slate-200 dark:border-slate-800 shadow-xs">
           <div className="text-[10px] font-mono uppercase text-slate-400 font-semibold">
             Loan Officers
           </div>
-          <div className="text-2xl font-bold font-mono text-blue-600 mt-1">
+          <div className="text-2xl font-bold font-mono text-blue-600 dark:text-blue-400 mt-1">
             {officerCount}
           </div>
-          <div className="text-[11px] text-slate-500 mt-0.5">Triage & verification</div>
+          <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Triage & verification</div>
         </div>
 
-        <div className="bg-white p-4 rounded-md border border-slate-200 shadow-xs">
+        <div className="bg-white dark:bg-slate-900 p-4 rounded-md border border-slate-200 dark:border-slate-800 shadow-xs">
           <div className="text-[10px] font-mono uppercase text-slate-400 font-semibold">
             Risk Analysts
           </div>
-          <div className="text-2xl font-bold font-mono text-orange-600 mt-1">
+          <div className="text-2xl font-bold font-mono text-orange-600 dark:text-orange-400 mt-1">
             {analystCount}
           </div>
-          <div className="text-[11px] text-slate-500 mt-0.5">Underwriting cockpits</div>
+          <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Underwriting cockpits</div>
         </div>
       </div>
 
       {/* Filter Toolbar */}
-      <div className="bg-white p-3 rounded-md border border-slate-200 shadow-xs flex flex-wrap items-center justify-between gap-3 text-xs">
+      <div className="bg-white dark:bg-slate-900 p-3 rounded-md border border-slate-200 dark:border-slate-800 shadow-xs flex flex-wrap items-center justify-between gap-3 text-xs">
         <div className="flex items-center gap-1 overflow-x-auto font-mono">
           <span className="text-slate-400 text-[11px] mr-1">ROLE:</span>
           {['ALL', 'LOAN_OFFICER', 'RISK_ANALYST', 'APPLICANT', 'ADMIN'].map((r) => (
@@ -243,7 +243,7 @@ export const UserAdministration: React.FC = () => {
               className={`px-2.5 py-1 rounded text-[11px] font-medium transition-colors cursor-pointer ${
                 roleFilter === r
                   ? 'bg-orange-600 text-white font-semibold'
-                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                  : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
               }`}
             >
               {r.replace('_', ' ')}
@@ -259,8 +259,8 @@ export const UserAdministration: React.FC = () => {
               onClick={() => setStatusFilter(s)}
               className={`px-2 py-1 rounded text-[11px] font-medium transition-colors cursor-pointer ${
                 statusFilter === s
-                  ? 'bg-slate-800 text-white font-semibold'
-                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                  ? 'bg-slate-800 dark:bg-slate-700 text-white font-semibold'
+                  : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
               }`}
             >
               {s}
@@ -321,13 +321,13 @@ export const UserAdministration: React.FC = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div>
-              <label className="block text-[10px] font-mono font-semibold text-slate-500 uppercase tracking-wider mb-1">
+              <label className="block text-[10px] font-mono font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">
                 System Role (RBAC)
               </label>
               <select
                 value={role}
                 onChange={(e) => setRole(e.target.value as UserRole)}
-                className="w-full text-xs p-2 bg-slate-50 border border-slate-300 rounded font-medium"
+                className="w-full text-xs p-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 rounded font-medium focus:bg-white dark:focus:bg-slate-950"
               >
                 <option value="LOAN_OFFICER">Loan Officer (Triage & KYC)</option>
                 <option value="RISK_ANALYST">Risk Analyst (Underwriting)</option>
@@ -344,10 +344,10 @@ export const UserAdministration: React.FC = () => {
             />
           </div>
 
-          <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
+          <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
             <div>
-              <span className="font-semibold text-slate-800 block">Initial Account Status</span>
-              <span className="text-[11px] text-slate-400">
+              <span className="font-semibold text-slate-800 dark:text-slate-200 block">Initial Account Status</span>
+              <span className="text-[11px] text-slate-400 dark:text-slate-500">
                 Determines whether user can authenticate immediately
               </span>
             </div>
@@ -356,8 +356,8 @@ export const UserAdministration: React.FC = () => {
               onClick={() => setIsActive(!isActive)}
               className={`text-xs px-3 py-1.5 rounded border font-semibold flex items-center gap-1.5 transition-colors cursor-pointer ${
                 isActive
-                  ? 'bg-emerald-50 text-emerald-700 border-emerald-300'
-                  : 'bg-slate-100 text-slate-500 border-slate-300'
+                  ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800/60'
+                  : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border-slate-300 dark:border-slate-700'
               }`}
             >
               {isActive ? (

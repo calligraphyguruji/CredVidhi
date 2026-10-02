@@ -75,14 +75,14 @@ export const UnderwritingCockpit: React.FC = () => {
   return (
     <div className="space-y-5">
       {/* Top Header & Breadcrumbs */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 bg-white p-4 rounded-md border border-slate-200 shadow-xs">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 bg-white dark:bg-slate-900 p-4 rounded-md border border-slate-200 dark:border-slate-800 shadow-xs transition-colors">
         <div>
-          <div className="flex items-center gap-2 text-xs font-mono text-slate-500 mb-1">
+          <div className="flex items-center gap-2 text-xs font-mono text-slate-500 dark:text-slate-400 mb-1">
             <span>DOCKET: {application.referenceNumber}</span>
             <span>•</span>
             <Badge status={application.status} size="sm" />
           </div>
-          <h1 className="text-xl font-bold tracking-tight text-slate-900">
+          <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
             Quantitative Underwriting Cockpit — {application.personal.fullName}
           </h1>
         </div>
@@ -103,7 +103,7 @@ export const UnderwritingCockpit: React.FC = () => {
               variant="outline"
               size="sm"
               onClick={handleRunEvaluation}
-              icon={<Activity className="w-3.5 h-3.5 text-orange-600" />}
+              icon={<Activity className="w-3.5 h-3.5 text-orange-600 dark:text-orange-400" />}
             >
               Re-Calculate Risk
             </Button>
@@ -115,20 +115,20 @@ export const UnderwritingCockpit: React.FC = () => {
       <AnimatePresence>
         {showSuccessBanner && (
           <motion.div
-            initial={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, y: -8 }}
+            initial={shouldReduceMotion ? undefined : { opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, y: -8 }}
-            className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-md text-xs flex items-center justify-between shadow-xs"
+            exit={shouldReduceMotion ? undefined : { opacity: 0, y: -8 }}
+            className="p-3 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800/80 text-emerald-800 dark:text-emerald-300 rounded-md text-xs flex items-center justify-between shadow-xs"
           >
             <div className="flex items-center gap-2 font-medium">
-              <CheckCircle className="w-4 h-4 text-emerald-600" />
+              <CheckCircle className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
               <span>
                 Decision successfully recorded and signed into the immutable audit trail.
               </span>
             </div>
             <button
               onClick={() => setShowSuccessBanner(false)}
-              className="text-emerald-700 hover:text-emerald-900 font-bold"
+              className="text-emerald-700 dark:text-emerald-400 hover:text-emerald-900 dark:hover:text-emerald-200 font-bold cursor-pointer"
             >
               ✕
             </button>
@@ -140,12 +140,12 @@ export const UnderwritingCockpit: React.FC = () => {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <motion.div
           whileHover={!shouldReduceMotion ? { y: -2 } : undefined}
-          className="bg-white p-4 rounded-md border border-slate-200 shadow-xs transition-shadow hover:shadow-md"
+          className="bg-white dark:bg-slate-900 p-4 rounded-md border border-slate-200 dark:border-slate-800 shadow-xs transition-shadow hover:shadow-md"
         >
-          <div className="text-[10px] font-mono text-slate-500 uppercase tracking-wider">
+          <div className="text-[10px] font-mono text-slate-500 dark:text-slate-400 uppercase tracking-wider">
             Credit Score
           </div>
-          <div className="text-2xl font-bold font-mono text-slate-900 mt-1">
+          <div className="text-2xl font-bold font-mono text-slate-900 dark:text-slate-100 mt-1">
             <AnimatedCounter value={application.financial.creditScoreDeclared} duration={0.6} />
           </div>
           <div className="mt-1">
@@ -157,31 +157,31 @@ export const UnderwritingCockpit: React.FC = () => {
 
         <motion.div
           whileHover={!shouldReduceMotion ? { y: -2 } : undefined}
-          className="bg-white p-4 rounded-md border border-slate-200 shadow-xs transition-shadow hover:shadow-md"
+          className="bg-white dark:bg-slate-900 p-4 rounded-md border border-slate-200 dark:border-slate-800 shadow-xs transition-shadow hover:shadow-md"
         >
-          <div className="text-[10px] font-mono text-slate-500 uppercase tracking-wider">
+          <div className="text-[10px] font-mono text-slate-500 dark:text-slate-400 uppercase tracking-wider">
             Calculated DTI Ratio
           </div>
-          <div className="text-2xl font-bold font-mono text-slate-900 mt-1">
+          <div className="text-2xl font-bold font-mono text-slate-900 dark:text-slate-100 mt-1">
             {assessment ? (
               <AnimatedCounter value={assessment.calculatedDti} duration={0.6} suffix="%" decimals={1} />
             ) : (
               'Pending'
             )}
           </div>
-          <div className="text-[11px] text-slate-500 font-mono mt-1">
+          <div className="text-[11px] text-slate-500 dark:text-slate-400 font-mono mt-1">
             Cap: {application.product.maxDtiRatio}% (Safe &lt; 45%)
           </div>
         </motion.div>
 
         <motion.div
           whileHover={!shouldReduceMotion ? { y: -2 } : undefined}
-          className="bg-white p-4 rounded-md border border-slate-200 shadow-xs transition-shadow hover:shadow-md"
+          className="bg-white dark:bg-slate-900 p-4 rounded-md border border-slate-200 dark:border-slate-800 shadow-xs transition-shadow hover:shadow-md"
         >
-          <div className="text-[10px] font-mono text-slate-500 uppercase tracking-wider">
+          <div className="text-[10px] font-mono text-slate-500 dark:text-slate-400 uppercase tracking-wider">
             Disposable Income Cushion
           </div>
-          <div className="text-2xl font-bold font-mono text-emerald-700 mt-1">
+          <div className="text-2xl font-bold font-mono text-emerald-700 dark:text-emerald-400 mt-1">
             {assessment ? (
               <AnimatedCounter
                 value={assessment.disposableIncome}
@@ -192,17 +192,17 @@ export const UnderwritingCockpit: React.FC = () => {
               'Pending'
             )}
           </div>
-          <div className="text-[11px] text-slate-500 font-mono mt-1">Net Monthly Surplus</div>
+          <div className="text-[11px] text-slate-500 dark:text-slate-400 font-mono mt-1">Net Monthly Surplus</div>
         </motion.div>
 
         <motion.div
           whileHover={!shouldReduceMotion ? { y: -2 } : undefined}
-          className="bg-white p-4 rounded-md border border-slate-200 shadow-xs transition-shadow hover:shadow-md"
+          className="bg-white dark:bg-slate-900 p-4 rounded-md border border-slate-200 dark:border-slate-800 shadow-xs transition-shadow hover:shadow-md"
         >
-          <div className="text-[10px] font-mono text-slate-500 uppercase tracking-wider">
+          <div className="text-[10px] font-mono text-slate-500 dark:text-slate-400 uppercase tracking-wider">
             Estimated Monthly EMI
           </div>
-          <div className="text-2xl font-bold font-mono text-orange-600 mt-1">
+          <div className="text-2xl font-bold font-mono text-orange-600 dark:text-orange-400 mt-1">
             {assessment ? (
               <AnimatedCounter
                 value={assessment.calculatedEmi}
@@ -213,7 +213,7 @@ export const UnderwritingCockpit: React.FC = () => {
               'Pending'
             )}
           </div>
-          <div className="text-[11px] text-slate-500 font-mono mt-1">
+          <div className="text-[11px] text-slate-500 dark:text-slate-400 font-mono mt-1">
             At {application.product.baseApr}% Fixed APR
           </div>
         </motion.div>
@@ -227,11 +227,11 @@ export const UnderwritingCockpit: React.FC = () => {
             <div className="space-y-4 text-xs">
               {/* Financial Progress Bar */}
               <div>
-                <div className="flex justify-between text-[11px] font-mono text-slate-500 mb-1">
+                <div className="flex justify-between text-[11px] font-mono text-slate-500 dark:text-slate-400 mb-1">
                   <span>Gross Income: {formatCurrency(application.financial.grossMonthlyIncome)}</span>
                   <span>100%</span>
                 </div>
-                <div className="h-3 w-full bg-slate-100 rounded-full overflow-hidden flex">
+                <div className="h-3 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden flex">
                   <motion.div
                     initial={shouldReduceMotion ? undefined : { width: 0 }}
                     animate={{
@@ -277,7 +277,7 @@ export const UnderwritingCockpit: React.FC = () => {
                   <div className="flex-1 bg-emerald-500" title="Disposable Surplus" />
                 </div>
 
-                <div className="grid grid-cols-2 gap-2 mt-3 text-[10px] font-mono text-slate-600">
+                <div className="grid grid-cols-2 gap-2 mt-3 text-[10px] font-mono text-slate-600 dark:text-slate-400">
                   <div className="flex items-center gap-1.5">
                     <span className="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
                     <span>Existing Debt: {formatCurrency(application.financial.existingMonthlyDebt)}</span>
@@ -298,20 +298,20 @@ export const UnderwritingCockpit: React.FC = () => {
               </div>
 
               {/* Employment Profile */}
-              <div className="pt-3 border-t border-slate-100 space-y-2">
-                <span className="text-[10px] font-mono uppercase text-slate-400 font-semibold block">
+              <div className="pt-3 border-t border-slate-100 dark:border-slate-800 space-y-2">
+                <span className="text-[10px] font-mono uppercase text-slate-400 dark:text-slate-500 font-semibold block">
                   Employment Stability
                 </span>
-                <div className="flex justify-between items-center bg-slate-50 p-2.5 rounded border border-slate-200">
+                <div className="flex justify-between items-center bg-slate-50 dark:bg-slate-950/60 p-2.5 rounded border border-slate-200 dark:border-slate-800">
                   <div>
-                    <div className="font-semibold text-slate-900">
+                    <div className="font-semibold text-slate-900 dark:text-slate-100">
                       {application.financial.employerName}
                     </div>
-                    <div className="text-[11px] text-slate-500">
+                    <div className="text-[11px] text-slate-500 dark:text-slate-400">
                       {application.financial.jobTitle} • {application.financial.employmentType}
                     </div>
                   </div>
-                  <span className="font-mono font-bold text-slate-800 text-xs">
+                  <span className="font-mono font-bold text-slate-800 dark:text-slate-200 text-xs">
                     {application.financial.yearsEmployed} Yrs
                   </span>
                 </div>
@@ -329,12 +329,12 @@ export const UnderwritingCockpit: React.FC = () => {
             {assessment ? (
               <div className="space-y-4 text-xs">
                 {/* Score & Tier Banner */}
-                <div className="p-3 bg-slate-50 border border-slate-200 rounded flex items-center justify-between">
+                <div className="p-3 bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 rounded flex items-center justify-between">
                   <div>
-                    <div className="text-[10px] font-mono text-slate-500 uppercase">
+                    <div className="text-[10px] font-mono text-slate-500 dark:text-slate-400 uppercase">
                       Risk Score Rating
                     </div>
-                    <div className="text-xl font-bold font-mono text-slate-900 mt-0.5">
+                    <div className="text-xl font-bold font-mono text-slate-900 dark:text-slate-100 mt-0.5">
                       <AnimatedCounter value={assessment.internalRiskScore} duration={0.8} /> / 1000
                     </div>
                   </div>
@@ -343,8 +343,8 @@ export const UnderwritingCockpit: React.FC = () => {
                   </Badge>
                 </div>
 
-                <div className="text-xs text-slate-700 bg-orange-50/60 border border-orange-200 p-2.5 rounded">
-                  <span className="font-semibold text-orange-950 block mb-0.5">
+                <div className="text-xs text-slate-700 dark:text-slate-300 bg-orange-50/60 dark:bg-orange-950/40 border border-orange-200 dark:border-orange-900/60 p-2.5 rounded">
+                  <span className="font-semibold text-orange-950 dark:text-orange-300 block mb-0.5">
                     System Recommendation:
                   </span>
                   {assessment.recommendation}
@@ -352,17 +352,17 @@ export const UnderwritingCockpit: React.FC = () => {
 
                 {/* Granular Evaluated Rules */}
                 <div className="space-y-2">
-                  <span className="text-[10px] font-mono uppercase text-slate-400 font-semibold block">
+                  <span className="text-[10px] font-mono uppercase text-slate-400 dark:text-slate-500 font-semibold block">
                     Evaluated Underwriting Policies
                   </span>
                   {assessment.scoreFactors.map((factor, idx) => (
                     <div
                       key={idx}
-                      className="p-2 bg-slate-50 rounded border border-slate-200 flex items-center justify-between text-xs"
+                      className="p-2 bg-slate-50 dark:bg-slate-950/60 rounded border border-slate-200 dark:border-slate-800 flex items-center justify-between text-xs"
                     >
                       <div>
-                        <div className="font-medium text-slate-900">{factor.name}</div>
-                        <div className="text-[10px] font-mono text-slate-500">
+                        <div className="font-medium text-slate-900 dark:text-slate-100">{factor.name}</div>
+                        <div className="text-[10px] font-mono text-slate-500 dark:text-slate-400">
                           Result: {factor.evaluated} (Threshold: {factor.threshold})
                         </div>
                       </div>
@@ -373,8 +373,8 @@ export const UnderwritingCockpit: React.FC = () => {
               </div>
             ) : (
               <div className="text-center py-10 space-y-3">
-                <Activity className="w-8 h-8 text-slate-400 mx-auto animate-pulse" />
-                <p className="text-xs text-slate-600">
+                <Activity className="w-8 h-8 text-slate-400 dark:text-slate-500 mx-auto animate-pulse" />
+                <p className="text-xs text-slate-600 dark:text-slate-400">
                   Risk score and DTI ratios have not been executed yet for this application.
                 </p>
                 <Button size="sm" onClick={handleRunEvaluation}>
@@ -390,22 +390,22 @@ export const UnderwritingCockpit: React.FC = () => {
           <Card
             title="Underwriting Disposition"
             subtitle="Codify binding approval or rejection"
-            className="border-slate-300"
+            className="border-slate-300 dark:border-slate-700"
           >
             <div className="space-y-3.5 text-xs">
               {/* Decision Tabs */}
               <div>
-                <label className="block text-[10px] font-mono font-semibold text-slate-500 uppercase tracking-wider mb-1.5">
+                <label className="block text-[10px] font-mono font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">
                   Adjudication Decision
                 </label>
-                <div className="grid grid-cols-3 gap-1 bg-slate-100 p-1 rounded">
+                <div className="grid grid-cols-3 gap-1 bg-slate-100 dark:bg-slate-950/70 p-1 rounded border border-transparent dark:border-slate-800">
                   <button
                     type="button"
                     onClick={() => setSelectedDecision('APPROVED')}
                     className={`py-1.5 rounded text-xs font-semibold transition-all cursor-pointer ${
                       selectedDecision === 'APPROVED'
                         ? 'bg-emerald-600 text-white shadow-xs'
-                        : 'text-slate-600 hover:text-slate-900'
+                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
                     }`}
                   >
                     APPROVE
@@ -416,7 +416,7 @@ export const UnderwritingCockpit: React.FC = () => {
                     className={`py-1.5 rounded text-xs font-semibold transition-all cursor-pointer ${
                       selectedDecision === 'CONDITIONAL'
                         ? 'bg-amber-600 text-white shadow-xs'
-                        : 'text-slate-600 hover:text-slate-900'
+                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
                     }`}
                   >
                     CONDITIONAL
@@ -427,7 +427,7 @@ export const UnderwritingCockpit: React.FC = () => {
                     className={`py-1.5 rounded text-xs font-semibold transition-all cursor-pointer ${
                       selectedDecision === 'REJECTED'
                         ? 'bg-rose-600 text-white shadow-xs'
-                        : 'text-slate-600 hover:text-slate-900'
+                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
                     }`}
                   >
                     REJECT
@@ -469,13 +469,13 @@ export const UnderwritingCockpit: React.FC = () => {
                 </>
               ) : (
                 <div>
-                  <label className="block text-[10px] font-mono font-semibold text-slate-500 uppercase tracking-wider mb-1.5">
+                  <label className="block text-[10px] font-mono font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">
                     Regulatory Rejection Code
                   </label>
                   <select
                     value={rejectionCode}
                     onChange={(e) => setRejectionCode(e.target.value)}
-                    className="w-full text-xs p-2 bg-slate-50 border border-slate-300 rounded font-mono"
+                    className="w-full text-xs p-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded font-mono text-slate-900 dark:text-slate-100 transition-colors cursor-pointer"
                   >
                     <option value="HIGH_DTI">HIGH_DTI — Exceeds product maximum DTI ratio</option>
                     <option value="POOR_CREDIT">CREDIT_BELOW_MINIMUM — Below 650 score floor</option>
@@ -487,7 +487,7 @@ export const UnderwritingCockpit: React.FC = () => {
 
               {/* Underwriter Rationale */}
               <div>
-                <label className="block text-[10px] font-mono font-semibold text-slate-500 uppercase tracking-wider mb-1.5">
+                <label className="block text-[10px] font-mono font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">
                   Audit-Logged Decision Rationale
                 </label>
                 <textarea
@@ -495,14 +495,14 @@ export const UnderwritingCockpit: React.FC = () => {
                   value={underwriterNotes}
                   onChange={(e) => setUnderwriterNotes(e.target.value)}
                   placeholder="Mandatory rationale for credit committee and regulatory audit..."
-                  className="w-full text-xs p-2.5 bg-slate-50 border border-slate-300 rounded focus:outline-none focus:ring-1 focus:ring-orange-500 transition-colors"
+                  className="w-full text-xs p-2.5 bg-slate-50 dark:bg-slate-950/80 border border-slate-300 dark:border-slate-700 rounded focus:outline-none focus:ring-1 focus:ring-orange-500 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 transition-colors"
                 ></textarea>
               </div>
 
               {/* High-Value Escalation Flag */}
               {isHighValue && (
-                <div className="p-2.5 bg-amber-50 border border-amber-300 rounded flex items-center gap-2 text-[11px] text-amber-800">
-                  <ShieldAlert className="w-4 h-4 text-amber-600 shrink-0" />
+                <div className="p-2.5 bg-amber-50 dark:bg-amber-950/50 border border-amber-300 dark:border-amber-900/80 rounded flex items-center gap-2 text-[11px] text-amber-800 dark:text-amber-300">
+                  <ShieldAlert className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
                   <span>
                     High-Value Loan (&gt; ₹5,00,000) flagged for mandatory Senior Committee cosign.
                   </span>

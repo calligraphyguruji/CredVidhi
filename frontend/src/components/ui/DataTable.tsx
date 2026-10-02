@@ -65,9 +65,9 @@ export function DataTable<T>({
   }, [filtered, sortKey, sortDir, columns]);
 
   return (
-    <div className="bg-white rounded-md border border-slate-200 shadow-xs overflow-hidden">
+    <div className="bg-white dark:bg-slate-900 rounded-md border border-slate-200 dark:border-slate-800 shadow-xs overflow-hidden transition-colors">
       {searchable && (
-        <div className="px-4 py-3 border-b border-slate-100">
+        <div className="px-4 py-3 border-b border-slate-100 dark:border-slate-800">
           <div className="relative max-w-sm">
             <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
             <input
@@ -75,7 +75,7 @@ export function DataTable<T>({
               placeholder={searchPlaceholder}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-3 py-1.5 text-xs bg-slate-50 border border-slate-300 rounded focus:outline-none focus:ring-1 focus:ring-orange-500 focus:bg-white"
+              className="w-full pl-9 pr-3 py-1.5 text-xs bg-slate-50 dark:bg-slate-950/70 border border-slate-300 dark:border-slate-700 rounded focus:outline-none focus:ring-1 focus:ring-orange-500 focus:bg-white dark:focus:bg-slate-900 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 transition-colors"
             />
           </div>
         </div>
@@ -84,11 +84,11 @@ export function DataTable<T>({
       <div className="overflow-x-auto">
         <table className="w-full text-left border-collapse">
           <thead>
-            <tr className="bg-slate-50 border-b border-slate-200 text-[11px] font-mono font-semibold text-slate-500 uppercase tracking-wider">
+            <tr className="bg-slate-50 dark:bg-slate-950/60 border-b border-slate-200 dark:border-slate-800 text-[11px] font-mono font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
               {columns.map((col) => (
                 <th
                   key={col.key}
-                  className={`py-2.5 px-4 ${stickyHeader ? 'sticky top-0 bg-slate-50 z-10' : ''} ${col.sortable ? 'cursor-pointer select-none hover:text-slate-800' : ''} ${col.className || ''}`}
+                  className={`py-2.5 px-4 ${stickyHeader ? 'sticky top-0 bg-slate-50 dark:bg-slate-950 z-10' : ''} ${col.sortable ? 'cursor-pointer select-none hover:text-slate-800 dark:hover:text-slate-200' : ''} ${col.className || ''}`}
                   onClick={col.sortable ? () => handleSort(col.key) : undefined}
                 >
                   <div className="flex items-center gap-1">
@@ -101,10 +101,10 @@ export function DataTable<T>({
               ))}
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100 text-xs">
+          <tbody className="divide-y divide-slate-100 dark:divide-slate-800/80 text-xs">
             {sorted.length === 0 ? (
               <tr>
-                <td colSpan={columns.length} className="py-12 text-center text-sm text-slate-400">
+                <td colSpan={columns.length} className="py-12 text-center text-sm text-slate-400 dark:text-slate-500">
                   {emptyMessage}
                 </td>
               </tr>
@@ -113,7 +113,7 @@ export function DataTable<T>({
                 <tr
                   key={rowKey(row)}
                   onClick={onRowClick ? () => onRowClick(row) : undefined}
-                  className={`hover:bg-slate-50/70 transition-colors ${onRowClick ? 'cursor-pointer' : ''}`}
+                  className={`hover:bg-slate-50/70 dark:hover:bg-slate-800/50 transition-colors ${onRowClick ? 'cursor-pointer' : ''}`}
                 >
                   {columns.map((col) => (
                     <td key={col.key} className={`py-2.5 px-4 ${col.className || ''}`}>
@@ -128,7 +128,7 @@ export function DataTable<T>({
       </div>
 
       {sorted.length > 0 && (
-        <div className="px-4 py-2 border-t border-slate-100 text-[11px] text-slate-400 font-mono">
+        <div className="px-4 py-2 border-t border-slate-100 dark:border-slate-800 text-[11px] text-slate-400 dark:text-slate-500 font-mono">
           {sorted.length} record{sorted.length !== 1 ? 's' : ''}
           {searchQuery && ` (filtered from ${data.length})`}
         </div>

@@ -32,23 +32,23 @@ export const Card: React.FC<CardProps> = ({
         }
       : {};
 
-  const commonClasses = `bg-white rounded-md border border-slate-200 shadow-xs transition-[border-color,box-shadow] duration-200 overflow-hidden ${
-    interactive ? 'hover:border-slate-300 hover:shadow-md cursor-pointer' : ''
+  const commonClasses = `bg-white dark:bg-slate-900 rounded-md border border-slate-200 dark:border-slate-800 shadow-xs transition-[border-color,box-shadow,background-color] duration-200 overflow-hidden ${
+    interactive ? 'hover:border-slate-300 dark:hover:border-slate-700 hover:shadow-md cursor-pointer' : ''
   } ${className}`;
 
   const content = (
     <>
       {(title || subtitle || headerAction) && (
-        <div className="px-4 py-3 border-b border-slate-200 flex items-center justify-between gap-3 bg-slate-50/50">
+        <div className="px-4 py-3 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between gap-3 bg-slate-50/50 dark:bg-slate-950/40">
           <div>
-            {title && <h3 className="text-sm font-semibold text-slate-900 leading-tight">{title}</h3>}
-            {subtitle && <p className="text-xs text-slate-500 mt-0.5">{subtitle}</p>}
+            {title && <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100 leading-tight">{title}</h3>}
+            {subtitle && <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{subtitle}</p>}
           </div>
           {headerAction && <div className="shrink-0">{headerAction}</div>}
         </div>
       )}
       <div className="p-4">{children}</div>
-      {footer && <div className="px-4 py-3 bg-slate-50 border-t border-slate-200">{footer}</div>}
+      {footer && <div className="px-4 py-3 bg-slate-50 dark:bg-slate-950/40 border-t border-slate-200 dark:border-slate-800">{footer}</div>}
     </>
   );
 

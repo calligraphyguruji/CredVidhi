@@ -59,8 +59,12 @@
     color: #F8FAFC !important;
   }
 
-  html.dark section.bg-slate-50,
-  html.dark div.bg-slate-50 {
+  html.dark section.bg-slate-50 {
+    background-color: transparent !important;
+    background-image: none !important;
+  }
+
+  html.dark div.bg-slate-50:not([class*="dark:bg-"]) {
     background-color: transparent !important;
     background-image: none !important;
   }
@@ -71,13 +75,13 @@
   }
 
   html.dark header .text-slate-900,
-  html.dark .text-slate-900 {
+  html.dark .text-slate-900:not([class*="dark:text-"]) {
     color: #F8FAFC !important;
   }
 
   html.dark header .text-slate-600,
-  html.dark .text-slate-600,
-  html.dark .text-slate-700 {
+  html.dark .text-slate-600:not([class*="dark:text-"]),
+  html.dark .text-slate-700:not([class*="dark:text-"]) {
     color: #94A3B8 !important;
   }
 
@@ -85,12 +89,12 @@
     color: #FB923C !important;
   }
 
-  html.dark .border-slate-200 {
+  html.dark .border-slate-200:not([class*="dark:border-"]) {
     border-color: rgba(255, 255, 255, 0.12) !important;
   }
 
-  /* Surface glass effect for dark mode cards */
-  html.dark .bg-white:not(.min-h-screen) {
+  /* Surface glass effect for dark mode cards without explicit dark bg */
+  html.dark .bg-white:not(.min-h-screen):not([class*="dark:bg-"]) {
     background-color: rgba(15, 23, 42, 0.8) !important;
     backdrop-filter: blur(12px);
     border-color: rgba(255, 255, 255, 0.12) !important;
@@ -100,6 +104,18 @@
   html.dark [role="tablist"].bg-slate-100 {
     background-color: rgba(2, 6, 23, 0.6) !important;
     border-color: rgba(255, 255, 255, 0.08) !important;
+  }
+
+  /* Form controls color-scheme in dark mode */
+  html.dark select,
+  html.dark textarea,
+  html.dark input {
+    color-scheme: dark;
+  }
+
+  html.dark select option {
+    background-color: #0f172a;
+    color: #F8FAFC;
   }
 
   /* Prevent browser autofill and password managers from flashing bright white in dark mode */

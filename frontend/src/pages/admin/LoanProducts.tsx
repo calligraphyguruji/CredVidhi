@@ -118,15 +118,15 @@ export const LoanProducts: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Page Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-5 rounded-md border border-slate-200 shadow-xs">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-slate-900 p-5 rounded-md border border-slate-200 dark:border-slate-800 shadow-xs">
         <div>
-          <span className="text-xs font-mono uppercase text-orange-600 font-semibold tracking-wider">
+          <span className="text-xs font-mono uppercase text-orange-600 dark:text-orange-400 font-semibold tracking-wider">
             Enterprise Product Catalog & Policy Engine
           </span>
-          <h1 className="text-xl font-bold tracking-tight text-slate-900 mt-0.5">
+          <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100 mt-0.5">
             Configured Loan Products & Underwriting Guidelines
           </h1>
-          <p className="text-xs text-slate-500 mt-1">
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
             Institutional policy limits, base interest rates, mandatory documentation checklists, and hard DTI caps.
           </p>
         </div>
@@ -152,8 +152,8 @@ export const LoanProducts: React.FC = () => {
                 <span
                   className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded border ${
                     product.isActive
-                      ? 'bg-emerald-50 text-emerald-700 border-emerald-300'
-                      : 'bg-slate-100 text-slate-500 border-slate-300'
+                      ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800/60'
+                      : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border-slate-300 dark:border-slate-700'
                   }`}
                 >
                   {product.isActive ? 'ACTIVE' : 'INACTIVE'}
@@ -161,7 +161,7 @@ export const LoanProducts: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => openEditModal(product)}
-                  className="p-1 text-slate-400 hover:text-orange-600 rounded transition-colors cursor-pointer"
+                  className="p-1 text-slate-400 hover:text-orange-600 dark:hover:text-orange-400 rounded transition-colors cursor-pointer"
                   title="Edit product parameters"
                   aria-label={`Edit ${product.name}`}
                 >
@@ -171,29 +171,29 @@ export const LoanProducts: React.FC = () => {
             }
           >
             <div className="space-y-4 text-xs">
-              <p className="text-slate-600 text-xs min-h-[36px]">{product.description}</p>
+              <p className="text-slate-600 dark:text-slate-300 text-xs min-h-[36px]">{product.description}</p>
 
               {/* Policy Parameters */}
-              <div className="bg-slate-50 p-3 rounded border border-slate-200 space-y-2 text-xs">
+              <div className="bg-slate-50 dark:bg-slate-950/60 p-3 rounded border border-slate-200 dark:border-slate-800 space-y-2 text-xs">
                 <div className="flex justify-between items-center">
-                  <span className="text-slate-500 font-medium">Base Fixed APR:</span>
-                  <span className="font-mono font-bold text-orange-600">{product.baseApr}%</span>
+                  <span className="text-slate-500 dark:text-slate-400 font-medium">Base Fixed APR:</span>
+                  <span className="font-mono font-bold text-orange-600 dark:text-orange-400">{product.baseApr}%</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-slate-500 font-medium">Allowable Amount:</span>
-                  <span className="font-mono text-slate-900 font-medium">
+                  <span className="text-slate-500 dark:text-slate-400 font-medium">Allowable Amount:</span>
+                  <span className="font-mono text-slate-900 dark:text-slate-100 font-medium">
                     {formatCurrency(product.minAmount)} – {formatCurrency(product.maxAmount)}
                   </span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-slate-500 font-medium">Tenor Range:</span>
-                  <span className="font-mono text-slate-900 font-medium">
+                  <span className="text-slate-500 dark:text-slate-400 font-medium">Tenor Range:</span>
+                  <span className="font-mono text-slate-900 dark:text-slate-100 font-medium">
                     {product.minTenorMonths} – {product.maxTenorMonths} Mos
                   </span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-slate-500 font-medium">Hard DTI Cap:</span>
-                  <span className="font-mono font-bold text-amber-700">
+                  <span className="text-slate-500 dark:text-slate-400 font-medium">Hard DTI Cap:</span>
+                  <span className="font-mono font-bold text-amber-700 dark:text-amber-400">
                     &le; {product.maxDtiRatio}%
                   </span>
                 </div>
@@ -201,26 +201,26 @@ export const LoanProducts: React.FC = () => {
 
               {/* Mandatory Checklist Items */}
               <div>
-                <span className="text-[10px] font-mono uppercase text-slate-400 font-semibold block mb-2">
+                <span className="text-[10px] font-mono uppercase text-slate-400 dark:text-slate-500 font-semibold block mb-2">
                   Mandatory Document Checklist ({product.requiredDocuments.length})
                 </span>
                 <div className="space-y-1.5 max-h-40 overflow-y-auto pr-1">
                   {product.requiredDocuments.map((doc, i) => (
                     <div
                       key={i}
-                      className="p-1.5 bg-slate-50 rounded border border-slate-200 flex items-center justify-between text-[11px]"
+                      className="p-1.5 bg-slate-50 dark:bg-slate-950/60 rounded border border-slate-200 dark:border-slate-800 flex items-center justify-between text-[11px]"
                     >
                       <div className="flex items-center gap-1.5 truncate">
-                        <FileText className="w-3.5 h-3.5 text-orange-600 shrink-0" />
-                        <span className="font-medium text-slate-800 truncate">{doc.title}</span>
+                        <FileText className="w-3.5 h-3.5 text-orange-600 dark:text-orange-400 shrink-0" />
+                        <span className="font-medium text-slate-800 dark:text-slate-200 truncate">{doc.title}</span>
                       </div>
-                      <span className="text-[9px] font-mono text-slate-400 shrink-0 uppercase">REQUIRED</span>
+                      <span className="text-[9px] font-mono text-slate-400 dark:text-slate-500 shrink-0 uppercase">REQUIRED</span>
                     </div>
                   ))}
                 </div>
               </div>
 
-              <div className="pt-2 border-t border-slate-100 flex justify-end">
+              <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex justify-end">
                 <Button
                   variant="outline"
                   size="sm"
@@ -278,56 +278,56 @@ export const LoanProducts: React.FC = () => {
             placeholder="Institutional lending guidelines and borrower eligibility overview"
           />
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 bg-slate-50 p-3 rounded border border-slate-200">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 bg-slate-50 dark:bg-slate-950/60 p-3 rounded border border-slate-200 dark:border-slate-800">
             <div>
-              <label className="block text-[10px] font-mono font-semibold text-slate-500 uppercase tracking-wider mb-1">
+              <label className="block text-[10px] font-mono font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">
                 Min Amount (₹)
               </label>
               <input
                 type="number"
                 value={minAmount}
                 onChange={(e) => setMinAmount(Number(e.target.value))}
-                className="w-full text-xs p-1.5 bg-white border border-slate-300 rounded font-mono"
+                className="w-full text-xs p-1.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 rounded font-mono"
               />
             </div>
             <div>
-              <label className="block text-[10px] font-mono font-semibold text-slate-500 uppercase tracking-wider mb-1">
+              <label className="block text-[10px] font-mono font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">
                 Max Amount (₹)
               </label>
               <input
                 type="number"
                 value={maxAmount}
                 onChange={(e) => setMaxAmount(Number(e.target.value))}
-                className="w-full text-xs p-1.5 bg-white border border-slate-300 rounded font-mono"
+                className="w-full text-xs p-1.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 rounded font-mono"
               />
             </div>
             <div>
-              <label className="block text-[10px] font-mono font-semibold text-slate-500 uppercase tracking-wider mb-1">
+              <label className="block text-[10px] font-mono font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">
                 Min Tenor (Mo)
               </label>
               <input
                 type="number"
                 value={minTenorMonths}
                 onChange={(e) => setMinTenorMonths(Number(e.target.value))}
-                className="w-full text-xs p-1.5 bg-white border border-slate-300 rounded font-mono"
+                className="w-full text-xs p-1.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 rounded font-mono"
               />
             </div>
             <div>
-              <label className="block text-[10px] font-mono font-semibold text-slate-500 uppercase tracking-wider mb-1">
+              <label className="block text-[10px] font-mono font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">
                 Max Tenor (Mo)
               </label>
               <input
                 type="number"
                 value={maxTenorMonths}
                 onChange={(e) => setMaxTenorMonths(Number(e.target.value))}
-                className="w-full text-xs p-1.5 bg-white border border-slate-300 rounded font-mono"
+                className="w-full text-xs p-1.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 rounded font-mono"
               />
             </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             <div>
-              <label className="block text-[10px] font-mono font-semibold text-slate-500 uppercase tracking-wider mb-1">
+              <label className="block text-[10px] font-mono font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">
                 Base Fixed APR (%)
               </label>
               <input
@@ -335,11 +335,11 @@ export const LoanProducts: React.FC = () => {
                 step="0.05"
                 value={baseApr}
                 onChange={(e) => setBaseApr(Number(e.target.value))}
-                className="w-full text-xs p-1.5 bg-white border border-slate-300 rounded font-mono"
+                className="w-full text-xs p-1.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 rounded font-mono"
               />
             </div>
             <div>
-              <label className="block text-[10px] font-mono font-semibold text-slate-500 uppercase tracking-wider mb-1">
+              <label className="block text-[10px] font-mono font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">
                 Hard DTI Cap (%)
               </label>
               <input
@@ -347,11 +347,11 @@ export const LoanProducts: React.FC = () => {
                 step="1"
                 value={maxDtiRatio}
                 onChange={(e) => setMaxDtiRatio(Number(e.target.value))}
-                className="w-full text-xs p-1.5 bg-white border border-slate-300 rounded font-mono"
+                className="w-full text-xs p-1.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 rounded font-mono"
               />
             </div>
             <div>
-              <label className="block text-[10px] font-mono font-semibold text-slate-500 uppercase tracking-wider mb-1">
+              <label className="block text-[10px] font-mono font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">
                 Product Lifecycle Status
               </label>
               <button
@@ -359,8 +359,8 @@ export const LoanProducts: React.FC = () => {
                 onClick={() => setIsActive(!isActive)}
                 className={`w-full text-xs p-1.5 rounded border font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer ${
                   isActive
-                    ? 'bg-emerald-50 text-emerald-700 border-emerald-300'
-                    : 'bg-slate-100 text-slate-500 border-slate-300'
+                    ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800/60'
+                    : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border-slate-300 dark:border-slate-700'
                 }`}
               >
                 {isActive ? (
@@ -377,19 +377,19 @@ export const LoanProducts: React.FC = () => {
           </div>
 
           {/* Document Checklist Items */}
-          <div className="pt-2 border-t border-slate-200">
-            <label className="block text-[10px] font-mono font-semibold text-slate-500 uppercase tracking-wider mb-1.5">
+          <div className="pt-2 border-t border-slate-200 dark:border-slate-800">
+            <label className="block text-[10px] font-mono font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">
               Mandatory Document Requirements
             </label>
             <div className="space-y-1.5 mb-2 max-h-36 overflow-y-auto">
               {requiredDocs.map((doc, idx) => (
                 <div
                   key={idx}
-                  className="flex items-center justify-between p-2 bg-slate-50 rounded border border-slate-200 text-xs"
+                  className="flex items-center justify-between p-2 bg-slate-50 dark:bg-slate-950/60 rounded border border-slate-200 dark:border-slate-800 text-xs"
                 >
                   <div className="flex items-center gap-2">
-                    <FileText className="w-3.5 h-3.5 text-orange-600" />
-                    <span className="font-medium text-slate-800">{doc.title}</span>
+                    <FileText className="w-3.5 h-3.5 text-orange-600 dark:text-orange-400" />
+                    <span className="font-medium text-slate-800 dark:text-slate-200">{doc.title}</span>
                   </div>
                   <button
                     type="button"
@@ -413,7 +413,7 @@ export const LoanProducts: React.FC = () => {
                     handleAddDoc();
                   }
                 }}
-                className="flex-1 text-xs p-1.5 bg-slate-50 border border-slate-300 rounded focus:bg-white"
+                className="flex-1 text-xs p-1.5 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 rounded focus:bg-white dark:focus:bg-slate-950"
               />
               <Button variant="outline" size="sm" onClick={handleAddDoc}>
                 Add Item

@@ -34,15 +34,15 @@ export const Button: React.FC<ButtonProps> = ({
     primary:
       'bg-orange-600 text-white hover:bg-orange-700 shadow-sm border border-orange-700 focus:ring-2 focus:ring-orange-500 focus:ring-offset-1',
     secondary:
-      'bg-slate-100 text-slate-800 hover:bg-slate-200 border border-slate-200 shadow-sm',
+      'bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 shadow-sm',
     outline:
-      'bg-white text-slate-700 border border-slate-300 hover:bg-slate-50 hover:text-slate-900 shadow-sm',
+      'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100 shadow-sm',
     danger:
       'bg-rose-600 text-white hover:bg-rose-700 shadow-sm border border-rose-700 focus:ring-2 focus:ring-rose-500',
     success:
       'bg-emerald-600 text-white hover:bg-emerald-700 shadow-sm border border-emerald-700 focus:ring-2 focus:ring-emerald-500',
     ghost:
-      'text-slate-600 hover:text-slate-900 hover:bg-slate-100',
+      'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800',
   }[variant];
 
   const isInteractive = !disabled && !isLoading;

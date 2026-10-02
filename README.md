@@ -356,15 +356,23 @@ All client-server communication utilizes predictable HTTP response codes and a s
 
 CredVidhi's design language combines institutional banking reliability with high-efficiency SaaS ergonomics:
 
-### 1. Color Palette
-- **Primary / Brand Saffron:** `#EA580C` (`orange-600`) — Represents trust, dynamism, and authentic financial identity.
-- **Dark Neutral / Charcoal:** `#0F172A` (`slate-900`) — High-contrast typography and deep framing.
-- **Surface & Backgrounds:** `#F8FAFC` (`slate-50`) & `#FFFFFF` — Clean, distraction-free work surfaces.
-- **Success / Approval:** `#059669` (`emerald-600`) — Verified KYC and approved underwriting.
-- **Warning / Pending:** `#D97706` (`amber-600`) — Incomplete documentation and escalated review.
-- **Destructive / Rejection:** `#DC2626` (`red-600`) — Failed credit assessment and rejected applications.
+### 1. Color Palette & Token System
+- **Primary / Brand Saffron:** `#EA580C` (`orange-600` / `dark:text-orange-400`) — Represents trust, dynamism, and authentic financial identity.
+- **Dark Neutral / Charcoal:** `#0F172A` (`slate-900`) & `#020617` (`slate-950`) — High-contrast typography and deep framing in dark mode.
+- **Surface & Backgrounds:** `#F8FAFC` (`slate-50`) & `#FFFFFF` in light mode; `#0F172A` (`slate-900`) & `#020617` (`slate-950/70`) in dark mode.
+- **Success / Approval:** `#059669` (`emerald-600` / `dark:text-emerald-400`) — Verified KYC and approved underwriting.
+- **Warning / Pending:** `#D97706` (`amber-600` / `dark:text-amber-400`) — Incomplete documentation and escalated review.
+- **Destructive / Rejection:** `#DC2626` (`red-600` / `dark:text-rose-400`) — Failed credit assessment and rejected applications.
 
-### 2. Motion System (Framer Motion)
+### 2. Dual-Theme Dark Mode Architecture
+- **Unified Contrast Standard:** Full WCAG AA contrast compliance across both light and dark themes (> 7:1 for text and semantic badges; > 12:1 for primary headings).
+- **Source-Level Semantic Styling:** Zero flashy white backgrounds or low-contrast text leaks in dark mode across all authenticated modules:
+  - App Shell & Navigation: Dark navy app-shell (`dark:bg-slate-950`), header, sidebar, active docket telemetry, and role switcher.
+  - Interactive Workspaces: Queue tables, Document Workbench, Underwriting Cockpit, Borrower Portal wizard, Compliance Audit journal, Product Catalog, and User Administration.
+  - UI Primitives: Base `Card`, `Badge`, `Button`, `DataTable`, `Modal`, `Input`, `select`, and `textarea` components implement unified `dark:*` token pairings.
+  - Form Controls & Autofill Protection: `color-scheme: dark` declarations prevent browser dropdowns and autofill overlays from flashing stark white backgrounds.
+
+### 3. Motion System (Framer Motion)
 - **Fast, Restrained Transitions:** 200–350ms with custom easing curves (`[0.16, 1, 0.3, 1]`) to provide immediate feedback without visual latency.
 - **Micro-Interactions:** Subtle button tap feedback (`scale: 0.98`), card hover lift (`y: -2px`), and sliding active menu indicators (`layoutId`).
 - **Full Accessibility:** Strict adherence to `prefers-reduced-motion` across all components; disables transforms while maintaining subtle opacity transitions.

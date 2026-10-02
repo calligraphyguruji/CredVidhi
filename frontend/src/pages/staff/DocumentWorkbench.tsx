@@ -90,28 +90,28 @@ export const DocumentWorkbench: React.FC = () => {
   return (
     <div className="space-y-4">
       {/* Top Sub-Header Bar (From Stitch Reference) */}
-      <div className="bg-white px-4 py-3 rounded-md border border-slate-200 shadow-xs flex flex-wrap items-center justify-between gap-3">
+      <div className="bg-white dark:bg-slate-900 px-4 py-3 rounded-md border border-slate-200 dark:border-slate-800 shadow-xs flex flex-wrap items-center justify-between gap-3 transition-colors">
         <div className="flex items-center gap-3">
           <button
             onClick={() => setActiveView('officer-queue')}
-            className="flex items-center gap-1.5 text-slate-500 hover:text-orange-600 transition-colors text-xs font-medium"
+            className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 hover:text-orange-600 dark:hover:text-orange-400 transition-colors text-xs font-medium cursor-pointer"
           >
             <ArrowLeft className="w-4 h-4" />
             <span>Queue [{application.referenceNumber}]</span>
           </button>
 
-          <div className="h-4 w-px bg-slate-200"></div>
+          <div className="h-4 w-px bg-slate-200 dark:bg-slate-800"></div>
 
           <div className="flex items-baseline gap-2">
-            <span className="text-sm font-bold text-slate-900">{application.personal.fullName}</span>
-            <span className="font-mono text-xs text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded">
+            <span className="text-sm font-bold text-slate-900 dark:text-slate-100">{application.personal.fullName}</span>
+            <span className="font-mono text-xs text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded">
               SSN: {application.personal.taxIdMasked}
             </span>
           </div>
 
-          <div className="inline-flex items-center gap-1 px-2 py-0.5 bg-orange-50 text-orange-700 rounded font-mono text-xs font-semibold">
+          <div className="inline-flex items-center gap-1 px-2 py-0.5 bg-orange-50 dark:bg-orange-950/60 text-orange-700 dark:text-orange-300 rounded font-mono text-xs font-semibold border border-orange-200/50 dark:border-orange-800/60">
             <span>{formatCurrency(application.requestedAmount)}</span>
-            <span className="uppercase text-[10px] text-orange-600 font-normal">
+            <span className="uppercase text-[10px] text-orange-600 dark:text-orange-400 font-normal">
               • {application.product.name}
             </span>
           </div>
@@ -123,7 +123,7 @@ export const DocumentWorkbench: React.FC = () => {
             variant="outline"
             size="sm"
             onClick={handleDeficientCurrentDoc}
-            icon={<HelpCircle className="w-3.5 h-3.5 text-amber-600" />}
+            icon={<HelpCircle className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />}
           >
             Request Clarification
           </Button>
@@ -132,7 +132,7 @@ export const DocumentWorkbench: React.FC = () => {
             variant="outline"
             size="sm"
             onClick={handleDeficientCurrentDoc}
-            icon={<AlertTriangle className="w-3.5 h-3.5 text-rose-600" />}
+            icon={<AlertTriangle className="w-3.5 h-3.5 text-rose-600 dark:text-rose-400" />}
           >
             Flag Discrepancy
           </Button>
@@ -153,10 +153,10 @@ export const DocumentWorkbench: React.FC = () => {
         {/* LEFT PANE: Document Telemetry & Viewport (7 Cols) */}
         <div className="col-span-12 xl:col-span-7 flex flex-col gap-3">
           {/* Document Tabs Strip */}
-          <div className="flex items-center justify-between bg-white p-1 rounded-md border border-slate-200 shadow-xs">
+          <div className="flex items-center justify-between bg-white dark:bg-slate-900 p-1 rounded-md border border-slate-200 dark:border-slate-800 shadow-xs transition-colors">
             <div className="flex items-center gap-1 overflow-x-auto">
               {application.documents.length === 0 ? (
-                <span className="text-xs text-slate-400 p-2 italic">No documents uploaded yet</span>
+                <span className="text-xs text-slate-400 dark:text-slate-500 p-2 italic">No documents uploaded yet</span>
               ) : (
                 application.documents.map((doc) => {
                   const isSelected = activeDoc.id === doc.id;
@@ -164,10 +164,10 @@ export const DocumentWorkbench: React.FC = () => {
                     <button
                       key={doc.id}
                       onClick={() => setSelectedDocId(doc.id)}
-                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-mono font-medium transition-all ${
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-mono font-medium transition-all cursor-pointer ${
                         isSelected
                           ? 'bg-orange-600 text-white shadow-xs'
-                          : 'bg-slate-50 text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                          : 'bg-slate-50 dark:bg-slate-800/80 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-700/80'
                       }`}
                     >
                       <FileText className="w-3.5 h-3.5" />
@@ -235,20 +235,20 @@ export const DocumentWorkbench: React.FC = () => {
                   transform: `scale(${zoomLevel / 100}) rotate(${rotation}deg)`,
                   transition: 'transform 0.15s ease-out',
                 }}
-                className="w-full max-w-[500px] bg-white text-slate-900 p-6 rounded shadow-2xl border border-slate-300 font-sans select-text text-left"
+                className="w-full max-w-[500px] bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 p-6 rounded shadow-2xl border border-slate-300 dark:border-slate-700 font-sans select-text text-left"
               >
                 {/* Simulated Official Tax / Income Statement Header */}
-                <div className="border-b-2 border-slate-900 pb-3 mb-4 flex justify-between items-start">
+                <div className="border-b-2 border-slate-900 dark:border-slate-700 pb-3 mb-4 flex justify-between items-start">
                   <div>
-                    <div className="text-[10px] font-mono tracking-widest text-slate-500 uppercase">
+                    <div className="text-[10px] font-mono tracking-widest text-slate-500 dark:text-slate-400 uppercase">
                       Form W-2 / Official Earnings Statement
                     </div>
-                    <div className="text-base font-bold tracking-tight text-slate-900">
+                    <div className="text-base font-bold tracking-tight text-slate-900 dark:text-slate-100">
                       TAX YEAR 2025 WAGE & TAX STATEMENT
                     </div>
                   </div>
                   <div className="text-right">
-                    <span className="font-mono text-[10px] bg-slate-100 px-1.5 py-0.5 rounded border border-slate-300">
+                    <span className="font-mono text-[10px] bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300">
                       OMB No. 1545-0008
                     </span>
                   </div>
@@ -256,64 +256,64 @@ export const DocumentWorkbench: React.FC = () => {
 
                 {/* Form Boxes Grid */}
                 <div className="grid grid-cols-2 gap-3 text-xs mb-4">
-                  <div className="border border-slate-300 p-2 rounded-xs bg-slate-50">
-                    <span className="block text-[9px] font-mono text-slate-400 uppercase">
+                  <div className="border border-slate-300 dark:border-slate-700 p-2 rounded-xs bg-slate-50 dark:bg-slate-950/60">
+                    <span className="block text-[9px] font-mono text-slate-400 dark:text-slate-500 uppercase">
                       a. Employee Social Security Number
                     </span>
-                    <span className="font-mono font-bold text-slate-800">
+                    <span className="font-mono font-bold text-slate-800 dark:text-slate-200">
                       {application.personal.taxIdMasked}
                     </span>
                   </div>
-                  <div className="border border-slate-300 p-2 rounded-xs bg-slate-50">
-                    <span className="block text-[9px] font-mono text-slate-400 uppercase">
+                  <div className="border border-slate-300 dark:border-slate-700 p-2 rounded-xs bg-slate-50 dark:bg-slate-950/60">
+                    <span className="block text-[9px] font-mono text-slate-400 dark:text-slate-500 uppercase">
                       b. Employer Identification Number (EIN)
                     </span>
-                    <span className="font-mono font-bold text-slate-800">94-3829104</span>
+                    <span className="font-mono font-bold text-slate-800 dark:text-slate-200">94-3829104</span>
                   </div>
                 </div>
 
-                <div className="border border-slate-300 p-2.5 rounded-xs mb-3">
-                  <span className="block text-[9px] font-mono text-slate-400 uppercase">
+                <div className="border border-slate-300 dark:border-slate-700 p-2.5 rounded-xs mb-3 bg-white dark:bg-slate-900">
+                  <span className="block text-[9px] font-mono text-slate-400 dark:text-slate-500 uppercase">
                     c. Employer Name & Registered Address
                   </span>
-                  <div className="font-semibold text-slate-900">
+                  <div className="font-semibold text-slate-900 dark:text-slate-100">
                     {application.financial.employerName}
                   </div>
-                  <div className="text-[11px] text-slate-600">
+                  <div className="text-[11px] text-slate-600 dark:text-slate-400">
                     100 Innovation Way, Suite 400, Industrial District
                   </div>
                 </div>
 
-                <div className="border border-slate-300 p-2.5 rounded-xs mb-4">
-                  <span className="block text-[9px] font-mono text-slate-400 uppercase">
+                <div className="border border-slate-300 dark:border-slate-700 p-2.5 rounded-xs mb-4 bg-white dark:bg-slate-900">
+                  <span className="block text-[9px] font-mono text-slate-400 dark:text-slate-500 uppercase">
                     e. Employee Full Legal Name
                   </span>
-                  <div className="font-semibold text-slate-900">
+                  <div className="font-semibold text-slate-900 dark:text-slate-100">
                     {application.personal.fullName}
                   </div>
-                  <div className="text-[11px] text-slate-600">
+                  <div className="text-[11px] text-slate-600 dark:text-slate-400">
                     {application.personal.residentialAddress}
                   </div>
                 </div>
 
                 {/* Financial Boxes */}
                 <div className="grid grid-cols-2 gap-3 text-xs">
-                  <div className="border border-orange-200 bg-orange-50/50 p-2.5 rounded-xs">
-                    <span className="block text-[9px] font-mono text-orange-700 uppercase font-semibold">
+                  <div className="border border-orange-200 dark:border-orange-800/60 bg-orange-50/50 dark:bg-orange-950/40 p-2.5 rounded-xs">
+                    <span className="block text-[9px] font-mono text-orange-700 dark:text-orange-400 uppercase font-semibold">
                       1. Wages, tips, other compensation
                     </span>
-                    <span className="text-base font-bold font-mono text-orange-950">
+                    <span className="text-base font-bold font-mono text-orange-950 dark:text-orange-300">
                       ₹{(application.financial.grossMonthlyIncome * 12).toLocaleString('en-IN')}.00
                     </span>
-                    <span className="block text-[10px] text-orange-700 mt-0.5">
+                    <span className="block text-[10px] text-orange-700 dark:text-orange-400 mt-0.5">
                       = ₹{application.financial.grossMonthlyIncome.toLocaleString('en-IN')} / mo
                     </span>
                   </div>
-                  <div className="border border-slate-300 p-2.5 rounded-xs">
-                    <span className="block text-[9px] font-mono text-slate-500 uppercase font-semibold">
+                  <div className="border border-slate-300 dark:border-slate-700 p-2.5 rounded-xs bg-slate-50 dark:bg-slate-950/60">
+                    <span className="block text-[9px] font-mono text-slate-500 dark:text-slate-400 uppercase font-semibold">
                       2. Federal income tax withheld
                     </span>
-                    <span className="text-base font-bold font-mono text-slate-800">
+                    <span className="text-base font-bold font-mono text-slate-800 dark:text-slate-200">
                       ₹{Math.round(application.financial.grossMonthlyIncome * 12 * 0.22).toLocaleString('en-IN')}.00
                     </span>
                   </div>
@@ -343,27 +343,27 @@ export const DocumentWorkbench: React.FC = () => {
         {/* RIGHT PANE: Verification Checklist & Adjudication Controls (5 Cols) */}
         <div className="col-span-12 xl:col-span-5 flex flex-col gap-3">
           {/* Active Checklist Panel */}
-          <div className="bg-white rounded-md border border-slate-200 shadow-xs p-4 space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
+          <div className="bg-white dark:bg-slate-900 rounded-md border border-slate-200 dark:border-slate-800 shadow-xs p-4 space-y-4 transition-colors">
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2.5">
               <div>
-                <h3 className="text-sm font-bold text-slate-900">Verification Checklist</h3>
-                <p className="text-[11px] text-slate-500">
+                <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100">Verification Checklist</h3>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400">
                   Audit-logged compliance requirements for {application.product.name}
                 </p>
               </div>
-              <span className="text-xs font-mono text-orange-700 font-semibold bg-orange-50 px-2 py-0.5 rounded">
+              <span className="text-xs font-mono text-orange-700 dark:text-orange-400 font-semibold bg-orange-50 dark:bg-orange-950/60 px-2 py-0.5 rounded border border-orange-200/50 dark:border-orange-800/60">
                 Checklist v1.2
               </span>
             </div>
 
             {/* Checklist Items */}
             <div className="space-y-3">
-              <div className="p-3 bg-slate-50 rounded border border-slate-200 flex items-start justify-between gap-3">
+              <div className="p-3 bg-slate-50 dark:bg-slate-950/60 rounded border border-slate-200 dark:border-slate-800 flex items-start justify-between gap-3">
                 <div>
-                  <div className="text-xs font-semibold text-slate-900">
+                  <div className="text-xs font-semibold text-slate-900 dark:text-slate-100">
                     1. Identity & Government ID Validation
                   </div>
-                  <div className="text-[11px] text-slate-500 mt-0.5">
+                  <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
                     Matches name, photo, and SSN {application.personal.taxIdMasked}.
                   </div>
                 </div>
@@ -377,12 +377,12 @@ export const DocumentWorkbench: React.FC = () => {
                 </Button>
               </div>
 
-              <div className="p-3 bg-slate-50 rounded border border-slate-200 flex items-start justify-between gap-3">
+              <div className="p-3 bg-slate-50 dark:bg-slate-950/60 rounded border border-slate-200 dark:border-slate-800 flex items-start justify-between gap-3">
                 <div>
-                  <div className="text-xs font-semibold text-slate-900">
+                  <div className="text-xs font-semibold text-slate-900 dark:text-slate-100">
                     2. Income Proof & Tax Alignment
                   </div>
-                  <div className="text-[11px] text-slate-500 mt-0.5">
+                  <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
                     Salary earnings of ₹{(application.financial.grossMonthlyIncome * 12).toLocaleString('en-IN')}/yr align with declared income.
                   </div>
                 </div>
@@ -396,12 +396,12 @@ export const DocumentWorkbench: React.FC = () => {
                 </Button>
               </div>
 
-              <div className="p-3 bg-slate-50 rounded border border-slate-200 flex items-start justify-between gap-3">
+              <div className="p-3 bg-slate-50 dark:bg-slate-950/60 rounded border border-slate-200 dark:border-slate-800 flex items-start justify-between gap-3">
                 <div>
-                  <div className="text-xs font-semibold text-slate-900">
+                  <div className="text-xs font-semibold text-slate-900 dark:text-slate-100">
                     3. 90-Day Bank Statement Continuity
                   </div>
-                  <div className="text-[11px] text-slate-500 mt-0.5">
+                  <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
                     Consecutive deposits with zero overdraft notices in past 3 months.
                   </div>
                 </div>
@@ -409,30 +409,30 @@ export const DocumentWorkbench: React.FC = () => {
                   variant="outline"
                   size="sm"
                   onClick={handleDeficientCurrentDoc}
-                  icon={<AlertTriangle className="w-3.5 h-3.5 text-amber-600" />}
+                  icon={<AlertTriangle className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />}
                 >
                   Flag Check
                 </Button>
               </div>
 
-              <div className="p-3 bg-slate-50 rounded border border-slate-200 flex items-start justify-between gap-3">
+              <div className="p-3 bg-slate-50 dark:bg-slate-950/60 rounded border border-slate-200 dark:border-slate-800 flex items-start justify-between gap-3">
                 <div>
-                  <div className="text-xs font-semibold text-slate-900">
+                  <div className="text-xs font-semibold text-slate-900 dark:text-slate-100">
                     4. Active Employer Confirmation
                   </div>
-                  <div className="text-[11px] text-slate-500 mt-0.5">
+                  <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
                     Verified employment at {application.financial.employerName} ({application.financial.yearsEmployed} yrs).
                   </div>
                 </div>
-                <span className="text-[11px] font-mono text-emerald-700 bg-emerald-50 px-2 py-1 rounded border border-emerald-200 font-medium">
+                <span className="text-[11px] font-mono text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-1 rounded border border-emerald-200 dark:border-emerald-800/80 font-medium">
                   PASSED
                 </span>
               </div>
             </div>
 
             {/* Officer Audit Notes Input */}
-            <div className="pt-2 border-t border-slate-100">
-              <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
+            <div className="pt-2 border-t border-slate-100 dark:border-slate-800">
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">
                 Add Adjudication Note (Audit Logged)
               </label>
               <textarea
@@ -440,7 +440,7 @@ export const DocumentWorkbench: React.FC = () => {
                 value={activeOfficerNotes}
                 onChange={(e) => setActiveOfficerNotes(e.target.value)}
                 placeholder="Enter regulatory verification comments for underwriter..."
-                className="w-full text-xs p-2.5 bg-slate-50 border border-slate-300 rounded focus:outline-none focus:ring-1 focus:ring-orange-500 focus:bg-white"
+                className="w-full text-xs p-2.5 bg-slate-50 dark:bg-slate-950/80 border border-slate-300 dark:border-slate-700 rounded focus:outline-none focus:ring-1 focus:ring-orange-500 focus:bg-white dark:focus:bg-slate-900 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 transition-colors"
               ></textarea>
               <div className="flex justify-end mt-2">
                 <Button
@@ -465,32 +465,32 @@ export const DocumentWorkbench: React.FC = () => {
           </div>
 
           {/* Quick Financial Snapshot Card */}
-          <div className="bg-white rounded-md border border-slate-200 shadow-xs p-4">
-            <h4 className="text-xs font-mono uppercase font-semibold text-slate-500 tracking-wider mb-3">
+          <div className="bg-white dark:bg-slate-900 rounded-md border border-slate-200 dark:border-slate-800 shadow-xs p-4 transition-colors">
+            <h4 className="text-xs font-mono uppercase font-semibold text-slate-500 dark:text-slate-400 tracking-wider mb-3">
               Declared vs Verified Metrics
             </h4>
             <div className="grid grid-cols-2 gap-3 text-xs">
-              <div className="bg-slate-50 p-2.5 rounded border border-slate-200">
-                <span className="text-[10px] text-slate-500 uppercase block font-mono">Gross Monthly</span>
-                <span className="text-sm font-bold font-mono text-slate-900">
+              <div className="bg-slate-50 dark:bg-slate-950/60 p-2.5 rounded border border-slate-200 dark:border-slate-800">
+                <span className="text-[10px] text-slate-500 dark:text-slate-400 uppercase block font-mono">Gross Monthly</span>
+                <span className="text-sm font-bold font-mono text-slate-900 dark:text-slate-100">
                   {formatCurrency(application.financial.grossMonthlyIncome)}
                 </span>
               </div>
-              <div className="bg-slate-50 p-2.5 rounded border border-slate-200">
-                <span className="text-[10px] text-slate-500 uppercase block font-mono">Existing Debt</span>
-                <span className="text-sm font-bold font-mono text-slate-900">
+              <div className="bg-slate-50 dark:bg-slate-950/60 p-2.5 rounded border border-slate-200 dark:border-slate-800">
+                <span className="text-[10px] text-slate-500 dark:text-slate-400 uppercase block font-mono">Existing Debt</span>
+                <span className="text-sm font-bold font-mono text-slate-900 dark:text-slate-100">
                   {formatCurrency(application.financial.existingMonthlyDebt)}
                 </span>
               </div>
-              <div className="bg-slate-50 p-2.5 rounded border border-slate-200">
-                <span className="text-[10px] text-slate-500 uppercase block font-mono">Declared Credit</span>
-                <span className="text-sm font-bold font-mono text-emerald-700">
+              <div className="bg-slate-50 dark:bg-slate-950/60 p-2.5 rounded border border-slate-200 dark:border-slate-800">
+                <span className="text-[10px] text-slate-500 dark:text-slate-400 uppercase block font-mono">Declared Credit</span>
+                <span className="text-sm font-bold font-mono text-emerald-700 dark:text-emerald-400">
                   {application.financial.creditScoreDeclared} (Prime)
                 </span>
               </div>
-              <div className="bg-slate-50 p-2.5 rounded border border-slate-200">
-                <span className="text-[10px] text-slate-500 uppercase block font-mono">Housing Obligation</span>
-                <span className="text-sm font-bold font-mono text-slate-900">
+              <div className="bg-slate-50 dark:bg-slate-950/60 p-2.5 rounded border border-slate-200 dark:border-slate-800">
+                <span className="text-[10px] text-slate-500 dark:text-slate-400 uppercase block font-mono">Housing Obligation</span>
+                <span className="text-sm font-bold font-mono text-slate-900 dark:text-slate-100">
                   {formatCurrency(application.financial.housingExpense)}
                 </span>
               </div>
@@ -518,13 +518,13 @@ export const DocumentWorkbench: React.FC = () => {
       >
         <div className="space-y-4 text-xs">
           <div>
-            <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
+            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">
               Deficiency Reason Code
             </label>
             <select
               value={clarificationReason}
               onChange={(e) => setClarificationReason(e.target.value)}
-              className="w-full text-xs p-2 bg-slate-50 border border-slate-300 rounded focus:outline-none focus:ring-1 focus:ring-orange-500"
+              className="w-full text-xs p-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded focus:outline-none focus:ring-1 focus:ring-orange-500 text-slate-900 dark:text-slate-100 transition-colors cursor-pointer"
             >
               <option value="BLURRY_OR_ILLEGIBLE">Blurry or Illegible Scanned File</option>
               <option value="EXPIRED_DOCUMENT">Document Expired or Outdated</option>
@@ -535,7 +535,7 @@ export const DocumentWorkbench: React.FC = () => {
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
+            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">
               Specific Instructions to Applicant
             </label>
             <textarea
@@ -543,7 +543,7 @@ export const DocumentWorkbench: React.FC = () => {
               value={clarificationNotes}
               onChange={(e) => setClarificationNotes(e.target.value)}
               placeholder="e.g. Please upload pages 1 through 4 of your December bank statement showing full employer deposit stamps."
-              className="w-full text-xs p-2.5 bg-slate-50 border border-slate-300 rounded focus:outline-none focus:ring-1 focus:ring-orange-500"
+              className="w-full text-xs p-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded focus:outline-none focus:ring-1 focus:ring-orange-500 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 transition-colors"
             ></textarea>
           </div>
         </div>

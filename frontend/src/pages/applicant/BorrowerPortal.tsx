@@ -142,15 +142,15 @@ export const BorrowerPortal: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Top Banner */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-5 rounded-md border border-slate-200 shadow-xs">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-slate-900 p-5 rounded-md border border-slate-200 dark:border-slate-800 shadow-xs transition-colors">
         <div>
-          <span className="text-xs font-mono uppercase text-orange-600 font-semibold tracking-wider">
+          <span className="text-xs font-mono uppercase text-orange-600 dark:text-orange-400 font-semibold tracking-wider">
             Applicant Self-Service Portal
           </span>
-          <h1 className="text-xl font-bold tracking-tight text-slate-900 mt-0.5">
+          <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100 mt-0.5">
             Welcome back, Alex Taylor
           </h1>
-          <p className="text-xs text-slate-500 mt-1">
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
             Track real-time status, manage uploaded documents, and access formal approval letters.
           </p>
         </div>
@@ -175,18 +175,18 @@ export const BorrowerPortal: React.FC = () => {
           >
             {/* Sanction Letter Banner if Approved */}
             {activeApp.status === 'APPROVED' && activeApp.decision && (
-              <div className="mb-6 p-4 bg-emerald-50 border border-emerald-300 rounded-md">
+              <div className="mb-6 p-4 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-300 dark:border-emerald-800/80 rounded-md">
                 <div className="flex items-start gap-3">
-                  <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
+                  <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
                   <div>
-                    <h4 className="text-sm font-bold text-emerald-900">
+                    <h4 className="text-sm font-bold text-emerald-900 dark:text-emerald-200">
                       Congratulations! Your Loan Has Been Approved
                     </h4>
-                    <p className="text-xs text-emerald-700 mt-0.5">
+                    <p className="text-xs text-emerald-700 dark:text-emerald-300 mt-0.5">
                       Sanctioned Amount: {formatCurrency(activeApp.decision.approvedAmount || activeApp.requestedAmount)} at {activeApp.decision.approvedApr}% APR for {activeApp.decision.approvedTenorMonths} months.
                     </p>
                     {activeApp.decision.conditions && (
-                      <div className="mt-2 text-[11px] bg-white/70 p-2 rounded text-emerald-800 border border-emerald-200">
+                      <div className="mt-2 text-[11px] bg-white/70 dark:bg-slate-900/80 p-2 rounded text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/80">
                         <strong>Pre-disbursement Conditions:</strong> {activeApp.decision.conditions}
                       </div>
                     )}
@@ -197,13 +197,13 @@ export const BorrowerPortal: React.FC = () => {
 
             {/* Deficiency Warning Banner if Documents Pending */}
             {activeApp.status === 'DOCUMENTS_PENDING' && (
-              <div className="mb-6 p-4 bg-amber-50 border border-amber-300 rounded-md flex items-start gap-3">
-                <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+              <div className="mb-6 p-4 bg-amber-50 dark:bg-amber-950/60 border border-amber-300 dark:border-amber-800/80 rounded-md flex items-start gap-3">
+                <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
                 <div>
-                  <h4 className="text-sm font-bold text-amber-900">
+                  <h4 className="text-sm font-bold text-amber-900 dark:text-amber-200">
                     Action Required: Document Clarification
                   </h4>
-                  <p className="text-xs text-amber-700 mt-0.5">
+                  <p className="text-xs text-amber-700 dark:text-amber-300 mt-0.5">
                     Our reviewing officer flagged one of your documents. Please review the deficiency notice in the documents tab below.
                   </p>
                 </div>
@@ -220,7 +220,7 @@ export const BorrowerPortal: React.FC = () => {
                     {!isLast && (
                       <div
                         className={`absolute left-3.5 top-7 -bottom-6 w-0.5 ${
-                          m.isComplete ? 'bg-orange-600' : 'bg-slate-200'
+                          m.isComplete ? 'bg-orange-600' : 'bg-slate-200 dark:bg-slate-800'
                         }`}
                       ></div>
                     )}
@@ -231,8 +231,8 @@ export const BorrowerPortal: React.FC = () => {
                         m.isComplete
                           ? 'bg-orange-600 text-white border-orange-600'
                           : m.isActive
-                          ? 'bg-white text-orange-600 border-orange-600 ring-2 ring-orange-100'
-                          : 'bg-slate-100 text-slate-400 border-slate-300'
+                          ? 'bg-white dark:bg-slate-900 text-orange-600 border-orange-600 ring-2 ring-orange-100 dark:ring-orange-950/50'
+                          : 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 border-slate-300 dark:border-slate-700'
                       }`}
                     >
                       {m.isComplete ? (
@@ -247,18 +247,18 @@ export const BorrowerPortal: React.FC = () => {
                       <div className="flex items-center justify-between">
                         <span
                           className={`text-xs font-bold ${
-                            m.isComplete || m.isActive ? 'text-slate-900' : 'text-slate-400'
+                            m.isComplete || m.isActive ? 'text-slate-900 dark:text-slate-100' : 'text-slate-400 dark:text-slate-500'
                           }`}
                         >
                           {m.title}
                         </span>
                         {m.isActive && (
-                          <span className="text-[10px] font-mono font-semibold text-orange-700 bg-orange-50 px-2 py-0.5 rounded">
+                          <span className="text-[10px] font-mono font-semibold text-orange-700 dark:text-orange-400 bg-orange-50 dark:bg-orange-950/60 px-2 py-0.5 rounded border border-orange-200/50 dark:border-orange-800/60">
                             IN PROGRESS
                           </span>
                         )}
                       </div>
-                      <p className="text-[11px] text-slate-500 mt-0.5">{m.description}</p>
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">{m.description}</p>
                     </div>
                   </div>
                 );
@@ -271,33 +271,33 @@ export const BorrowerPortal: React.FC = () => {
         <div className="lg:col-span-5 space-y-4">
           <Card title="Loan Financial Summary">
             <div className="space-y-3 text-xs">
-              <div className="flex justify-between py-1.5 border-b border-slate-100">
-                <span className="text-slate-500">Requested Principal</span>
-                <span className="font-mono font-bold text-slate-900">
+              <div className="flex justify-between py-1.5 border-b border-slate-100 dark:border-slate-800">
+                <span className="text-slate-500 dark:text-slate-400">Requested Principal</span>
+                <span className="font-mono font-bold text-slate-900 dark:text-slate-100">
                   {formatCurrency(activeApp.requestedAmount)}
                 </span>
               </div>
-              <div className="flex justify-between py-1.5 border-b border-slate-100">
-                <span className="text-slate-500">Tenor Period</span>
-                <span className="font-mono text-slate-900 font-medium">
+              <div className="flex justify-between py-1.5 border-b border-slate-100 dark:border-slate-800">
+                <span className="text-slate-500 dark:text-slate-400">Tenor Period</span>
+                <span className="font-mono text-slate-900 dark:text-slate-100 font-medium">
                   {activeApp.requestedTenorMonths} Months
                 </span>
               </div>
-              <div className="flex justify-between py-1.5 border-b border-slate-100">
-                <span className="text-slate-500">Annual Interest Rate (APR)</span>
-                <span className="font-mono text-slate-900 font-medium">
+              <div className="flex justify-between py-1.5 border-b border-slate-100 dark:border-slate-800">
+                <span className="text-slate-500 dark:text-slate-400">Annual Interest Rate (APR)</span>
+                <span className="font-mono text-slate-900 dark:text-slate-100 font-medium">
                   {activeApp.product.baseApr}% Fixed
                 </span>
               </div>
-              <div className="flex justify-between py-1.5 border-b border-slate-100">
-                <span className="text-slate-500">Estimated Monthly EMI</span>
-                <span className="font-mono font-bold text-orange-600 text-sm">
+              <div className="flex justify-between py-1.5 border-b border-slate-100 dark:border-slate-800">
+                <span className="text-slate-500 dark:text-slate-400">Estimated Monthly EMI</span>
+                <span className="font-mono font-bold text-orange-600 dark:text-orange-400 text-sm">
                   {formatCurrency(calculateEmi(activeApp.requestedAmount, activeApp.product.baseApr, activeApp.requestedTenorMonths))} / mo
                 </span>
               </div>
               <div className="flex justify-between py-1.5">
-                <span className="text-slate-500">Declared Loan Purpose</span>
-                <span className="text-slate-800 font-medium text-right truncate max-w-[200px]">
+                <span className="text-slate-500 dark:text-slate-400">Declared Loan Purpose</span>
+                <span className="text-slate-800 dark:text-slate-200 font-medium text-right truncate max-w-[200px]">
                   {activeApp.purpose}
                 </span>
               </div>
@@ -307,20 +307,20 @@ export const BorrowerPortal: React.FC = () => {
           <Card title="Uploaded Verification Documents">
             <div className="space-y-2.5 text-xs">
               {activeApp.documents.length === 0 ? (
-                <p className="text-slate-400 italic py-2">No documents attached.</p>
+                <p className="text-slate-400 dark:text-slate-500 italic py-2">No documents attached.</p>
               ) : (
                 activeApp.documents.map((doc) => (
                   <div
                     key={doc.id}
-                    className="p-2.5 bg-slate-50 rounded border border-slate-200 flex items-center justify-between"
+                    className="p-2.5 bg-slate-50 dark:bg-slate-950/60 rounded border border-slate-200 dark:border-slate-800 flex items-center justify-between"
                   >
                     <div className="flex items-center gap-2 truncate">
-                      <FileText className="w-4 h-4 text-orange-600 shrink-0" />
+                      <FileText className="w-4 h-4 text-orange-600 dark:text-orange-400 shrink-0" />
                       <div className="truncate">
-                        <div className="font-semibold text-slate-900 truncate">
+                        <div className="font-semibold text-slate-900 dark:text-slate-100 truncate">
                           {doc.documentType}
                         </div>
-                        <div className="text-[10px] text-slate-500 font-mono">
+                        <div className="text-[10px] text-slate-500 dark:text-slate-400 font-mono">
                           {doc.originalFilename}
                         </div>
                       </div>
@@ -393,17 +393,17 @@ export const BorrowerPortal: React.FC = () => {
                   key={st.num}
                   className={`py-1.5 px-2 rounded border text-xs font-semibold transition-colors ${
                     step === st.num
-                      ? 'bg-orange-50 text-orange-700 border-orange-300'
+                      ? 'bg-orange-50 dark:bg-orange-950/40 text-orange-700 dark:text-orange-300 border-orange-300 dark:border-orange-800/60'
                       : step > st.num
-                      ? 'bg-slate-100 text-slate-700 border-slate-200'
-                      : 'text-slate-400 border-slate-100'
+                      ? 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-700'
+                      : 'text-slate-400 dark:text-slate-500 border-slate-100 dark:border-slate-800'
                   }`}
                 >
                   {st.num}. {st.label}
                 </div>
               ))}
             </div>
-            <div className="h-1 w-full bg-slate-100 rounded-full overflow-hidden">
+            <div className="h-1 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
               <motion.div
                 initial={false}
                 animate={{ width: `${(step / 4) * 100}%` }}
@@ -426,13 +426,13 @@ export const BorrowerPortal: React.FC = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-4">
                 <div>
-                  <label className="block text-[10px] font-mono font-semibold text-slate-500 uppercase tracking-wider mb-1.5">
+                  <label className="block text-[10px] font-mono font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">
                     Loan Product Selection
                   </label>
                   <select
                     value={selectedProductId}
                     onChange={(e) => setSelectedProductId(e.target.value)}
-                    className="w-full text-xs p-2 bg-slate-50 border border-slate-300 rounded font-medium"
+                    className="w-full text-xs p-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 rounded font-medium focus:outline-hidden focus:ring-1 focus:ring-orange-500"
                   >
                     {products.map((p) => (
                       <option key={p.id} value={p.id}>
@@ -444,10 +444,10 @@ export const BorrowerPortal: React.FC = () => {
 
                 <div>
                   <div className="flex justify-between items-center mb-1">
-                    <label className="text-[10px] font-mono font-semibold text-slate-500 uppercase tracking-wider">
+                    <label className="text-[10px] font-mono font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                       Requested Loan Amount
                     </label>
-                    <span className="font-mono font-bold text-sm text-orange-600">
+                    <span className="font-mono font-bold text-sm text-orange-600 dark:text-orange-400">
                       {formatCurrency(loanAmount)}
                     </span>
                   </div>
@@ -467,7 +467,7 @@ export const BorrowerPortal: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-[10px] font-mono font-semibold text-slate-500 uppercase tracking-wider mb-1.5">
+                  <label className="block text-[10px] font-mono font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">
                     Repayment Tenor
                   </label>
                   <div className="grid grid-cols-4 gap-1.5 font-mono text-xs">
@@ -479,7 +479,7 @@ export const BorrowerPortal: React.FC = () => {
                         className={`py-1.5 rounded border text-center font-medium ${
                           tenorMonths === m
                             ? 'bg-orange-600 text-white border-orange-600'
-                            : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+                            : 'bg-slate-50 dark:bg-slate-900 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800'
                         }`}
                       >
                         {m} Mos
@@ -497,41 +497,41 @@ export const BorrowerPortal: React.FC = () => {
               </div>
 
               {/* Dynamic Repayment Preview Card */}
-              <div className="bg-slate-50 p-4 rounded-md border border-slate-200 flex flex-col justify-between">
+              <div className="bg-slate-50 dark:bg-slate-950/70 p-4 rounded-md border border-slate-200 dark:border-slate-800 flex flex-col justify-between">
                 <div>
-                  <div className="text-[10px] font-mono text-slate-500 uppercase">
+                  <div className="text-[10px] font-mono text-slate-500 dark:text-slate-400 uppercase">
                     Live Calculation Preview
                   </div>
-                  <div className="text-2xl font-bold font-mono text-orange-600 mt-1">
+                  <div className="text-2xl font-bold font-mono text-orange-600 dark:text-orange-400 mt-1">
                     {formatCurrency(liveEmi)} / mo
                   </div>
-                  <div className="text-[11px] text-slate-500 font-mono mt-0.5">
+                  <div className="text-[11px] text-slate-500 dark:text-slate-400 font-mono mt-0.5">
                     Fixed rate: {selectedProduct.baseApr}% APR
                   </div>
 
-                  <div className="mt-4 pt-3 border-t border-slate-200 space-y-2 text-[11px]">
+                  <div className="mt-4 pt-3 border-t border-slate-200 dark:border-slate-800 space-y-2 text-[11px]">
                     <div className="flex justify-between">
-                      <span className="text-slate-500">Estimated DTI:</span>
+                      <span className="text-slate-500 dark:text-slate-400">Estimated DTI:</span>
                       <span
                         className={`font-mono font-semibold ${
                           liveDti <= selectedProduct.maxDtiRatio
-                            ? 'text-emerald-700'
-                            : 'text-rose-600'
+                            ? 'text-emerald-700 dark:text-emerald-400'
+                            : 'text-rose-600 dark:text-rose-400'
                         }`}
                       >
                         {liveDti}% (Cap: {selectedProduct.maxDtiRatio}%)
                       </span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-slate-500">Estimated Disposable Surplus:</span>
-                      <span className="font-mono font-semibold text-slate-800">
+                      <span className="text-slate-500 dark:text-slate-400">Estimated Disposable Surplus:</span>
+                      <span className="font-mono font-semibold text-slate-800 dark:text-slate-200">
                         {formatCurrency(liveDisposable)}
                       </span>
                     </div>
                   </div>
                 </div>
 
-                <div className="text-[10px] text-slate-400 bg-white p-2 rounded border border-slate-200 mt-3">
+                <div className="text-[10px] text-slate-400 dark:text-slate-400 bg-white dark:bg-slate-900 p-2 rounded border border-slate-200 dark:border-slate-800 mt-3">
                   *Calculations use fixed-point arithmetic adhering to PRD compound amortization rules.
                 </div>
               </div>
@@ -588,19 +588,19 @@ export const BorrowerPortal: React.FC = () => {
           {step === 3 && (
             <div className="grid grid-cols-2 gap-3.5">
               <div>
-                <label className="block text-[10px] font-mono font-semibold text-slate-500 uppercase tracking-wider mb-1.5">
+                <label className="block text-[10px] font-mono font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">
                   Employment Status
                 </label>
-                <div className="grid grid-cols-2 gap-1 bg-slate-100 p-1 rounded font-mono text-xs">
+                <div className="grid grid-cols-2 gap-1 bg-slate-100 dark:bg-slate-950/80 p-1 rounded font-mono text-xs border border-transparent dark:border-slate-800">
                   <button
                     type="button"
                     onClick={() =>
                       setFinancialForm({ ...financialForm, employmentType: 'SALARIED' })
                     }
-                    className={`py-1.5 rounded font-medium ${
+                    className={`py-1.5 rounded font-medium transition-colors ${
                       financialForm.employmentType === 'SALARIED'
-                        ? 'bg-white text-orange-600 shadow-xs'
-                        : 'text-slate-600'
+                        ? 'bg-white dark:bg-slate-800 text-orange-600 dark:text-orange-400 shadow-xs'
+                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
                     }`}
                   >
                     SALARIED
@@ -610,10 +610,10 @@ export const BorrowerPortal: React.FC = () => {
                     onClick={() =>
                       setFinancialForm({ ...financialForm, employmentType: 'SELF_EMPLOYED' })
                     }
-                    className={`py-1.5 rounded font-medium ${
+                    className={`py-1.5 rounded font-medium transition-colors ${
                       financialForm.employmentType === 'SELF_EMPLOYED'
-                        ? 'bg-white text-orange-600 shadow-xs'
-                        : 'text-slate-600'
+                        ? 'bg-white dark:bg-slate-800 text-orange-600 dark:text-orange-400 shadow-xs'
+                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
                     }`}
                   >
                     SELF EMPLOYED
@@ -682,38 +682,38 @@ export const BorrowerPortal: React.FC = () => {
           {/* STEP 4: Document Upload & Declaration */}
           {step === 4 && (
             <div className="space-y-4">
-              <div className="border-2 border-dashed border-slate-300 p-4 rounded-md text-center bg-slate-50">
+              <div className="border-2 border-dashed border-slate-300 dark:border-slate-700 p-4 rounded-md text-center bg-slate-50 dark:bg-slate-950/50">
                 <Upload className="w-6 h-6 text-slate-400 mx-auto mb-2" />
-                <div className="font-semibold text-slate-800">
+                <div className="font-semibold text-slate-800 dark:text-slate-100">
                   Drag & Drop mandatory KYC files (PDF, PNG, JPEG up to 10MB)
                 </div>
-                <div className="text-[11px] text-slate-500 mt-0.5">
+                <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
                   Required: Government Photo ID and 2025 W-2 / Tax Return
                 </div>
               </div>
 
               <div className="space-y-2">
-                <span className="text-[10px] font-mono uppercase text-slate-500 font-semibold block">
+                <span className="text-[10px] font-mono uppercase text-slate-500 dark:text-slate-400 font-semibold block">
                   Attached Files ({uploadedFiles.length})
                 </span>
                 {uploadedFiles.map((f, i) => (
                   <div
                     key={i}
-                    className="p-2.5 bg-slate-50 rounded border border-slate-200 flex items-center justify-between"
+                    className="p-2.5 bg-slate-50 dark:bg-slate-950/60 rounded border border-slate-200 dark:border-slate-800 flex items-center justify-between"
                   >
                     <div className="flex items-center gap-2">
-                      <FileText className="w-4 h-4 text-orange-600 shrink-0" />
-                      <span className="font-medium text-slate-900">{f.title}:</span>
-                      <span className="font-mono text-slate-500 text-[11px]">{f.filename}</span>
+                      <FileText className="w-4 h-4 text-orange-600 dark:text-orange-400 shrink-0" />
+                      <span className="font-medium text-slate-900 dark:text-slate-100">{f.title}:</span>
+                      <span className="font-mono text-slate-500 dark:text-slate-400 text-[11px]">{f.filename}</span>
                     </div>
-                    <span className="text-[10px] font-mono text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                    <span className="text-[10px] font-mono text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded border border-emerald-200 dark:border-emerald-800/60">
                       READY
                     </span>
                   </div>
                 ))}
               </div>
 
-              <div className="p-3 bg-slate-50 rounded border border-slate-200 flex items-start gap-2.5">
+              <div className="p-3 bg-slate-50 dark:bg-slate-950/60 rounded border border-slate-200 dark:border-slate-800 flex items-start gap-2.5">
                 <input
                   type="checkbox"
                   id="consent"
@@ -721,7 +721,7 @@ export const BorrowerPortal: React.FC = () => {
                   onChange={(e) => setDeclarationConsent(e.target.checked)}
                   className="mt-1 accent-orange-600 cursor-pointer"
                 />
-                <label htmlFor="consent" className="text-[11px] text-slate-600 leading-relaxed cursor-pointer">
+                <label htmlFor="consent" className="text-[11px] text-slate-600 dark:text-slate-300 leading-relaxed cursor-pointer">
                   I certify that all information provided in this application is true and complete. I consent to deterministic credit underwriting, income verification, and immutable audit logging in accordance with regulatory banking compliance.
                 </label>
               </div>

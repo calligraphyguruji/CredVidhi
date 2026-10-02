@@ -72,10 +72,10 @@ export const OfficerQueue: React.FC = () => {
       {/* Top Page Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl font-bold tracking-tight text-slate-900">
+          <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
             Adjudication & Verification Queue
           </h1>
-          <p className="text-xs text-slate-500 mt-1">
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
             Incoming retail & commercial loan applications awaiting officer triage and verification.
           </p>
         </div>
@@ -95,63 +95,63 @@ export const OfficerQueue: React.FC = () => {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <motion.div
           whileHover={!shouldReduceMotion ? { y: -2 } : undefined}
-          className="bg-white p-4 rounded-md border border-slate-200 shadow-xs transition-shadow hover:shadow-md"
+          className="bg-white dark:bg-slate-900 p-4 rounded-md border border-slate-200 dark:border-slate-800 shadow-xs transition-shadow hover:shadow-md"
         >
-          <div className="flex items-center justify-between text-slate-500 text-xs">
+          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 text-xs">
             <span>Total Inbound Docket</span>
-            <TrendingUp className="w-4 h-4 text-orange-600" />
+            <TrendingUp className="w-4 h-4 text-orange-600 dark:text-orange-400" />
           </div>
-          <div className="text-2xl font-bold font-mono text-slate-900 mt-2">
+          <div className="text-2xl font-bold font-mono text-slate-900 dark:text-slate-100 mt-2">
             <AnimatedCounter value={totalCount} duration={0.6} />
           </div>
-          <div className="text-[11px] text-slate-500 mt-1">Active institutional portfolio</div>
+          <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Active institutional portfolio</div>
         </motion.div>
 
         <motion.div
           whileHover={!shouldReduceMotion ? { y: -2 } : undefined}
-          className="bg-white p-4 rounded-md border border-slate-200 shadow-xs transition-shadow hover:shadow-md"
+          className="bg-white dark:bg-slate-900 p-4 rounded-md border border-slate-200 dark:border-slate-800 shadow-xs transition-shadow hover:shadow-md"
         >
-          <div className="flex items-center justify-between text-slate-500 text-xs">
+          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 text-xs">
             <span>Pending Document Triage</span>
-            <Clock className="w-4 h-4 text-amber-600" />
+            <Clock className="w-4 h-4 text-amber-600 dark:text-amber-400" />
           </div>
-          <div className="text-2xl font-bold font-mono text-amber-700 mt-2">
+          <div className="text-2xl font-bold font-mono text-amber-700 dark:text-amber-400 mt-2">
             <AnimatedCounter value={underReviewCount} duration={0.6} />
           </div>
-          <div className="text-[11px] text-amber-600/80 mt-1">Awaiting KYC checklist signoff</div>
+          <div className="text-[11px] text-amber-600/80 dark:text-amber-400/80 mt-1">Awaiting KYC checklist signoff</div>
         </motion.div>
 
         <motion.div
           whileHover={!shouldReduceMotion ? { y: -2 } : undefined}
-          className="bg-white p-4 rounded-md border border-slate-200 shadow-xs transition-shadow hover:shadow-md"
+          className="bg-white dark:bg-slate-900 p-4 rounded-md border border-slate-200 dark:border-slate-800 shadow-xs transition-shadow hover:shadow-md"
         >
-          <div className="flex items-center justify-between text-slate-500 text-xs">
+          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 text-xs">
             <span>Ready for Underwriting</span>
-            <FileCheck2 className="w-4 h-4 text-orange-600" />
+            <FileCheck2 className="w-4 h-4 text-orange-600 dark:text-orange-400" />
           </div>
-          <div className="text-2xl font-bold font-mono text-orange-600 mt-2">
+          <div className="text-2xl font-bold font-mono text-orange-600 dark:text-orange-400 mt-2">
             <AnimatedCounter value={readyForRiskCount} duration={0.6} />
           </div>
-          <div className="text-[11px] text-orange-600/80 mt-1">Documents 100% certified</div>
+          <div className="text-[11px] text-orange-600/80 dark:text-orange-400/80 mt-1">Documents 100% certified</div>
         </motion.div>
 
         <motion.div
           whileHover={!shouldReduceMotion ? { y: -2 } : undefined}
-          className="bg-white p-4 rounded-md border border-slate-200 shadow-xs transition-shadow hover:shadow-md"
+          className="bg-white dark:bg-slate-900 p-4 rounded-md border border-slate-200 dark:border-slate-800 shadow-xs transition-shadow hover:shadow-md"
         >
-          <div className="flex items-center justify-between text-slate-500 text-xs">
+          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 text-xs">
             <span>Sanctioned / Approved</span>
-            <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+            <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
           </div>
-          <div className="text-2xl font-bold font-mono text-emerald-700 mt-2">
+          <div className="text-2xl font-bold font-mono text-emerald-700 dark:text-emerald-400 mt-2">
             <AnimatedCounter value={approvedCount} duration={0.6} />
           </div>
-          <div className="text-[11px] text-emerald-600/80 mt-1">Decisions completed</div>
+          <div className="text-[11px] text-emerald-600/80 dark:text-emerald-400/80 mt-1">Decisions completed</div>
         </motion.div>
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="bg-white p-3.5 rounded-md border border-slate-200 shadow-xs flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+      <div className="bg-white dark:bg-slate-900 p-3.5 rounded-md border border-slate-200 dark:border-slate-800 shadow-xs flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 transition-colors">
         {/* Search */}
         <div className="relative flex-1 max-w-md">
           <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -160,7 +160,7 @@ export const OfficerQueue: React.FC = () => {
             placeholder="Search by Reference ID, Applicant, or Product..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-3 py-1.5 text-xs bg-slate-50 border border-slate-300 rounded focus:outline-none focus:ring-1 focus:ring-orange-500 focus:bg-white transition-colors"
+            className="w-full pl-9 pr-3 py-1.5 text-xs bg-slate-50 dark:bg-slate-950/70 border border-slate-300 dark:border-slate-700 rounded focus:outline-none focus:ring-1 focus:ring-orange-500 focus:bg-white dark:focus:bg-slate-900 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 transition-colors"
           />
         </div>
 
@@ -182,7 +182,7 @@ export const OfficerQueue: React.FC = () => {
                 className={`relative px-2.5 py-1 rounded text-xs font-medium transition-colors cursor-pointer ${
                   isSelected
                     ? 'text-white'
-                    : 'text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200/70'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 bg-slate-100 dark:bg-slate-800/80 hover:bg-slate-200/70 dark:hover:bg-slate-700/80'
                 }`}
               >
                 {isSelected && (
@@ -200,11 +200,11 @@ export const OfficerQueue: React.FC = () => {
       </div>
 
       {/* High-Density Applications Table */}
-      <div className="bg-white rounded-md border border-slate-200 shadow-xs overflow-hidden">
+      <div className="bg-white dark:bg-slate-900 rounded-md border border-slate-200 dark:border-slate-800 shadow-xs overflow-hidden transition-colors">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-slate-50 border-b border-slate-200 text-[11px] font-mono font-semibold text-slate-500 uppercase tracking-wider">
+              <tr className="bg-slate-50 dark:bg-slate-950/60 border-b border-slate-200 dark:border-slate-800 text-[11px] font-mono font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                 <th className="py-2.5 px-4">Ref Docket</th>
                 <th className="py-2.5 px-4">Applicant & Contact</th>
                 <th className="py-2.5 px-4">Product Category</th>
@@ -215,12 +215,12 @@ export const OfficerQueue: React.FC = () => {
                 <th className="py-2.5 px-4 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 text-xs">
+            <tbody className="divide-y divide-slate-100 dark:divide-slate-800/80 text-xs">
               {filteredApplications.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="text-center py-12 text-slate-500">
-                    <p className="text-sm font-medium text-slate-700">No applications match criteria</p>
-                    <p className="text-xs text-slate-400 mt-1">Try adjusting your filters or search query.</p>
+                  <td colSpan={8} className="text-center py-12 text-slate-500 dark:text-slate-400">
+                    <p className="text-sm font-medium text-slate-700 dark:text-slate-300">No applications match criteria</p>
+                    <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">Try adjusting your filters or search query.</p>
                   </td>
                 </tr>
               ) : (
@@ -230,35 +230,35 @@ export const OfficerQueue: React.FC = () => {
                     variants={shouldReduceMotion ? undefined : tableRowVariants}
                     initial="initial"
                     animate="animate"
-                    className="hover:bg-orange-50/40 transition-colors group cursor-pointer"
+                    className="hover:bg-orange-50/40 dark:hover:bg-slate-800/50 transition-colors group cursor-pointer"
                     onClick={() => handleOpenWorkbench(app.id)}
                   >
                     {/* Ref Docket */}
-                    <td className="py-3 px-4 font-mono font-semibold text-orange-600">
+                    <td className="py-3 px-4 font-mono font-semibold text-orange-600 dark:text-orange-400">
                       {app.referenceNumber}
-                      <div className="text-[10px] text-slate-400 font-normal">
+                      <div className="text-[10px] text-slate-400 dark:text-slate-500 font-normal">
                         {formatDateTime(app.submittedAt || app.createdAt)}
                       </div>
                     </td>
 
                     {/* Applicant & Contact */}
                     <td className="py-3 px-4">
-                      <div className="font-semibold text-slate-900">{app.personal.fullName}</div>
-                      <div className="text-[11px] text-slate-500 font-mono">
+                      <div className="font-semibold text-slate-900 dark:text-slate-100">{app.personal.fullName}</div>
+                      <div className="text-[11px] text-slate-500 dark:text-slate-400 font-mono">
                         {app.personal.taxIdMasked} • {app.personal.phone}
                       </div>
                     </td>
 
                     {/* Product */}
-                    <td className="py-3 px-4 text-slate-700">
+                    <td className="py-3 px-4 text-slate-700 dark:text-slate-300">
                       <div className="font-medium truncate max-w-[160px]">{app.product.name}</div>
-                      <div className="text-[11px] text-slate-400 font-mono">APR: {app.product.baseApr}%</div>
+                      <div className="text-[11px] text-slate-400 dark:text-slate-500 font-mono">APR: {app.product.baseApr}%</div>
                     </td>
 
                     {/* Requested Amount & Tenor */}
-                    <td className="py-3 px-4 text-right font-mono font-semibold text-slate-900">
+                    <td className="py-3 px-4 text-right font-mono font-semibold text-slate-900 dark:text-slate-100">
                       {formatCurrency(app.requestedAmount)}
-                      <div className="text-[11px] text-slate-400 font-normal">
+                      <div className="text-[11px] text-slate-400 dark:text-slate-500 font-normal">
                         {app.requestedTenorMonths} Mos Tenor
                       </div>
                     </td>
@@ -267,13 +267,13 @@ export const OfficerQueue: React.FC = () => {
                     <td className="py-3 px-4 text-center">
                       {app.riskAssessment ? (
                         <div className="inline-flex flex-col items-center">
-                          <span className="font-mono text-xs font-semibold text-slate-800">
+                          <span className="font-mono text-xs font-semibold text-slate-800 dark:text-slate-200">
                             {app.riskAssessment.calculatedDti}% DTI
                           </span>
                           <Badge status={app.riskAssessment.riskTier} size="sm" className="mt-0.5" />
                         </div>
                       ) : (
-                        <span className="text-[11px] font-mono text-slate-400 italic">Unassessed</span>
+                        <span className="text-[11px] font-mono text-slate-400 dark:text-slate-500 italic">Unassessed</span>
                       )}
                     </td>
 
@@ -283,7 +283,7 @@ export const OfficerQueue: React.FC = () => {
                     </td>
 
                     {/* Assigned Staff */}
-                    <td className="py-3 px-4 text-slate-600 font-medium text-[11px]">
+                    <td className="py-3 px-4 text-slate-600 dark:text-slate-400 font-medium text-[11px]">
                       {app.assignedOfficerName || 'Unassigned'}
                     </td>
 

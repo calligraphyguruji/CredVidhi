@@ -50,16 +50,16 @@ export const Sidebar: React.FC = () => {
   ];
 
   return (
-    <aside className="w-64 bg-white border-r border-slate-200 shrink-0 flex flex-col h-screen fixed left-0 top-0 z-30 select-none">
+    <aside className="w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 shrink-0 flex flex-col h-screen fixed left-0 top-0 z-30 select-none transition-colors">
       {/* Brand Header */}
-      <div className="h-14 px-4 border-b border-slate-200 flex items-center justify-between">
+      <div className="h-14 px-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
         <div className="flex items-center gap-2.5">
           <div className="w-7 h-7 bg-orange-600 text-white flex items-center justify-center rounded shadow-xs">
             <Building2 className="w-4 h-4" />
           </div>
           <div>
-            <div className="text-sm font-bold tracking-tight text-slate-900 leading-none">CredVidhi</div>
-            <div className="text-[10px] font-mono tracking-wider text-slate-500 uppercase mt-0.5">
+            <div className="text-sm font-bold tracking-tight text-slate-900 dark:text-slate-100 leading-none">CredVidhi</div>
+            <div className="text-[10px] font-mono tracking-wider text-slate-500 dark:text-slate-400 uppercase mt-0.5">
               Adjudication Hub
             </div>
           </div>
@@ -67,21 +67,21 @@ export const Sidebar: React.FC = () => {
       </div>
 
       {/* Active File Telemetry Card */}
-      <div className="px-3.5 py-3 bg-slate-50 border-b border-slate-200">
-        <div className="flex items-center justify-between text-[10px] font-mono text-slate-500 uppercase tracking-wider">
+      <div className="px-3.5 py-3 bg-slate-50 dark:bg-slate-950/70 border-b border-slate-200 dark:border-slate-800">
+        <div className="flex items-center justify-between text-[10px] font-mono text-slate-500 dark:text-slate-400 uppercase tracking-wider">
           <span>Active Docket</span>
-          <span className="flex items-center gap-1 text-emerald-600 font-medium">
+          <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-medium">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
             ACTIVE
           </span>
         </div>
-        <div className="font-mono text-xs font-bold text-orange-600 mt-1 truncate">
+        <div className="font-mono text-xs font-bold text-orange-600 dark:text-orange-400 mt-1 truncate">
           {activeApp.referenceNumber}
         </div>
-        <div className="text-xs text-slate-600 truncate mt-0.5 font-medium">
+        <div className="text-xs text-slate-600 dark:text-slate-300 truncate mt-0.5 font-medium">
           {activeApp.personal.fullName}
         </div>
-        <div className="text-[11px] text-slate-500 font-mono mt-0.5">
+        <div className="text-[11px] text-slate-500 dark:text-slate-400 font-mono mt-0.5">
           {formatCurrency(activeApp.requestedAmount)} • {activeApp.product.name}
         </div>
       </div>
@@ -90,7 +90,7 @@ export const Sidebar: React.FC = () => {
       <nav className="flex-1 px-3 py-4 space-y-5 overflow-y-auto">
         {navItems.map((group) => (
           <div key={group.group}>
-            <div className="px-2 pb-1.5 text-[10px] font-mono font-semibold uppercase tracking-wider text-slate-600">
+            <div className="px-2 pb-1.5 text-[10px] font-mono font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400">
               {group.group}
             </div>
             <div className="space-y-0.5 relative">
@@ -110,7 +110,7 @@ export const Sidebar: React.FC = () => {
                     className={`relative w-full flex items-center gap-2.5 px-2.5 py-2 rounded text-xs font-medium transition-colors cursor-pointer ${
                       isActive
                         ? 'text-white'
-                        : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/80'
+                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100/80 dark:hover:bg-slate-800/60'
                     }`}
                   >
                     {isActive && (
@@ -120,7 +120,7 @@ export const Sidebar: React.FC = () => {
                         transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
                       />
                     )}
-                    <Icon className={`w-4 h-4 shrink-0 relative z-10 ${isActive ? 'text-white' : 'text-slate-400'}`} />
+                    <Icon className={`w-4 h-4 shrink-0 relative z-10 ${isActive ? 'text-white' : 'text-slate-400 dark:text-slate-400'}`} />
                     <span className="truncate relative z-10">{item.label}</span>
                   </button>
                 );
