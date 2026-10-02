@@ -113,6 +113,7 @@ interface AppContextType {
     phone?: string;
     pan?: string;
   }) => Promise<{ success: boolean; error?: string }>;
+  provisionInitialApplication: (user: User, phone: string, dob?: string) => LoanApplication;
   resetAllData: () => void;
 }
 
@@ -1047,6 +1048,62 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     });
   };
 
+  const provisionInitialApplication = (
+    user: User,
+    phone: string,
+    dob?: string
+  ): LoanApplication => {
+    const existing = applications.find(
+      (a) => a.applicantId === user.id || a.personal.email.toLowerCase() === user.email.toLowerCase()
+    );
+    if (existing) return existing;
+
+    const selectedProd = products[0] || INITIAL_PRODUCTS[0];
+    const newRef = `APP-2026-${Math.floor(1000 + Math.random() * 9000)}`;
+    const newApp: LoanApplication = {
+      id: `app-reg-${Date.now().toString().slice(-6)}`,
+      referenceNumber: newRef,
+      applicantId: user.id,
+      productId: selectedProd.id,
+      product: selectedProd,
+      assignedOfficerId: 'usr-officer-1',
+      assignedOfficerName: 'David Vance',
+      status: 'SUBMITTED',
+      requestedAmount: 250000,
+      requestedTenorMonths: 24,
+      purpose: 'Personal Loan Self-Registration',
+      personal: {
+        fullName: user.fullName,
+        email: user.email,
+        phone: phone || user.phone || '',
+        dateOfBirth: dob || '',
+        residentialAddress: 'Primary Residential Address',
+        taxIdMasked: '******1234F',
+      },
+      financial: {
+        employmentType: 'SALARIED',
+        employerName: 'Declared Employer',
+        jobTitle: 'Professional',
+        yearsEmployed: 3.0,
+        grossMonthlyIncome: 85000,
+        existingMonthlyDebt: 10000,
+        housingExpense: 18000,
+        creditScoreDeclared: 750,
+      },
+      documents: [],
+      submittedAt: new Date().toISOString(),
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    setApplications((prev) => {
+      const nextApps = [newApp, ...prev.filter((a) => a.applicantId !== user.id && a.personal.email.toLowerCase() !== user.email.toLowerCase())];
+      localStorage.setItem(STORAGE_KEYS.APPLICATIONS, JSON.stringify(nextApps));
+      return nextApps;
+    });
+    return newApp;
+  };
+
   const registerApplicant = async (payload: {
     email: string;
     password: string;
@@ -1093,13 +1150,26 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       };
 
       // Prepend so newUser becomes the active user for APPLICANT role
-      setUsers((prev) => [newUser, ...prev.filter((u) => u.email.toLowerCase() !== newUser.email.toLowerCase())]);
+      setUsers((prev) => {
+        const nextUsers = [newUser, ...prev.filter((u) => u.email.toLowerCase() !== newUser.email.toLowerCase())];
+        localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(nextUsers));
+        return nextUsers;
+      });
+
+      // Automatically provision initial loan application with reference number for this borrower
+      const initialApp = provisionInitialApplication(
+        newUser,
+        payload.phone || '',
+        (payload as any).dateOfBirth || ''
+      );
+      setActiveApplicationId(initialApp.id);
+
       setCurrentRole('APPLICANT');
       setIsAuthenticated(true);
       localStorage.setItem(STORAGE_KEYS.IS_AUTHENTICATED, 'true');
       addAuditLog({
         eventType: 'USER_REGISTERED',
-        notes: `Borrower self-registration: '${fullName}' (${payload.email}) registered and authenticated.`,
+        notes: `Borrower self-registration: '${fullName}' (${payload.email}) registered with Docket ${initialApp.referenceNumber}.`,
       });
       // Determine target redirect after registration
       const target = pendingRedirectView;
@@ -1193,6 +1263,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         addUser,
         updateUser,
         registerApplicant,
+        provisionInitialApplication,
         resetAllData,
       }}
     >

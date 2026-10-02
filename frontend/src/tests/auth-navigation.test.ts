@@ -2,6 +2,14 @@ import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { isPublicRoute, resolveViewFromUrl, ROUTE_SEO_MAP } from '../utils/seo.ts';
 import { canRoleAccessView, getDefaultViewForRole, isValidAppView } from '../utils/rbac.ts';
+import {
+  parseDateParts,
+  isDobMatching,
+  normalizePhoneDigits,
+  isPhoneMatching,
+  isNameMatching,
+  isEmailMatching,
+} from '../utils/identityVerification.ts';
 import type { UserRole } from '../types/index.ts';
 
 describe('CredVidhi Navigation & Authentication Guards', () => {
@@ -323,24 +331,29 @@ describe('CredVidhi Navigation & Authentication Guards', () => {
         referenceNumber: 'APP-2026-0891',
         personal: {
           fullName: 'Alex Taylor',
-          phone: '+919811234501',
+          phone: '+91 98112 34501',
           email: 'alex.taylor@gmail.com',
           dateOfBirth: '1988-06-14',
         },
       },
     ];
 
-    const verifyIdentity = (data: { fullName: string; mobile: string; dateOfBirth: string }) => {
-      const cleanName = data.fullName.trim().toLowerCase();
-      const cleanDigits = data.mobile.replace(/\D/g, '').slice(-10);
+    const verifyIdentity = (data: { fullName: string; mobile: string; dateOfBirth: string; email?: string }) => {
+      const cleanName = data.fullName.trim();
+      const cleanMobile = data.mobile.trim();
       const cleanDob = data.dateOfBirth.trim();
 
-      const matched = mockApps.find((app) => {
-        const appName = app.personal.fullName.toLowerCase();
-        const appDigits = app.personal.phone.replace(/\D/g, '').slice(-10);
-        const appDob = app.personal.dateOfBirth;
+      const inputDobParts = parseDateParts(cleanDob);
+      if (!inputDobParts) {
+        return { success: false, error: 'Please enter a valid date of birth.' };
+      }
 
-        return appName === cleanName && appDigits === cleanDigits && appDob === cleanDob;
+      const matched = mockApps.find((app) => {
+        const phoneOk = isPhoneMatching(cleanMobile, app.personal.phone);
+        const nameOk = isNameMatching(cleanName, app.personal.fullName);
+        const dobOk = isDobMatching(cleanDob, app.personal.dateOfBirth);
+        const emailOk = isEmailMatching(data.email, app.personal.email);
+        return phoneOk && nameOk && dobOk && emailOk;
       });
 
       if (!matched) {
@@ -365,7 +378,7 @@ describe('CredVidhi Navigation & Authentication Guards', () => {
     assert.equal(failedAttempt.success, false);
     assert.equal(failedAttempt.error, 'We could not verify your details. Please check your information and try again.');
 
-    // Valid identity details
+    // Valid identity details with YYYY-MM-DD
     const validAttempt = verifyIdentity({
       fullName: 'Alex Taylor',
       mobile: '+91 98112 34501',
@@ -375,6 +388,15 @@ describe('CredVidhi Navigation & Authentication Guards', () => {
     assert.equal(validAttempt.step, 'OTP_REQUIRED');
     assert.equal(validAttempt.otp, '849201');
     assert.equal(validAttempt.referenceNumber, 'APP-2026-0891');
+
+    // Valid identity details with DD/MM/YYYY date format
+    const validDmyAttempt = verifyIdentity({
+      fullName: 'alex taylor',
+      mobile: '9811234501',
+      dateOfBirth: '14/06/1988',
+    });
+    assert.equal(validDmyAttempt.success, true);
+    assert.equal(validDmyAttempt.referenceNumber, 'APP-2026-0891');
 
     // OTP verification
     const verifyOtp = (token: string, otp: string, expectedToken: string, expectedOtp: string) => {
@@ -386,6 +408,43 @@ describe('CredVidhi Navigation & Authentication Guards', () => {
 
     assert.equal(verifyOtp(validAttempt.verificationToken, '000000', 'token-12345', '849201').success, false);
     assert.equal(verifyOtp(validAttempt.verificationToken, '849201', 'token-12345', '849201').success, true);
+  });
+
+  it('validates date parsing and comparison across all supported date formats', () => {
+    // ISO format
+    assert.deepEqual(parseDateParts('1990-04-08'), { year: 1990, month: 4, day: 8 });
+    // DD/MM/YYYY format
+    assert.deepEqual(parseDateParts('08/04/1990'), { year: 1990, month: 4, day: 8 });
+    // DD-MM-YYYY format
+    assert.deepEqual(parseDateParts('08-04-1990'), { year: 1990, month: 4, day: 8 });
+    // With timestamp
+    assert.deepEqual(parseDateParts('1990-04-08T00:00:00Z'), { year: 1990, month: 4, day: 8 });
+    // Invalid dates
+    assert.equal(parseDateParts('invalid-date'), null);
+    assert.equal(parseDateParts(''), null);
+
+    // Cross-format matching
+    assert.equal(isDobMatching('1990-04-08', '08/04/1990'), true);
+    assert.equal(isDobMatching('08/04/1990', '1990-04-08'), true);
+    assert.equal(isDobMatching('1988-04-15', '1988-04-15'), true);
+    assert.equal(isDobMatching('1990-04-08', '1988-04-15'), false);
+  });
+
+  it('validates mobile number normalization and comparison', () => {
+    assert.equal(normalizePhoneDigits('+91 98112 34501'), '9811234501');
+    assert.equal(normalizePhoneDigits('09811234501'), '9811234501');
+    assert.equal(normalizePhoneDigits('9811234501'), '9811234501');
+
+    assert.equal(isPhoneMatching('+91 98112 34501', '9811234501'), true);
+    assert.equal(isPhoneMatching('9811234501', '+91 98112 34501'), true);
+    assert.equal(isPhoneMatching('+91 98112 34501', '+91 98203 45602'), false);
+  });
+
+  it('validates name token matching', () => {
+    assert.equal(isNameMatching('Aman Mishra', 'Aman Mishra'), true);
+    assert.equal(isNameMatching('aman mishra', 'Aman Mishra'), true);
+    assert.equal(isNameMatching('Mishra Aman', 'Aman Mishra'), true);
+    assert.equal(isNameMatching('Aman Mishra', 'Aarav Sharma'), false);
   });
 });
 

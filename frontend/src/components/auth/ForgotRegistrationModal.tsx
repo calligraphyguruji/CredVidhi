@@ -16,6 +16,14 @@ import { Input } from '../ui/Input';
 import { Button } from '../ui/Button';
 import { authApi, ApiError } from '../../services/api';
 import { useApp } from '../../context/AppContext';
+import {
+  parseDateParts,
+  isDobMatching,
+  normalizePhoneDigits,
+  isPhoneMatching,
+  isNameMatching,
+  isEmailMatching,
+} from '../../utils/identityVerification';
 
 interface ForgotRegistrationModalProps {
   isOpen: boolean;
@@ -30,7 +38,7 @@ export const ForgotRegistrationModal: React.FC<ForgotRegistrationModalProps> = (
   onClose,
   onReturnToSignIn,
 }) => {
-  const { isBackendConnected, applications } = useApp();
+  const { isBackendConnected, applications, users, provisionInitialApplication } = useApp();
 
   const [step, setStep] = useState<RecoveryStep>('IDENTIFY');
   const [fullName, setFullName] = useState('');
@@ -100,6 +108,7 @@ export const ForgotRegistrationModal: React.FC<ForgotRegistrationModalProps> = (
 
   const handleIdentitySubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isLoading) return;
     setErrorMessage(null);
 
     const cleanName = fullName.trim();
@@ -110,7 +119,7 @@ export const ForgotRegistrationModal: React.FC<ForgotRegistrationModalProps> = (
       setErrorMessage('Please enter your full legal name.');
       return;
     }
-    if (!cleanMobile || cleanMobile.length < 8) {
+    if (!cleanMobile || cleanMobile.replace(/\D/g, '').length < 8) {
       setErrorMessage('Please enter a valid registered mobile number.');
       return;
     }
@@ -119,64 +128,87 @@ export const ForgotRegistrationModal: React.FC<ForgotRegistrationModalProps> = (
       return;
     }
 
+    const inputDobParts = parseDateParts(cleanDob);
+    if (!inputDobParts) {
+      setErrorMessage('Please provide a valid date of birth (e.g. DD/MM/YYYY or YYYY-MM-DD).');
+      return;
+    }
+
     setIsLoading(true);
 
     try {
       if (isBackendConnected) {
-        // Live backend verification
-        const res = await authApi.forgotRegistration({
-          fullName: cleanName,
-          mobile: cleanMobile,
-          dateOfBirth: cleanDob,
-          email: email.trim() || undefined,
-        });
+        try {
+          // Live backend verification
+          const res = await authApi.forgotRegistration({
+            fullName: cleanName,
+            mobile: cleanMobile,
+            dateOfBirth: cleanDob,
+            email: email.trim() || undefined,
+          });
 
-        setVerificationToken(res.verification_token);
-        setMaskedContact(res.masked_destination);
-        setDemoCode(res.demo_code || null);
-        setResendCooldown(30);
-        setStep('OTP');
-      } else {
-        // Client-side deterministic verification fallback (when backend offline)
-        // Normalize mobile: digits only, match last 10
-        const inputDigits = cleanMobile.replace(/\D/g, '').slice(-10);
-        const normInputName = cleanName.toLowerCase().replace(/\s+/g, ' ');
-
-        const matched = applications.find((app) => {
-          const appPhoneDigits = (app.personal.phone || '').replace(/\D/g, '').slice(-10);
-          const appNameNorm = app.personal.fullName.toLowerCase().replace(/\s+/g, ' ');
-          const appDob = app.personal.dateOfBirth || '';
-
-          const phoneMatch = appPhoneDigits.length >= 8 && appPhoneDigits === inputDigits;
-          const nameMatch =
-            appNameNorm === normInputName ||
-            appNameNorm.includes(normInputName) ||
-            normInputName.includes(appNameNorm);
-          const dobMatch =
-            appDob === cleanDob ||
-            cleanDob.replace(/\D/g, '') === appDob.replace(/\D/g, '');
-
-          return phoneMatch && nameMatch && dobMatch;
-        });
-
-        if (!matched) {
-          throw new Error('We could not verify your details. Please check your information and try again.');
+          setVerificationToken(res.verification_token);
+          setMaskedContact(res.masked_destination);
+          setDemoCode(res.demo_code || null);
+          setResendCooldown(30);
+          setStep('OTP');
+          return;
+        } catch (apiErr) {
+          // If backend returned client validation failure or rate limit, rethrow so user sees exact message
+          if (
+            apiErr instanceof ApiError &&
+            (apiErr.statusCode === 400 || apiErr.statusCode === 422 || apiErr.statusCode === 429)
+          ) {
+            throw apiErr;
+          }
+          // Network or server connection issue: fall through to client-side verification
+          console.warn('Backend recovery endpoint unavailable, using deterministic verification:', apiErr);
         }
-
-        const maskedPhone =
-          cleanMobile.length > 4
-            ? `+91 ******${cleanMobile.replace(/\D/g, '').slice(-4)}`
-            : '+91 ******3210';
-        const simulatedToken = `demo_token_${Date.now()}`;
-        const simulatedOtp = '849201';
-
-        setVerificationToken(simulatedToken);
-        setMaskedContact(maskedPhone);
-        setDemoCode(simulatedOtp);
-        setRecoveredRefNumber(matched.referenceNumber);
-        setResendCooldown(30);
-        setStep('OTP');
       }
+
+      // Client-side deterministic verification
+      // 1. Search active applications
+      let matchedApp = applications.find((app) => {
+        const phoneOk = isPhoneMatching(cleanMobile, app.personal.phone);
+        const nameOk = isNameMatching(cleanName, app.personal.fullName);
+        const dobOk = isDobMatching(cleanDob, app.personal.dateOfBirth);
+        const emailOk = isEmailMatching(email, app.personal.email);
+        return phoneOk && nameOk && dobOk && emailOk;
+      });
+
+      // 2. If not found in applications, also search registered users
+      if (!matchedApp) {
+        const matchedUser = users.find((u) => {
+          const phoneOk = isPhoneMatching(cleanMobile, u.phone);
+          const nameOk = isNameMatching(cleanName, u.fullName);
+          const emailOk = isEmailMatching(email, u.email);
+          return phoneOk && nameOk && emailOk;
+        });
+
+        if (matchedUser) {
+          // Retrieve or auto-provision application docket for this registered borrower
+          matchedApp = provisionInitialApplication(matchedUser, cleanMobile, cleanDob);
+        }
+      }
+
+      if (!matchedApp) {
+        throw new Error('We could not verify your details. Please check your information and try again.');
+      }
+
+      const cleanPhoneDigits = normalizePhoneDigits(cleanMobile);
+      const maskedPhone =
+        cleanPhoneDigits.length >= 4
+          ? `+91 ******${cleanPhoneDigits.slice(-4)}`
+          : '+91 ******3210';
+      const simulatedToken = `demo_token_${Date.now()}`;
+      const simulatedOtp = '849201';
+
+      setVerificationToken(simulatedToken);
+      setMaskedContact(maskedPhone);
+      setDemoCode(simulatedOtp);
+      setRecoveredRefNumber(matchedApp.referenceNumber);
+      setResendCooldown(30);
+      setStep('OTP');
     } catch (err: any) {
       const msg =
         err instanceof ApiError
@@ -201,7 +233,7 @@ export const ForgotRegistrationModal: React.FC<ForgotRegistrationModalProps> = (
     setIsLoading(true);
 
     try {
-      if (isBackendConnected) {
+      if (isBackendConnected && !verificationToken.startsWith('demo_token_')) {
         const res = await authApi.verifyRegistrationOtp({
           verificationToken,
           otp: cleanOtp,
@@ -317,20 +349,27 @@ export const ForgotRegistrationModal: React.FC<ForgotRegistrationModalProps> = (
             />
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label className="text-[10px] font-mono font-semibold text-slate-500 uppercase tracking-wider block mb-1">
+              <div className="w-full">
+                <label
+                  htmlFor="recovery-dob"
+                  className="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5 transition-colors"
+                >
                   Date of Birth <span className="text-orange-600">*</span>
                 </label>
-                <input
-                  type="date"
-                  value={dateOfBirth}
-                  onChange={(e) => {
-                    setDateOfBirth(e.target.value);
-                    if (errorMessage) setErrorMessage(null);
-                  }}
-                  required
-                  className="w-full text-xs p-2.5 bg-slate-50 border border-slate-300 rounded focus:outline-none focus:ring-2 focus:ring-orange-500 focus:bg-white font-mono transition-colors text-slate-800"
-                />
+                <div className="relative flex items-center rounded-md shadow-xs">
+                  <input
+                    id="recovery-dob"
+                    type="date"
+                    value={dateOfBirth}
+                    onChange={(e) => {
+                      setDateOfBirth(e.target.value);
+                      if (errorMessage) setErrorMessage(null);
+                    }}
+                    required
+                    aria-label="Date of Birth"
+                    className="block w-full text-sm text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-700 focus:ring-orange-500 focus:border-orange-500 rounded-md px-3 py-2 bg-white dark:bg-slate-900 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-1 font-mono transition-all duration-150 [color-scheme:light] dark:[color-scheme:dark]"
+                  />
+                </div>
               </div>
 
               <Input

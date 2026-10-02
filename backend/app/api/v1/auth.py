@@ -102,6 +102,40 @@ async def register(
             status_code=status.HTTP_409_CONFLICT,
         )
 
+    # Automatically provision initial application record with reference number for this borrower
+    from decimal import Decimal
+    from app.api.v1.applications import generate_reference_number
+    from app.models.application import ApplicationStatus
+    from app.models.loan_product import LoanProduct
+
+    prod_stmt = select(LoanProduct).where(LoanProduct.is_active == True).limit(1)
+    prod_res = await db.execute(prod_stmt)
+    default_prod = prod_res.scalar_one_or_none()
+
+    if default_prod:
+        init_app = LoanApplication(
+            id=uuid.uuid4(),
+            reference_number=generate_reference_number(),
+            applicant_id=new_user.id,
+            product_id=default_prod.id,
+            status=ApplicationStatus.SUBMITTED,
+            requested_amount=Decimal("250000.00"),
+            requested_tenor_months=24,
+            purpose="Personal Loan Self-Registration",
+            applicant_personal_snapshot={
+                "fullName": new_user.full_name,
+                "email": new_user.email,
+                "phone": new_user.phone_number,
+                "pan": new_user.pan_number,
+            },
+            submitted_at=datetime.utcnow(),
+        )
+        db.add(init_app)
+        try:
+            await db.commit()
+        except Exception:
+            await db.rollback()
+
     user_dto = UserProfileResponse(
         id=new_user.id,
         email=new_user.email,
@@ -332,24 +366,28 @@ def _normalize_phone(phone_str: Optional[str]) -> str:
 
 
 def _normalize_name(name_str: Optional[str]) -> str:
-    """Normalize whitespace and case for robust name comparisons."""
+    """Normalize whitespace, punctuation and case for robust name comparisons."""
     if not name_str:
         return ""
-    return " ".join(name_str.strip().lower().split())
+    cleaned = re.sub(r"[^a-z0-9\s]", " ", name_str.lower())
+    return " ".join(cleaned.split())
 
 
 def _normalize_date(date_str: Optional[str]) -> Optional[str]:
     """Parse common date formats (ISO, slash, hyphen) to YYYY-MM-DD."""
     if not date_str:
         return None
-    cleaned = date_str.strip()
-    for fmt in ("%Y-%m-%d", "%d/%m/%Y", "%d-%m-%Y", "%Y/%m/%d", "%d.%m.%Y"):
+    cleaned = date_str.strip().split("T")[0].strip()
+    for fmt in ("%Y-%m-%d", "%d/%m/%Y", "%d-%m-%Y", "%Y/%m/%d", "%d.%m.%Y", "%m/%d/%Y"):
         try:
             dt = datetime.strptime(cleaned, fmt)
-            return dt.strftime("%Y-%m-%d")
+            from datetime import timezone
+            current_year = datetime.now(timezone.utc).year
+            if 1900 <= dt.year <= current_year - 18:
+                return dt.strftime("%Y-%m-%d")
         except ValueError:
             pass
-    return cleaned
+    return None
 
 
 @router.post(
@@ -388,8 +426,9 @@ async def forgot_registration(
 
     # 2. Look up applicants in database (narrowed by phone suffix and optional email)
     stmt = select(User).where(User.role == UserRole.APPLICANT)
-    if len(clean_mobile) == 10:
-        stmt = stmt.where(User.phone_number.like(f"%{clean_mobile}%"))
+    if len(clean_mobile) >= 4:
+        # Match by last 4 digits to avoid whitespace issues in formatted phone numbers (+91 98112 34501)
+        stmt = stmt.where(User.phone_number.like(f"%{clean_mobile[-4:]}%"))
     if payload.email:
         stmt = stmt.where(User.email == payload.email.lower().strip())
 
@@ -402,16 +441,34 @@ async def forgot_registration(
     normalized_input_name = _normalize_name(payload.full_name)
     normalized_input_dob = _normalize_date(payload.date_of_birth)
 
+    if not normalized_input_dob:
+        return error_response(
+            code="VERIFICATION_FAILED",
+            message="We could not verify your details. Please check your information and try again.",
+            status_code=status.HTTP_400_BAD_REQUEST,
+        )
+
     for user in candidate_users:
         user_phone = _normalize_phone(user.phone_number)
         user_name = _normalize_name(f"{user.first_name} {user.last_name}")
 
-        # Name match: exact full name or token sets match
+        user_name_tokens = set(user_name.split())
+        input_name_tokens = set(normalized_input_name.split())
+
         name_match = (
             user_name == normalized_input_name
-            or set(user_name.split()) == set(normalized_input_name.split())
+            or user_name_tokens == input_name_tokens
+            or (len(input_name_tokens) >= 2 and input_name_tokens.issubset(user_name_tokens))
+            or (len(user_name_tokens) >= 2 and user_name_tokens.issubset(input_name_tokens))
         )
-        phone_match = user_phone == clean_mobile
+        if not user_phone or len(user_phone) < 8 or len(clean_mobile) < 8:
+            phone_match = False
+        else:
+            phone_match = (
+                user_phone == clean_mobile
+                or user_phone.endswith(clean_mobile)
+                or clean_mobile.endswith(user_phone)
+            )
 
         if not (name_match and phone_match):
             continue
@@ -424,6 +481,44 @@ async def forgot_registration(
         )
         app_res = await db.execute(app_stmt)
         apps = app_res.scalars().all()
+
+        if not apps:
+            # User registered without application row yet: provision initial application reference
+            from decimal import Decimal
+            from app.api.v1.applications import generate_reference_number
+            from app.models.application import ApplicationStatus
+            from app.models.loan_product import LoanProduct
+
+            prod_stmt = select(LoanProduct).where(LoanProduct.is_active == True).limit(1)
+            prod_res = await db.execute(prod_stmt)
+            default_prod = prod_res.scalar_one_or_none()
+
+            if default_prod:
+                init_app = LoanApplication(
+                    id=uuid.uuid4(),
+                    reference_number=generate_reference_number(),
+                    applicant_id=user.id,
+                    product_id=default_prod.id,
+                    status=ApplicationStatus.SUBMITTED,
+                    requested_amount=Decimal("250000.00"),
+                    requested_tenor_months=24,
+                    purpose="Personal Loan Self-Registration",
+                    applicant_personal_snapshot={
+                        "fullName": user.full_name,
+                        "email": user.email,
+                        "phone": user.phone_number,
+                        "dateOfBirth": payload.date_of_birth,
+                    },
+                    submitted_at=datetime.utcnow(),
+                )
+                db.add(init_app)
+                try:
+                    await db.commit()
+                    matched_user = user
+                    matched_app = init_app
+                    break
+                except Exception:
+                    await db.rollback()
 
         for app in apps:
             snapshot = app.applicant_personal_snapshot or {}

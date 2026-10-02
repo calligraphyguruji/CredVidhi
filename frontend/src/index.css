@@ -113,6 +113,45 @@
     color-scheme: dark;
   }
 
+  /* Native date input styling for dark mode */
+  html.dark input[type="date"] {
+    color-scheme: dark !important;
+    background-color: #0f172a !important;
+    color: #F8FAFC !important;
+    border-color: #334155 !important;
+  }
+
+  html.dark input[type="date"]:focus {
+    background-color: #0f172a !important;
+    border-color: #ea580c !important;
+    box-shadow: 0 0 0 1px #ea580c !important;
+  }
+
+  html.dark input[type="date"]::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+    filter: invert(0.85);
+    opacity: 0.8;
+    transition: opacity 0.15s ease-in-out;
+  }
+
+  html.dark input[type="date"]::-webkit-calendar-picker-indicator:hover {
+    opacity: 1;
+  }
+
+  html.dark input[type="date"]::-webkit-datetime-edit-fields-wrapper {
+    color: #F8FAFC;
+  }
+
+  html.dark input[type="date"]::-webkit-datetime-edit-text {
+    color: #94A3B8;
+  }
+
+  html.dark input[type="date"]::-webkit-datetime-edit-month-field,
+  html.dark input[type="date"]::-webkit-datetime-edit-day-field,
+  html.dark input[type="date"]::-webkit-datetime-edit-year-field {
+    color: #F8FAFC;
+  }
+
   html.dark select option {
     background-color: #0f172a;
     color: #F8FAFC;
