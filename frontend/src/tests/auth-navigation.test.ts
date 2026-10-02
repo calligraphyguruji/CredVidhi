@@ -1,7 +1,7 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { isPublicRoute, resolveViewFromUrl, ROUTE_SEO_MAP } from '../utils/seo.ts';
-import { canRoleAccessView, getDefaultViewForRole } from '../utils/rbac.ts';
+import { canRoleAccessView, getDefaultViewForRole, isValidAppView } from '../utils/rbac.ts';
 import type { UserRole } from '../types/index.ts';
 
 describe('CredVidhi Navigation & Authentication Guards', () => {
@@ -203,5 +203,44 @@ describe('CredVidhi Navigation & Authentication Guards', () => {
     assert.equal(res3.target, 'borrower-portal');
     assert.equal(res3.allowed, false);
     assert.equal(res3.rbacWarning, true);
+  });
+
+  it('fails closed for unmapped or arbitrary internal views', () => {
+    // Arbitrary unmapped route
+    assert.equal(canRoleAccessView('APPLICANT', 'secret-admin-console'), false);
+    assert.equal(canRoleAccessView('LOAN_OFFICER', 'secret-admin-console'), false);
+    assert.equal(canRoleAccessView('ADMIN', 'secret-admin-console'), false);
+
+    // Public routes remain accessible
+    assert.equal(canRoleAccessView('APPLICANT', 'landing'), true);
+    assert.equal(canRoleAccessView('APPLICANT', 'login'), true);
+    assert.equal(canRoleAccessView('APPLICANT', 'register'), true);
+  });
+
+  it('sanitizes redirect intent queries using isValidAppView', () => {
+    assert.equal(isValidAppView('landing'), true);
+    assert.equal(isValidAppView('login'), true);
+    assert.equal(isValidAppView('register'), true);
+    assert.equal(isValidAppView('officer-queue'), true);
+    assert.equal(isValidAppView('borrower-portal'), true);
+
+    // Invalid / attack routes
+    assert.equal(isValidAppView('https://malicious-site.com'), false);
+    assert.equal(isValidAppView('javascript:alert(1)'), false);
+    assert.equal(isValidAppView('unknown-secret-dashboard'), false);
+
+    const sanitizeRedirect = (param: string | null) => {
+      if (param && isValidAppView(param) && !isPublicRoute(param)) {
+        return param;
+      }
+      return null;
+    };
+
+    assert.equal(sanitizeRedirect('officer-queue'), 'officer-queue');
+    assert.equal(sanitizeRedirect('borrower-portal'), 'borrower-portal');
+    assert.equal(sanitizeRedirect('landing'), null); // public route, not internal redirect
+    assert.equal(sanitizeRedirect('https://evil.com'), null);
+    assert.equal(sanitizeRedirect(''), null);
+    assert.equal(sanitizeRedirect(null), null);
   });
 });

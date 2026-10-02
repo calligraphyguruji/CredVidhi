@@ -18,7 +18,7 @@ import {
 import { calculateEmi, calculateDti, calculateDisposableIncome } from '../utils/financial';
 import { ToastContainer, type ToastMessage } from '../components/ui/Toast';
 import { applyRouteSEO, resolveViewFromUrl, isPublicRoute } from '../utils/seo';
-import { canRoleAccessView, getDefaultViewForRole } from '../utils/rbac';
+import { canRoleAccessView, getDefaultViewForRole, isValidAppView } from '../utils/rbac';
 import {
   healthApi,
   authApi,
@@ -217,7 +217,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [pendingRedirectView, setPendingRedirectViewState] = useState<string | null>(() => {
     if (typeof window === 'undefined') return null;
     const urlRedirect = new URLSearchParams(window.location.search).get('redirect');
-    if (urlRedirect && !isPublicRoute(urlRedirect)) {
+    if (urlRedirect && isValidAppView(urlRedirect) && !isPublicRoute(urlRedirect)) {
       return urlRedirect;
     }
     return localStorage.getItem(STORAGE_KEYS.PENDING_REDIRECT);
@@ -250,6 +250,22 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return initialView;
   });
 
+  const [toasts, setToasts] = useState<ToastMessage[]>([]);
+
+  const addToast = (toast: Omit<ToastMessage, 'id'>) => {
+    const id = `toast-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+    const newToast: ToastMessage = { id, ...toast };
+    setToasts((prev) => [...prev.slice(-3), newToast]);
+
+    setTimeout(() => {
+      setToasts((prev) => prev.filter((t) => t.id !== id));
+    }, 4500);
+  };
+
+  const dismissToast = (id: string) => {
+    setToasts((prev) => prev.filter((t) => t.id !== id));
+  };
+
   const setActiveView = (view: string, redirectTarget?: string) => {
     const isAuthed =
       isAuthenticated ||
@@ -264,8 +280,23 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       return;
     }
 
+    if (isAuthed && !isPublicRoute(view)) {
+      if (!canRoleAccessView(currentRole, view)) {
+        const fallbackView = getDefaultViewForRole(currentRole);
+        setActiveViewState(fallbackView);
+        addToast({
+          type: 'error',
+          title: 'Access Restricted (RBAC)',
+          message: `Your account (${currentRole}) does not have permission for the requested view. Navigated to your primary workspace.`,
+        });
+        return;
+      }
+    }
+
     if (isPublicRoute(view) && redirectTarget) {
-      setPendingRedirectView(redirectTarget);
+      if (isValidAppView(redirectTarget) && !isPublicRoute(redirectTarget)) {
+        setPendingRedirectView(redirectTarget);
+      }
     }
 
     setActiveViewState(view);
@@ -327,7 +358,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
-  const [toasts, setToasts] = useState<ToastMessage[]>([]);
   const [isBackendConnected, setIsBackendConnected] = useState<boolean>(false);
   const [backendHealth, setBackendHealth] = useState<{ database: boolean; redis: boolean } | null>(null);
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
@@ -424,27 +454,20 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             localStorage.getItem(STORAGE_KEYS.IS_AUTHENTICATED) === 'true'));
       if (!isPublicRoute(targetView) && !isAuthed) {
         setActiveViewState('register');
+      } else if (isAuthed && !isPublicRoute(targetView) && !canRoleAccessView(currentRole, targetView)) {
+        setActiveViewState(getDefaultViewForRole(currentRole));
+        addToast({
+          type: 'error',
+          title: 'Access Restricted (RBAC)',
+          message: `Your account (${currentRole}) does not have permission for the requested view. Navigated to your primary workspace.`,
+        });
       } else {
         setActiveViewState(targetView);
       }
     };
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
-  }, [isAuthenticated]);
-
-  const addToast = (toast: Omit<ToastMessage, 'id'>) => {
-    const id = `toast-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
-    const newToast: ToastMessage = { id, ...toast };
-    setToasts((prev) => [...prev.slice(-3), newToast]);
-
-    setTimeout(() => {
-      setToasts((prev) => prev.filter((t) => t.id !== id));
-    }, 4500);
-  };
-
-  const dismissToast = (id: string) => {
-    setToasts((prev) => prev.filter((t) => t.id !== id));
-  };
+  }, [isAuthenticated, currentRole]);
 
   // Sync to localStorage
   useEffect(() => {
@@ -491,13 +514,19 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
     setCurrentRole(role);
     if (targetView) {
-      setActiveViewState(targetView);
+      if (canRoleAccessView(role, targetView)) {
+        setActiveViewState(targetView);
+      } else {
+        setActiveViewState(getDefaultViewForRole(role));
+        addToast({
+          type: 'error',
+          title: 'Access Restricted (RBAC)',
+          message: `Role ${role} is not permitted to access ${targetView}. Navigated to default view.`,
+        });
+      }
       return;
     }
-    if (role === 'LOAN_OFFICER') setActiveView('officer-queue');
-    else if (role === 'RISK_ANALYST') setActiveView('underwriting-cockpit');
-    else if (role === 'APPLICANT') setActiveView('borrower-portal');
-    else if (role === 'ADMIN') setActiveView('compliance-audit');
+    setActiveViewState(getDefaultViewForRole(role));
   };
 
   const transitionApplicationStatus = (

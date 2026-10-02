@@ -1,4 +1,5 @@
 import type { UserRole } from '../types';
+import { isPublicRoute } from './seo.ts';
 
 /**
  * Maps each view/route to the roles permitted to access it.
@@ -24,6 +25,13 @@ export const VIEW_ROLE_PERMISSIONS: Record<string, UserRole[]> = {
 };
 
 /**
+ * Validates whether a given view name is registered in CredVidhi.
+ */
+export function isValidAppView(view: string): boolean {
+  return view in VIEW_ROLE_PERMISSIONS || isPublicRoute(view);
+}
+
+/**
  * Returns default landing view for a role when authorized.
  */
 export function getDefaultViewForRole(role: UserRole): string {
@@ -43,12 +51,16 @@ export function getDefaultViewForRole(role: UserRole): string {
 
 /**
  * Checks whether a given role is authorized to access a given view.
+ * Fails closed: unmapped internal routes are denied.
  */
 export function canRoleAccessView(role: UserRole, view: string): boolean {
+  if (isPublicRoute(view)) {
+    return true;
+  }
   const allowed = VIEW_ROLE_PERMISSIONS[view];
   if (!allowed) {
-    // If view not registered, default allow for safety or fallback
-    return true;
+    // Fail closed: unregistered internal views are forbidden
+    return false;
   }
   return allowed.includes(role);
 }
