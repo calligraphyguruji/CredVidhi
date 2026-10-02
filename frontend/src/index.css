@@ -127,15 +127,17 @@
     box-shadow: 0 0 0 1px #ea580c !important;
   }
 
+  /* Make date picker calendar icon clearly visible in dark mode */
   html.dark input[type="date"]::-webkit-calendar-picker-indicator {
     cursor: pointer;
-    filter: invert(0.85);
-    opacity: 0.8;
-    transition: opacity 0.15s ease-in-out;
+    filter: invert(1) brightness(1.2) !important;
+    opacity: 1 !important;
+    transition: filter 0.15s ease-in-out, opacity 0.15s ease-in-out;
   }
 
   html.dark input[type="date"]::-webkit-calendar-picker-indicator:hover {
-    opacity: 1;
+    filter: invert(55%) sepia(90%) saturate(2200%) hue-rotate(355deg) brightness(105%) contrast(100%) !important;
+    opacity: 1 !important;
   }
 
   html.dark input[type="date"]::-webkit-datetime-edit-fields-wrapper {

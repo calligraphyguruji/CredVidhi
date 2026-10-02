@@ -367,7 +367,7 @@ export const ForgotRegistrationModal: React.FC<ForgotRegistrationModalProps> = (
                     }}
                     required
                     aria-label="Date of Birth"
-                    className="block w-full text-sm text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-700 focus:ring-orange-500 focus:border-orange-500 rounded-md px-3 py-2 bg-white dark:bg-slate-900 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-1 font-mono transition-all duration-150 [color-scheme:light] dark:[color-scheme:dark]"
+                    className="block w-full text-sm text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-700 focus:ring-orange-500 focus:border-orange-500 rounded-md px-3 py-2 bg-white dark:bg-slate-900 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-1 font-mono transition-all duration-150 [color-scheme:light] dark:[color-scheme:dark] dark:[&::-webkit-calendar-picker-indicator]:invert dark:[&::-webkit-calendar-picker-indicator]:brightness-125 dark:[&::-webkit-calendar-picker-indicator]:opacity-100 cursor-pointer"
                   />
                 </div>
               </div>
