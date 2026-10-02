@@ -69,7 +69,7 @@ const MainContent: React.FC = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1, transition: { duration: 0.2 } }}
             exit={{ opacity: 0, transition: { duration: 0.15 } }}
-            className="min-h-screen bg-slate-50 dark:bg-slate-950 flex transition-colors"
+            className="min-h-screen bg-slate-50 dark:bg-transparent flex transition-colors"
           >
             {/* Navigation Sidebar */}
             <Sidebar />

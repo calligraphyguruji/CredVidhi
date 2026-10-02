@@ -53,10 +53,10 @@
     color: var(--text-primary);
   }
 
-  /* Allow dark mode hero and canvas to display background image */
-  html.dark .min-h-screen.bg-white {
+  /* Allow dark mode hero, authenticated app shell, and canvas to display background image */
+  html.dark .min-h-screen.bg-white,
+  html.dark .min-h-screen.bg-slate-50 {
     background-color: transparent !important;
-    color: #F8FAFC !important;
   }
 
   html.dark section.bg-slate-50 {
