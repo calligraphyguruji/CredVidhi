@@ -18,8 +18,9 @@ router = APIRouter(prefix="/health", tags=["Health & Diagnostics"])
 START_TIME = time.time()
 
 
-@router.get(
+@router.api_route(
     "",
+    methods=["GET", "HEAD"],
     summary="Comprehensive Service Health Check",
     description="Validates API uptime and deep connectivity to PostgreSQL and Redis.",
     response_model=None,
@@ -54,8 +55,9 @@ async def get_health() -> JSONResponse:
     )
 
 
-@router.get(
+@router.api_route(
     "/live",
+    methods=["GET", "HEAD"],
     summary="Liveness Probe",
     description="Lightweight probe to verify that the HTTP process is alive.",
 )
@@ -67,8 +69,9 @@ async def get_liveness() -> JSONResponse:
     )
 
 
-@router.get(
+@router.api_route(
     "/ready",
+    methods=["GET", "HEAD"],
     summary="Readiness Probe",
     description="Validates whether the service can accept incoming production traffic.",
 )

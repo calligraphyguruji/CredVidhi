@@ -51,6 +51,7 @@ def create_application() -> FastAPI:
     app.add_middleware(
         CORSMiddleware,
         allow_origins=settings.CORS_ORIGINS,
+        allow_origin_regex=r"^https://credvidhi(-[a-zA-Z0-9_-]+)?\.vercel\.app$",
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
@@ -107,8 +108,9 @@ def create_application() -> FastAPI:
         )
 
     # Root Discovery Endpoint
-    @app.get(
+    @app.api_route(
         "/",
+        methods=["GET", "HEAD"],
         summary="API Root Information",
         description="Returns service metadata and active API version endpoints.",
         tags=["System"],
@@ -126,6 +128,11 @@ def create_application() -> FastAPI:
 
     # Mount API v1 router
     app.include_router(api_v1_router, prefix=settings.API_V1_PREFIX)
+
+    # Top-level /health alias for uptime monitors, Render health checks, and crawlers
+    from app.api.v1.health import router as health_router
+
+    app.include_router(health_router, include_in_schema=False)
 
     # Mount /api/auth alias for top-level authentication requests
     from app.api.v1.auth import router as auth_router

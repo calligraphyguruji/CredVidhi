@@ -104,11 +104,12 @@ async def register(
 
     # Automatically provision initial application record with reference number for this borrower
     from decimal import Decimal
+
     from app.api.v1.applications import generate_reference_number
     from app.models.application import ApplicationStatus
     from app.models.loan_product import LoanProduct
 
-    prod_stmt = select(LoanProduct).where(LoanProduct.is_active == True).limit(1)
+    prod_stmt = select(LoanProduct).where(LoanProduct.is_active).limit(1)
     prod_res = await db.execute(prod_stmt)
     default_prod = prod_res.scalar_one_or_none()
 
@@ -485,11 +486,12 @@ async def forgot_registration(
         if not apps:
             # User registered without application row yet: provision initial application reference
             from decimal import Decimal
+
             from app.api.v1.applications import generate_reference_number
             from app.models.application import ApplicationStatus
             from app.models.loan_product import LoanProduct
 
-            prod_stmt = select(LoanProduct).where(LoanProduct.is_active == True).limit(1)
+            prod_stmt = select(LoanProduct).where(LoanProduct.is_active).limit(1)
             prod_res = await db.execute(prod_stmt)
             default_prod = prod_res.scalar_one_or_none()
 

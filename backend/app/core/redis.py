@@ -2,7 +2,7 @@
 
 import json
 import time
-from typing import Dict, Optional
+from typing import Any, Dict, Optional, cast
 
 from app.core.logging import logger
 from app.database import get_redis_client
@@ -51,7 +51,7 @@ async def is_token_revoked(jti: str) -> bool:
 _memory_rate_limits: Dict[str, tuple[int, float]] = {}
 
 # In-memory recovery sessions fallback: token -> (dict, expiration_timestamp)
-_memory_recovery_sessions: Dict[str, tuple[dict, float]] = {}
+_memory_recovery_sessions: Dict[str, tuple[dict[str, Any], float]] = {}
 
 
 async def check_rate_limit(key: str, max_attempts: int, window_seconds: int) -> bool:
@@ -82,7 +82,7 @@ async def check_rate_limit(key: str, max_attempts: int, window_seconds: int) -> 
             return True
 
 
-async def store_recovery_session(token: str, data: dict, ttl_seconds: int = 300) -> None:
+async def store_recovery_session(token: str, data: dict[str, Any], ttl_seconds: int = 300) -> None:
     """Store temporary identity verification OTP recovery session."""
     now = time.time()
     try:
@@ -93,14 +93,14 @@ async def store_recovery_session(token: str, data: dict, ttl_seconds: int = 300)
         _memory_recovery_sessions[token] = (data, now + ttl_seconds)
 
 
-async def get_recovery_session(token: str) -> Optional[dict]:
+async def get_recovery_session(token: str) -> Optional[dict[str, Any]]:
     """Retrieve recovery session if valid and not expired."""
     now = time.time()
     try:
         client = await get_redis_client()
         val = await client.get(f"reg_recovery:{token}")
         if val:
-            return json.loads(val)
+            return cast(dict[str, Any], json.loads(val))
     except Exception as exc:
         logger.warning(f"Redis get_recovery_session failed; using in-memory fallback: {exc}")
 

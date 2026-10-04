@@ -49,9 +49,10 @@ class Settings(BaseSettings):
     @classmethod
     def parse_cors_origins(cls, v: Any) -> List[str]:
         """Safely parse CORS_ORIGINS from JSON array, comma-delimited string, or list."""
+        raw_items: List[str] = []
         if isinstance(v, list):
-            return [str(item).strip() for item in v if str(item).strip()]
-        if isinstance(v, str):
+            raw_items = [str(item).strip() for item in v if str(item).strip()]
+        elif isinstance(v, str):
             v_stripped = v.strip()
             if not v_stripped:
                 return []
@@ -59,20 +60,30 @@ class Settings(BaseSettings):
                 try:
                     parsed = json.loads(v_stripped)
                     if isinstance(parsed, list):
-                        return [str(item).strip() for item in parsed if str(item).strip()]
+                        raw_items = [str(item).strip() for item in parsed if str(item).strip()]
                 except Exception:
                     inner = v_stripped[1:-1]
-                    return [
+                    raw_items = [
                         item.strip().strip("'\"")
                         for item in inner.split(",")
                         if item.strip().strip("'\"")
                     ]
-            return [
-                item.strip().strip("'\"")
-                for item in v_stripped.split(",")
-                if item.strip().strip("'\"")
-            ]
-        return []
+            else:
+                raw_items = [
+                    item.strip().strip("'\"")
+                    for item in v_stripped.split(",")
+                    if item.strip().strip("'\"")
+                ]
+
+        origins: List[str] = []
+        for item in raw_items:
+            clean = item.strip().strip("'\"")
+            stripped = clean.rstrip("/")
+            if stripped and stripped not in origins:
+                origins.append(stripped)
+            if clean not in origins:
+                origins.append(clean)
+        return origins
 
     # Logging
     LOG_LEVEL: str = "INFO"

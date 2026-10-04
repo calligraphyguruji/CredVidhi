@@ -13,7 +13,7 @@ _TEST_DOMAINS = frozenset({"example.com", "example.org", "example.net", "test.co
 _TEST_TLDS = frozenset({".example", ".test", ".invalid", ".localhost"})
 
 # Bounded caching resolver to prevent async event loop starvation
-_resolver = caching_resolver(timeout=3.0)
+_resolver = caching_resolver(timeout=3)
 
 
 def _is_test_environment() -> bool:

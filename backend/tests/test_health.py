@@ -182,3 +182,51 @@ def test_config_production_guard() -> None:
             ENVIRONMENT="production",
             JWT_SECRET="credvidhi-super-secret-development-key-change-in-production",
         )
+
+
+@pytest.mark.asyncio
+async def test_head_and_root_health_aliases(async_client: AsyncClient) -> None:
+    """Verify HEAD method and top-level /health aliases support uptime monitors like UptimeRobot."""
+    with (
+        patch("app.api.v1.health.check_db_health", return_value=True),
+        patch("app.api.v1.health.check_redis_health", return_value=True),
+    ):
+        # Test HEAD on root and api health
+        head_root = await async_client.head("/")
+        assert head_root.status_code == 200
+
+        head_api_health = await async_client.head("/api/v1/health")
+        assert head_api_health.status_code == 200
+
+        head_live = await async_client.head("/api/v1/health/live")
+        assert head_live.status_code == 200
+
+        head_ready = await async_client.head("/api/v1/health/ready")
+        assert head_ready.status_code == 200
+
+        # Test top-level /health alias
+        get_alias = await async_client.get("/health")
+        assert get_alias.status_code == 200
+        assert get_alias.json()["data"]["status"] == "HEALTHY"
+
+        head_alias = await async_client.head("/health")
+        assert head_alias.status_code == 200
+
+        get_alias_live = await async_client.get("/health/live")
+        assert get_alias_live.status_code == 200
+        assert get_alias_live.json()["data"]["status"] == "ALIVE"
+
+        head_alias_live = await async_client.head("/health/live")
+        assert head_alias_live.status_code == 200
+
+
+def test_cors_origin_normalization_trailing_slashes() -> None:
+    """Verify that CORS_ORIGINS strips and normalizes trailing slashes safely."""
+    from app.config import Settings
+
+    s = Settings(
+        CORS_ORIGINS=["https://credvidhi.vercel.app/"],
+    )
+    assert "https://credvidhi.vercel.app" in s.CORS_ORIGINS
+    assert "https://credvidhi.vercel.app/" in s.CORS_ORIGINS
+
