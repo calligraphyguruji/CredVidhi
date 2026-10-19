@@ -1,3 +1,4 @@
+from tests.wizard_helpers import complete_draft
 """Comprehensive Verification Suite for Document Storage & Verification Pipeline (Phase 04)."""
 
 import io
@@ -310,6 +311,7 @@ async def test_officer_verification_and_automated_fsm_triggers(
         headers=app_headers,
     )
     app_id = create_res.json()["data"]["id"]
+    await complete_draft(async_client, app_id, app_headers, product.required_documents)
     await async_client.post(f"/api/v1/applications/{app_id}/submit", headers=app_headers)
 
     # 2. Officer transitions application to UNDER_REVIEW

@@ -3,8 +3,10 @@
 Enforces MIME magic byte inspection, 10MB file caps, and time-limited presigned URLs.
 """
 
+import asyncio
 import hashlib
 import uuid
+from pathlib import Path
 from typing import AsyncGenerator, Optional, Tuple
 
 from aiobotocore.session import get_session
@@ -49,6 +51,19 @@ class StorageService:
         self.bucket_name = settings.MINIO_BUCKET_NAME
         self.region_name = "us-east-1"
         self._session = get_session()
+        self.local_root = (
+            Path(settings.LOCAL_DOCUMENT_STORAGE_PATH).resolve()
+            if settings.LOCAL_DOCUMENT_STORAGE_PATH
+            else None
+        )
+
+    def local_path(self, storage_key: str) -> Path:
+        if self.local_root is None:
+            raise StorageUnavailableError("Local storage is not configured.")
+        path = (self.local_root / storage_key).resolve()
+        if not path.is_relative_to(self.local_root) or path == self.local_root:
+            raise StorageUnavailableError("Invalid document storage path.")
+        return path
 
     async def get_client(self) -> AsyncGenerator[object, None]:
         """Yield an active aiobotocore S3 client context."""
@@ -120,6 +135,10 @@ class StorageService:
         expires_in: int = 900,
     ) -> str:
         """Generate presigned PUT URL for direct client upload (default 15 minutes)."""
+        if self.local_root is not None:
+            raise StorageUnavailableError(
+                "Use the authenticated multipart upload for local storage."
+            )
         try:
             async with self._session.create_client(
                 "s3",
@@ -139,8 +158,9 @@ class StorageService:
                 )
                 return str(url)
         except Exception as exc:
-            raise StorageUnavailableError("Document storage is temporarily unavailable. Please retry.") from exc
-
+            raise StorageUnavailableError(
+                "Document storage is temporarily unavailable. Please retry."
+            ) from exc
 
     async def generate_presigned_download_url(
         self,
@@ -148,6 +168,8 @@ class StorageService:
         expires_in: int = 900,
     ) -> str:
         """Generate presigned GET URL for secure time-limited document download."""
+        if self.local_root is not None:
+            return ""  # Local documents are served only by the authenticated download route.
         try:
             async with self._session.create_client(
                 "s3",
@@ -166,8 +188,9 @@ class StorageService:
                 )
                 return str(url)
         except Exception as exc:
-            raise StorageUnavailableError("Document storage is temporarily unavailable. Please retry.") from exc
-
+            raise StorageUnavailableError(
+                "Document storage is temporarily unavailable. Please retry."
+            ) from exc
 
     async def upload_file_bytes(
         self,
@@ -176,6 +199,15 @@ class StorageService:
         mime_type: str,
     ) -> None:
         """Directly stream byte payload into S3 / MinIO storage."""
+        if self.local_root is not None:
+            try:
+                path = self.local_path(storage_key)
+                await asyncio.to_thread(path.parent.mkdir, parents=True, exist_ok=True, mode=0o700)
+                await asyncio.to_thread(path.write_bytes, file_bytes)
+                await asyncio.to_thread(path.chmod, 0o600)
+                return
+            except OSError as exc:
+                raise StorageUnavailableError("Document upload failed. Please retry.") from exc
         try:
             async with self._session.create_client(
                 "s3",
@@ -199,8 +231,49 @@ class StorageService:
         except Exception as exc:
             raise StorageUnavailableError("Document upload failed. Please retry.") from exc
 
+    async def validate_stored_document(
+        self, storage_key: str, mime_type: str, file_size_bytes: int, file_hash: Optional[str]
+    ) -> Tuple[bool, Optional[str]]:
+        """Inspect actual bounded bytes before confirming a direct-to-storage upload."""
+        try:
+            if self.local_root is not None:
+
+                def read_local() -> bytes:
+                    with self.local_path(storage_key).open("rb") as stored:
+                        return stored.read(MAX_FILE_SIZE_BYTES + 1)
+
+                content = await asyncio.to_thread(read_local)
+            else:
+                async with self._session.create_client(
+                    "s3",
+                    endpoint_url=self.endpoint_url,
+                    aws_access_key_id=self.access_key,
+                    aws_secret_access_key=self.secret_key,
+                    region_name=self.region_name,
+                ) as client:
+                    response = await client.get_object(Bucket=self.bucket_name, Key=storage_key)
+                    async with response["Body"] as stream:
+                        content = await stream.read(MAX_FILE_SIZE_BYTES + 1)
+        except Exception as exc:
+            raise StorageUnavailableError(
+                "Unable to inspect the stored document. Please retry."
+            ) from exc
+        valid, error = self.validate_file_metadata(mime_type, len(content))
+        if not valid:
+            return valid, error
+        if len(content) != file_size_bytes:
+            return False, "Stored file size does not match the upload metadata."
+        valid, error = self.validate_magic_bytes(content[:32], mime_type)
+        if not valid:
+            return valid, error
+        if file_hash is not None and self.compute_sha256(content) != file_hash.lower():
+            return False, "Stored file integrity hash does not match the upload metadata."
+        return True, None
+
     async def check_object_exists(self, storage_key: str) -> bool:
         """Verify whether an object exists in S3 / MinIO storage."""
+        if self.local_root is not None:
+            return await asyncio.to_thread(self.local_path(storage_key).is_file)
         try:
             async with self._session.create_client(
                 "s3",
@@ -215,9 +288,13 @@ class StorageService:
             error_code = exc.response.get("Error", {}).get("Code")
             if error_code in ("404", "NoSuchKey", "NotFound"):
                 return False
-            raise StorageUnavailableError("Document storage is temporarily unavailable. Please retry.") from exc
+            raise StorageUnavailableError(
+                "Document storage is temporarily unavailable. Please retry."
+            ) from exc
         except Exception as exc:
-            raise StorageUnavailableError("Document storage is temporarily unavailable. Please retry.") from exc
+            raise StorageUnavailableError(
+                "Document storage is temporarily unavailable. Please retry."
+            ) from exc
 
 
 # Global storage service instance

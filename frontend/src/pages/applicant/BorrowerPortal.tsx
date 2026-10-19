@@ -4,30 +4,23 @@ import {
   CheckCircle2,
   AlertCircle,
   PlusCircle,
-  Upload,
-  ArrowLeft,
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { Badge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
-import { Input } from '../../components/ui/Input';
-import { Modal } from '../../components/ui/Modal';
+import { LoanApplicationWizard } from './LoanApplicationWizard';
 import {
   calculateEmi,
-  calculateDti,
-  calculateDisposableIncome,
   formatCurrency,
   formatDateTime,
 } from '../../utils/financial';
 import { documentsApi } from '../../services/api';
-import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 
 export const BorrowerPortal: React.FC = () => {
   const { applications: allApplications, products, currentUser, isSyncing, dataError,
-    refreshFromBackend, submitNewApplication } = useApp();
+    refreshFromBackend } = useApp();
   const applications = allApplications.filter(a => a.applicantId === currentUser.id);
-  const shouldReduceMotion = useReducedMotion();
 
   // Find applicant's current active application
   const [selectedAppId, setSelectedAppId] = useState<string>(applications[0]?.id || '');
@@ -35,44 +28,11 @@ export const BorrowerPortal: React.FC = () => {
 
   // Wizard Modal State
   const [isWizardOpen, setIsWizardOpen] = useState(false);
-  const [step, setStep] = useState(1);
-
-  // Wizard Form State
-  const [selectedProductId, setSelectedProductId] = useState(products[0]?.id || '');
-  const selectedProduct = products.find((p) => p.id === selectedProductId) || products[0];
-  const [loanAmount, setLoanAmount] = useState(30000);
-  const [tenorMonths, setTenorMonths] = useState(36);
-  const [loanPurpose, setLoanPurpose] = useState('');
-
-  const [personalForm, setPersonalForm] = useState({
-    fullName: currentUser.fullName,
-    email: currentUser.email,
-    phone: currentUser.phone || '',
-    dateOfBirth: '',
-    residentialAddress: '',
-    taxId: '',
-  });
-
-  const [financialForm, setFinancialForm] = useState({
-    employmentType: 'SALARIED' as 'SALARIED' | 'SELF_EMPLOYED',
-    employerName: '',
-    jobTitle: '',
-    yearsEmployed: 0,
-    grossMonthlyIncome: 0,
-    existingMonthlyDebt: 0,
-    housingExpense: 0,
-    creditScoreDeclared: null as number | null,
-  });
-
-  const [uploadedFiles] = useState<Array<{ title: string; filename: string; size: number }>>([]);
-  const [declarationConsent, setDeclarationConsent] = useState(false);
-  const [submitError, setSubmitError] = useState<string | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [resumeId, setResumeId] = useState<string | undefined>();
+  const [success, setSuccess] = useState('');
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [documentType, setDocumentType] = useState('');
-  const declaredScore = financialForm.creditScoreDeclared;
-  const invalidDeclaredScore = declaredScore !== null && (!Number.isInteger(declaredScore) || declaredScore < 300 || declaredScore > 900);
   const activeDocumentType = activeApp?.product.requiredDocuments.some(d => d.code === documentType) ? documentType : activeApp?.product.requiredDocuments[0]?.code || '';
   const handleUpload = async (file?: File) => {
     if (!file || !activeApp || isUploading) return;
@@ -88,46 +48,8 @@ export const BorrowerPortal: React.FC = () => {
   };
 
   const openWizard = () => {
-    if (isSyncing || dataError || !selectedProduct) return;
-    setPersonalForm(previous => ({ ...previous,
-      fullName: previous.fullName || currentUser.fullName,
-      email: previous.email || currentUser.email,
-      phone: previous.phone || currentUser.phone || '',
-    }));
-    setSelectedProductId(selectedProduct.id);
-    setLoanAmount(selectedProduct.minAmount);
-    setTenorMonths(Math.max(12, selectedProduct.minTenorMonths));
-    setSubmitError(null);
-    setIsWizardOpen(true);
-  };
-
-  // Live Calculations for Wizard
-  const liveEmi = calculateEmi(loanAmount, (selectedProduct?.baseApr || 0), tenorMonths);
-  const liveDti = calculateDti(
-    financialForm.grossMonthlyIncome,
-    financialForm.existingMonthlyDebt,
-    liveEmi
-  );
-  const liveDisposable = calculateDisposableIncome(
-    financialForm.grossMonthlyIncome,
-    financialForm.existingMonthlyDebt,
-    financialForm.housingExpense,
-    liveEmi
-  );
-
-  const handleFinishWizard = async () => {
-    if (isSubmitting) return;
-    setIsSubmitting(true);
-    setSubmitError(null);
-    try {
-      const newId = await submitNewApplication({ productId: selectedProduct?.id,
-        requestedAmount: loanAmount, requestedTenorMonths: tenorMonths, purpose: loanPurpose,
-        personal: personalForm, financial: financialForm, uploadedDocs: [] });
-      setSelectedAppId(newId);
-      setIsWizardOpen(false);
-      setStep(1);
-    } catch (err: any) { setSubmitError(err.message || 'Unable to submit application. Please retry.'); }
-    finally { setIsSubmitting(false); }
+    if (isSyncing || dataError) return;
+    setResumeId(undefined); setSuccess(''); setIsWizardOpen(true);
   };
 
   // Milestone Progress Definition
@@ -172,6 +94,8 @@ export const BorrowerPortal: React.FC = () => {
 
   return (
     <div className="space-y-6">
+      {success && <p role="status" className="text-emerald-500">{success}</p>}
+      {activeApp?.status === 'DRAFT' && <Button variant="outline" onClick={() => { setResumeId(activeApp.id); setIsWizardOpen(true); }}>Resume Draft Application</Button>}
       {/* Top Banner */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-slate-900 p-5 rounded-md border border-slate-200 dark:border-slate-800 shadow-xs transition-colors">
         <div>
@@ -406,404 +330,7 @@ export const BorrowerPortal: React.FC = () => {
 
       </>}
       </>}
-      {/* Multi-Step New Loan Application Wizard Modal */}
-      <Modal
-        isOpen={isWizardOpen && !!selectedProduct}
-        onClose={() => setIsWizardOpen(false)}
-        maxWidth="xl"
-        title="Multi-Step Loan Application Wizard"
-        description="Complete all 4 steps to submit your verified application directly to underwriting."
-        footer={
-          <div className="flex items-center justify-between w-full">
-            {step > 1 ? (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setStep((s) => s - 1)}
-                icon={<ArrowLeft className="w-3.5 h-3.5" />}
-              >
-                Back
-              </Button>
-            ) : (
-              <div></div>
-            )}
-
-            {step < 4 ? (
-              <Button
-                variant="primary"
-                size="sm"
-                onClick={() => setStep((s) => s + 1)}
-              >
-                Save & Proceed →
-              </Button>
-            ) : (
-              <Button
-                variant="success"
-                size="sm"
-                disabled={!declarationConsent || isSubmitting || invalidDeclaredScore}
-                onClick={handleFinishWizard}
-              >
-                Submit Application to CredVidhi
-              </Button>
-            )}
-          </div>
-        }
-      >
-        {selectedProduct && <div className="space-y-5 text-xs">
-          {submitError && <p role="alert">{submitError}</p>}
-          {/* Stepper Progress Bar with animated track */}
-          <div className="space-y-1.5">
-            <div className="grid grid-cols-4 gap-2 text-center select-none">
-              {[
-                { num: 1, label: 'Specifications' },
-                { num: 2, label: 'Personal' },
-                { num: 3, label: 'Financials' },
-                { num: 4, label: 'Documents' },
-              ].map((st) => (
-                <div
-                  key={st.num}
-                  className={`py-1.5 px-2 rounded border text-xs font-semibold transition-colors ${
-                    step === st.num
-                      ? 'bg-orange-50 dark:bg-orange-950/40 text-orange-700 dark:text-orange-300 border-orange-300 dark:border-orange-800/60'
-                      : step > st.num
-                      ? 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-700'
-                      : 'text-slate-400 dark:text-slate-500 border-slate-100 dark:border-slate-800'
-                  }`}
-                >
-                  {st.num}. {st.label}
-                </div>
-              ))}
-            </div>
-            <div className="h-1 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-              <motion.div
-                initial={false}
-                animate={{ width: `${(step / 4) * 100}%` }}
-                transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-                className="h-full bg-orange-600 rounded-full"
-              />
-            </div>
-          </div>
-
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={step}
-              initial={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, x: 8 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, x: -8 }}
-              transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
-            >
-              {/* STEP 1: Loan Specifications & Calculator */}
-              {step === 1 && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-[10px] font-mono font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">
-                    Loan Product Selection
-                  </label>
-                  <select
-                    value={selectedProduct?.id || selectedProductId}
-                    onChange={(e) => { setSelectedProductId(e.target.value); const product = products.find(p => p.id === e.target.value); if (product) { setLoanAmount(product.minAmount); setTenorMonths(product.minTenorMonths); } }}
-                    className="w-full text-xs p-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 rounded font-medium focus:outline-hidden focus:ring-1 focus:ring-orange-500"
-                  >
-                    {products.map((p) => (
-                      <option key={p.id} value={p.id}>
-                        {p.name} ({p.baseApr}% APR)
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <div className="flex justify-between items-center mb-1">
-                    <label className="text-[10px] font-mono font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                      Requested Loan Amount
-                    </label>
-                    <span className="font-mono font-bold text-sm text-orange-600 dark:text-orange-400">
-                      {formatCurrency(loanAmount)}
-                    </span>
-                  </div>
-                  <input
-                    type="range"
-                    min={selectedProduct.minAmount}
-                    max={selectedProduct.maxAmount}
-                    step={1000}
-                    value={loanAmount}
-                    onChange={(e) => setLoanAmount(Number(e.target.value))}
-                    className="w-full accent-orange-600 cursor-pointer"
-                  />
-                  <div className="flex justify-between text-[10px] font-mono text-slate-400 mt-1">
-                    <span>{formatCurrency(selectedProduct.minAmount)}</span>
-                    <span>{formatCurrency(selectedProduct.maxAmount)}</span>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-[10px] font-mono font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">
-                    Repayment Tenor
-                  </label>
-                  <div className="grid grid-cols-4 gap-1.5 font-mono text-xs">
-                    {[12, 24, 36, 60].map((m) => (
-                      <button
-                        key={m}
-                        type="button"
-                        onClick={() => setTenorMonths(m)}
-                        className={`py-1.5 rounded border text-center font-medium ${
-                          tenorMonths === m
-                            ? 'bg-orange-600 text-white border-orange-600'
-                            : 'bg-slate-50 dark:bg-slate-900 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800'
-                        }`}
-                      >
-                        {m} Mos
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <Input
-                  label="Declared Loan Purpose"
-                  value={loanPurpose}
-                  onChange={(e) => setLoanPurpose(e.target.value)}
-                  placeholder="e.g. Debt Consolidation, Home Renovation"
-                />
-              </div>
-
-              {/* Dynamic Repayment Preview Card */}
-              <div className="bg-slate-50 dark:bg-slate-950/70 p-4 rounded-md border border-slate-200 dark:border-slate-800 flex flex-col justify-between">
-                <div>
-                  <div className="text-[10px] font-mono text-slate-500 dark:text-slate-400 uppercase">
-                    Illustrative Repayment Estimate
-                  </div>
-                  <div className="text-2xl font-bold font-mono text-orange-600 dark:text-orange-400 mt-1">
-                    {formatCurrency(liveEmi)} / mo
-                  </div>
-                  <div className="text-[11px] text-slate-500 dark:text-slate-400 font-mono mt-0.5">
-                    Fixed rate: {(selectedProduct?.baseApr || 0)}% APR
-                  </div>
-
-                  <div className="mt-4 pt-3 border-t border-slate-200 dark:border-slate-800 space-y-2 text-[11px]">
-                    <div className="flex justify-between">
-                      <span className="text-slate-500 dark:text-slate-400">Estimated DTI:</span>
-                      <span
-                        className={`font-mono font-semibold ${
-                          liveDti <= selectedProduct.maxDtiRatio
-                            ? 'text-emerald-700 dark:text-emerald-400'
-                            : 'text-rose-600 dark:text-rose-400'
-                        }`}
-                      >
-                        {liveDti}% (Cap: {selectedProduct.maxDtiRatio}%)
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-slate-500 dark:text-slate-400">Estimated Disposable Surplus:</span>
-                      <span className="font-mono font-semibold text-slate-800 dark:text-slate-200">
-                        {formatCurrency(liveDisposable)}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="text-[10px] text-slate-400 dark:text-slate-400 bg-white dark:bg-slate-900 p-2 rounded border border-slate-200 dark:border-slate-800 mt-3">
-                  *Illustrative estimate only. This is not an approved offer or an actual liability.
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* STEP 2: Personal & Identity */}
-          {step === 2 && (
-            <div className="grid grid-cols-2 gap-3.5">
-              <Input
-                label="Full Legal Name"
-                value={personalForm.fullName}
-                onChange={(e) => setPersonalForm({ ...personalForm, fullName: e.target.value })}
-              />
-              <Input
-                label="Email Address"
-                type="email"
-                value={personalForm.email}
-                onChange={(e) => setPersonalForm({ ...personalForm, email: e.target.value })}
-              />
-              <Input
-                label="Contact Phone"
-                value={personalForm.phone}
-                onChange={(e) => setPersonalForm({ ...personalForm, phone: e.target.value })}
-              />
-              <Input
-                label="Date of Birth"
-                type="date"
-                value={personalForm.dateOfBirth}
-                onChange={(e) =>
-                  setPersonalForm({ ...personalForm, dateOfBirth: e.target.value })
-                }
-              />
-              <div className="col-span-2">
-                <Input
-                  label="Residential Address"
-                  value={personalForm.residentialAddress}
-                  onChange={(e) =>
-                    setPersonalForm({ ...personalForm, residentialAddress: e.target.value })
-                  }
-                />
-              </div>
-              <Input
-                label="SSN / National ID (Last 4 Digits)"
-                value={personalForm.taxId}
-                onChange={(e) => setPersonalForm({ ...personalForm, taxId: e.target.value })}
-                prefixText="***-**-"
-                isMono
-              />
-            </div>
-          )}
-
-          {/* STEP 3: Employment & Financial Information */}
-          {step === 3 && (
-            <div className="grid grid-cols-2 gap-3.5">
-              <div>
-                <label className="block text-[10px] font-mono font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">
-                  Employment Status
-                </label>
-                <div className="grid grid-cols-2 gap-1 bg-slate-100 dark:bg-slate-950/80 p-1 rounded font-mono text-xs border border-transparent dark:border-slate-800">
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setFinancialForm({ ...financialForm, employmentType: 'SALARIED' })
-                    }
-                    className={`py-1.5 rounded font-medium transition-colors ${
-                      financialForm.employmentType === 'SALARIED'
-                        ? 'bg-white dark:bg-slate-800 text-orange-600 dark:text-orange-400 shadow-xs'
-                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
-                    }`}
-                  >
-                    SALARIED
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setFinancialForm({ ...financialForm, employmentType: 'SELF_EMPLOYED' })
-                    }
-                    className={`py-1.5 rounded font-medium transition-colors ${
-                      financialForm.employmentType === 'SELF_EMPLOYED'
-                        ? 'bg-white dark:bg-slate-800 text-orange-600 dark:text-orange-400 shadow-xs'
-                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
-                    }`}
-                  >
-                    SELF EMPLOYED
-                  </button>
-                </div>
-              </div>
-
-              <Input
-                label="Employer / Business Name"
-                value={financialForm.employerName}
-                onChange={(e) =>
-                  setFinancialForm({ ...financialForm, employerName: e.target.value })
-                }
-              />
-
-              <Input
-                label="Job Title"
-                value={financialForm.jobTitle}
-                onChange={(e) =>
-                  setFinancialForm({ ...financialForm, jobTitle: e.target.value })
-                }
-              />
-
-              <Input
-                label="Years with Current Employer"
-                type="number"
-                step="0.5"
-                value={financialForm.yearsEmployed}
-                onChange={(e) =>
-                  setFinancialForm({ ...financialForm, yearsEmployed: Number(e.target.value) })
-                }
-                suffixText="Yrs"
-                isMono
-              />
-
-              <Input
-                label="Gross Monthly Income"
-                type="number"
-                value={financialForm.grossMonthlyIncome}
-                onChange={(e) =>
-                  setFinancialForm({
-                    ...financialForm,
-                    grossMonthlyIncome: Number(e.target.value),
-                  })
-                }
-                prefixText="₹"
-                isMono
-              />
-
-              <Input label="Monthly Housing Expenses" type="number" value={financialForm.housingExpense} onChange={e => setFinancialForm({ ...financialForm, housingExpense: Number(e.target.value) })} prefixText="₹" />
-              <Input label="Declared Credit Score (optional)" error={invalidDeclaredScore ? 'Enter a whole-number score from 300 to 900, or leave it blank.' : undefined} type="number" min="300" max="900" value={financialForm.creditScoreDeclared ?? ''} onChange={e => setFinancialForm({ ...financialForm, creditScoreDeclared: e.target.value === '' ? null : Number(e.target.value) })} />
-              <Input
-                label="Existing Monthly Debt Commitments"
-                type="number"
-                value={financialForm.existingMonthlyDebt}
-                onChange={(e) =>
-                  setFinancialForm({
-                    ...financialForm,
-                    existingMonthlyDebt: Number(e.target.value),
-                  })
-                }
-                prefixText="₹"
-                isMono
-              />
-            </div>
-          )}
-
-          {/* STEP 4: Document Upload & Declaration */}
-          {step === 4 && (
-            <div className="space-y-4">
-              <div className="border-2 border-dashed border-slate-300 dark:border-slate-700 p-4 rounded-md text-center bg-slate-50 dark:bg-slate-950/50">
-                <Upload className="w-6 h-6 text-slate-400 mx-auto mb-2" />
-                <div className="font-semibold text-slate-800 dark:text-slate-100">
-                  Upload supporting documents after creating your application
-                </div>
-                <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
-                  Document requirements are determined by your selected loan product.
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <span className="text-[10px] font-mono uppercase text-slate-500 dark:text-slate-400 font-semibold block">
-                  Attached Files ({uploadedFiles.length})
-                </span>
-                {uploadedFiles.map((f, i) => (
-                  <div
-                    key={i}
-                    className="p-2.5 bg-slate-50 dark:bg-slate-950/60 rounded border border-slate-200 dark:border-slate-800 flex items-center justify-between"
-                  >
-                    <div className="flex items-center gap-2">
-                      <FileText className="w-4 h-4 text-orange-600 dark:text-orange-400 shrink-0" />
-                      <span className="font-medium text-slate-900 dark:text-slate-100">{f.title}:</span>
-                      <span className="font-mono text-slate-500 dark:text-slate-400 text-[11px]">{f.filename}</span>
-                    </div>
-                    <span className="text-[10px] font-mono text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded border border-emerald-200 dark:border-emerald-800/60">
-                      READY
-                    </span>
-                  </div>
-                ))}
-              </div>
-
-              <div className="p-3 bg-slate-50 dark:bg-slate-950/60 rounded border border-slate-200 dark:border-slate-800 flex items-start gap-2.5">
-                <input
-                  type="checkbox"
-                  id="consent"
-                  checked={declarationConsent}
-                  onChange={(e) => setDeclarationConsent(e.target.checked)}
-                  className="mt-1 accent-orange-600 cursor-pointer"
-                />
-                <label htmlFor="consent" className="text-[11px] text-slate-600 dark:text-slate-300 leading-relaxed cursor-pointer">
-                  I certify that all information provided in this application is true and complete. I consent to deterministic credit underwriting, income verification, and immutable audit logging in accordance with regulatory banking compliance.
-                </label>
-              </div>
-            </div>
-          )}
-          </motion.div>
-        </AnimatePresence>
-        </div>}
-      </Modal>
+      <LoanApplicationWizard key={resumeId || "new"} isOpen={isWizardOpen} resumeId={resumeId} onClose={() => setIsWizardOpen(false)} onSubmitted={id => { setSelectedAppId(id); setIsWizardOpen(false); setSuccess('Your application was submitted successfully.'); }} />
     </div>
   );
 };

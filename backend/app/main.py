@@ -64,6 +64,12 @@ def create_application() -> FastAPI:
     async def storage_exception_handler(request: Request, exc: StorageUnavailableError) -> JSONResponse:
         return error_response(code="STORAGE_UNAVAILABLE", message=str(exc), status_code=503)
 
+    from app.services.application_validation import ApplicationValidationError
+
+    @app.exception_handler(ApplicationValidationError)
+    async def application_validation_handler(request: Request, exc: ApplicationValidationError) -> JSONResponse:
+        return error_response(code="APPLICATION_INCOMPLETE", message=str(exc), details={"fields": exc.fields}, status_code=422)
+
     # Exception Handlers
     @app.exception_handler(StarletteHTTPException)
     async def http_exception_handler(request: Request, exc: StarletteHTTPException) -> JSONResponse:

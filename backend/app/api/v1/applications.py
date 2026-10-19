@@ -7,6 +7,7 @@ from typing import Optional
 from fastapi import APIRouter, Depends, Request, status
 from fastapi.responses import JSONResponse
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.responses import error_response, success_response
@@ -20,6 +21,12 @@ from app.schemas.application import (
     ApplicationDetailResponse,
     ApplicationTransitionRequest,
     ApplicationUpdateDraftRequest,
+)
+from app.services.application_validation import (
+    ApplicationValidationError,
+    FinancialSnapshot,
+    PersonalSnapshot,
+    snapshot_errors,
 )
 from app.services.fsm_service import IllegalStateTransitionError, execute_transition
 
@@ -44,6 +51,19 @@ async def create_application(
     current_user: User = Depends(require_roles([UserRole.APPLICANT, UserRole.ADMIN])),
 ) -> JSONResponse:
     """Create new draft loan application."""
+    owner_id = current_user.id
+    if payload.draft_id:
+        existing = await db.get(LoanApplication, payload.draft_id)
+        if existing:
+            if existing.applicant_id != owner_id:
+                return error_response(
+                    code="ACCESS_FORBIDDEN",
+                    message="Draft belongs to another account.",
+                    status_code=403,
+                )
+            return success_response(
+                data=ApplicationDetailResponse.model_validate(existing).model_dump()
+            )
     # Verify product eligibility
     result = await db.execute(
         select(LoanProduct).where(
@@ -93,11 +113,12 @@ async def create_application(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
         )
 
+    draft_id = payload.draft_id or uuid.uuid4()
     temp_reference = f"DRAFT-{uuid.uuid4().hex[:8].upper()}"
     new_app = LoanApplication(
-        id=uuid.uuid4(),
+        id=draft_id,
         reference_number=temp_reference,
-        applicant_id=current_user.id,
+        applicant_id=owner_id,
         product_id=product.id,
         status=ApplicationStatus.DRAFT,
         requested_amount=payload.requested_amount,
@@ -106,7 +127,20 @@ async def create_application(
     )
 
     db.add(new_app)
-    await db.commit()
+    try:
+        await db.commit()
+    except IntegrityError:
+        await db.rollback()
+        existing = await db.get(LoanApplication, draft_id)
+        if not existing or existing.applicant_id != owner_id:
+            return error_response(
+                code="DRAFT_CONFLICT",
+                message="Draft could not be saved. Please retry.",
+                status_code=409,
+            )
+        return success_response(
+            data=ApplicationDetailResponse.model_validate(existing).model_dump()
+        )
     await db.refresh(new_app)
 
     dto = ApplicationDetailResponse.model_validate(new_app).model_dump()
@@ -125,7 +159,9 @@ async def update_draft(
     current_user: User = Depends(get_current_user),
 ) -> JSONResponse:
     """Save draft application progress."""
-    result = await db.execute(select(LoanApplication).where(LoanApplication.id == app_id))
+    result = await db.execute(
+        select(LoanApplication).where(LoanApplication.id == app_id).with_for_update()
+    )
     application = result.scalar_one_or_none()
     if not application:
         return error_response(
@@ -150,11 +186,22 @@ async def update_draft(
         )
 
     # Validate financial bounds if loan terms are being mutated
-    if payload.requested_amount is not None or payload.requested_tenor_months is not None:
+    if (
+        payload.product_id is not None
+        or payload.requested_amount is not None
+        or payload.requested_tenor_months is not None
+    ):
         prod_result = await db.execute(
-            select(LoanProduct).where(LoanProduct.id == application.product_id)
+            select(LoanProduct).where(
+                LoanProduct.id == (payload.product_id or application.product_id),
+                LoanProduct.is_active.is_(True),
+            )
         )
         product = prod_result.scalar_one_or_none()
+        if not product:
+            return error_response(
+                code="PRODUCT_NOT_FOUND", message="Select an active loan product.", status_code=422
+            )
         if product:
             new_amount = (
                 payload.requested_amount
@@ -195,6 +242,27 @@ async def update_draft(
                     status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
                 )
 
+    snapshot_validation: dict[str, str] = {}
+    for value, prefix in [
+        (payload.applicant_personal_snapshot, "personal"),
+        (payload.applicant_financial_snapshot, "financial"),
+    ]:
+        if value is not None:
+            snapshot_validation.update(
+                {
+                    key: message
+                    for key, message in snapshot_errors(
+                        PersonalSnapshot if prefix == "personal" else FinancialSnapshot,
+                        value,
+                        prefix,
+                    ).items()
+                    if message != "Field required"
+                }
+            )
+    if snapshot_validation:
+        raise ApplicationValidationError(snapshot_validation)
+    if payload.product_id is not None:
+        application.product_id = payload.product_id
     if payload.requested_amount is not None:
         application.requested_amount = payload.requested_amount
     if payload.requested_tenor_months is not None:
@@ -202,7 +270,10 @@ async def update_draft(
     if payload.purpose is not None:
         application.purpose = payload.purpose
     if payload.applicant_personal_snapshot is not None:
-        application.applicant_personal_snapshot = payload.applicant_personal_snapshot
+        application.applicant_personal_snapshot = {
+            **(application.applicant_personal_snapshot or {}),
+            **payload.applicant_personal_snapshot,
+        }
     if payload.applicant_financial_snapshot is not None:
         application.applicant_financial_snapshot = payload.applicant_financial_snapshot
 
@@ -225,7 +296,9 @@ async def submit_application(
     current_user: User = Depends(get_current_user),
 ) -> JSONResponse:
     """Submit application for institutional processing."""
-    result = await db.execute(select(LoanApplication).where(LoanApplication.id == app_id))
+    result = await db.execute(
+        select(LoanApplication).where(LoanApplication.id == app_id).with_for_update()
+    )
     application = result.scalar_one_or_none()
     if not application:
         return error_response(
@@ -239,6 +312,11 @@ async def submit_application(
             code="ACCESS_FORBIDDEN",
             message="You can only submit your own loan applications.",
             status_code=status.HTTP_403_FORBIDDEN,
+        )
+
+    if application.submitted_at is not None:
+        return success_response(
+            data=ApplicationDetailResponse.model_validate(application).model_dump()
         )
 
     # Assign canonical institutional reference number upon formal submission
@@ -321,7 +399,9 @@ async def transition_application_status(
     current_user: User = Depends(get_current_user),
 ) -> JSONResponse:
     """Transition application to next lifecycle state."""
-    result = await db.execute(select(LoanApplication).where(LoanApplication.id == app_id))
+    result = await db.execute(
+        select(LoanApplication).where(LoanApplication.id == app_id).with_for_update()
+    )
     application = result.scalar_one_or_none()
     if not application:
         return error_response(
@@ -376,7 +456,9 @@ async def cancel_application(
     current_user: User = Depends(get_current_user),
 ) -> JSONResponse:
     """Cancel an active application."""
-    result = await db.execute(select(LoanApplication).where(LoanApplication.id == app_id))
+    result = await db.execute(
+        select(LoanApplication).where(LoanApplication.id == app_id).with_for_update()
+    )
     application = result.scalar_one_or_none()
     if not application:
         return error_response(

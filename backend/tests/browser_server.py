@@ -7,6 +7,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 os.environ['ENVIRONMENT'] = 'test'
 os.environ['DATABASE_URL'] = 'sqlite+aiosqlite:////tmp/credvidhi-browser-tests.sqlite'
 os.environ['DEBUG'] = 'false'
+os.environ['LOCAL_DOCUMENT_STORAGE_PATH'] = '/tmp/credvidhi-browser-documents'
 os.environ['REDIS_URL'] = 'redis://127.0.0.1:1/0'
 os.environ['MINIO_ENDPOINT'] = '127.0.0.1:1'
 os.environ['CORS_ORIGINS'] = '["http://127.0.0.1:5174", "http://localhost:5174"]'

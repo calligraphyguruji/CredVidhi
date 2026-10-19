@@ -32,7 +32,7 @@ export const Input: React.FC<InputProps> = ({
           htmlFor={inputId}
           className="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5 transition-colors"
         >
-          {label}
+          {label}{props.required && <span aria-hidden="true" className="text-orange-500"> *</span>}
         </label>
       )}
       <div className="relative flex items-center rounded-md shadow-xs transition-all">
@@ -43,6 +43,9 @@ export const Input: React.FC<InputProps> = ({
         )}
         <input
           id={inputId}
+          aria-label={label}
+          aria-invalid={!!error}
+          aria-describedby={error || helperText ? `${inputId}-message` : undefined}
           className={`block w-full text-sm text-slate-900 dark:text-slate-100 border ${
             error
               ? 'border-rose-500 focus:ring-rose-500 focus:border-rose-500'
@@ -63,19 +66,19 @@ export const Input: React.FC<InputProps> = ({
 
       <AnimatePresence>
         {error && (
-          <motion.p
+          <motion.p id={`${inputId}-message`} role="alert"
             variants={shouldReduceMotion ? undefined : formErrorVariants}
             initial="initial"
             animate="animate"
             exit="exit"
             className="mt-1 text-xs text-rose-600 flex items-center gap-1 font-medium overflow-hidden"
           >
-            <span>⚠</span> {error}
+            {error}
           </motion.p>
         )}
       </AnimatePresence>
 
-      {!error && helperText && <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{helperText}</p>}
+      {!error && helperText && <p id={`${inputId}-message`} className="mt-1 text-xs text-slate-500 dark:text-slate-400">{helperText}</p>}
     </div>
   );
 };

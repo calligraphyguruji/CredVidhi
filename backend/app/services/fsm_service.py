@@ -130,6 +130,10 @@ async def execute_transition(
     prior_status = application.status
     validate_transition(prior_status, target_status, actor_role, reason=reason)
 
+    if target_status == ApplicationStatus.SUBMITTED:
+        from app.services.application_validation import validate_submission
+        await validate_submission(session, application)
+
     # Apply mutation
     application.status = target_status
     if target_status == ApplicationStatus.SUBMITTED and not application.submitted_at:

@@ -1,3 +1,4 @@
+from tests.wizard_helpers import complete_draft
 """End-to-End Multi-Persona Loan Origination Lifecycle Integration Test."""
 
 import io
@@ -89,6 +90,9 @@ async def test_full_origination_lifecycle_e2e(
     )
     assert update_res.status_code == 200
 
+    await complete_draft(async_client, app_id, applicant_headers, product.required_documents,
+        personal={'fullName': 'Jordan Miller', 'email': reg_payload['email'], 'pan': 'ABCDE1234F'},
+        financial={'grossMonthlyIncome': 95000, 'existingMonthlyDebt': 15000, 'housingExpense': 20000, 'creditScoreDeclared': 780})
     submit_res = await async_client.post(
         f"/api/v1/applications/{app_id}/submit",
         headers=applicant_headers,

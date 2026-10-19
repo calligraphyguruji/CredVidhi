@@ -1,3 +1,4 @@
+from tests.wizard_helpers import complete_draft
 """Regression checks for clean accounts, ownership, and genuine underwriting inputs."""
 from decimal import Decimal
 from importlib import import_module
@@ -65,6 +66,7 @@ async def test_borrowers_cannot_read_or_mutate_each_others_records(async_client:
     })
     assert updated.status_code == 200
     assert updated.json()['data']['applicant_personal_snapshot']['pan'] == '***-**-1234'
+    await complete_draft(async_client, app_id, headers(borrower_a), product.required_documents)
     submitted = await async_client.post(f'/api/v1/applications/{app_id}/submit', headers=headers(borrower_a))
     assert submitted.status_code == 200
     assert submitted.json()['data']['status'] == 'SUBMITTED'

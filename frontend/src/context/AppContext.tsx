@@ -70,15 +70,7 @@ interface AppContextType {
   addToast: (toast: Omit<ToastMessage, 'id'>) => void;
   dismissToast: (id: string) => void;
   // Lifecycle Actions
-  submitNewApplication: (data: {
-    productId: string;
-    requestedAmount: number;
-    requestedTenorMonths: number;
-    purpose: string;
-    personal: any;
-    financial: any;
-    uploadedDocs: Array<{ title: string; filename: string; size: number }>;
-  }) => Promise<string>;
+  submitNewApplication: (draftId: string) => Promise<string>;
   verifyDocument: (
     applicationId: string,
     documentId: string,
@@ -812,138 +804,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
-  const submitNewApplication = async (data: {
-    productId: string;
-    requestedAmount: number;
-    requestedTenorMonths: number;
-    purpose: string;
-    personal: any;
-    financial: any;
-    uploadedDocs: Array<{ title: string; filename: string; size: number }>;
-  }) => {
-    if (!demoRef.current) {
-      if (!isAuthenticated || currentRole !== 'APPLICANT') throw new Error('Please sign in as a borrower.');
-      const version = sessionVersion.current;
-      const draft = await applicationsApi.createDraft({ product_id: data.productId,
-        requested_amount: data.requestedAmount, requested_tenor_months: data.requestedTenorMonths, purpose: data.purpose });
-      await applicationsApi.updateDraft(draft.id, { applicant_personal_snapshot: data.personal,
-        applicant_financial_snapshot: data.financial });
-      const submitted = await applicationsApi.submit(draft.id);
-      if (version !== sessionVersion.current) throw new Error('Session changed. Sign in to view your application.');
-      await refreshFromBackend();
-      return String(submitted.id);
-    }
-    const selectedProd = INITIAL_PRODUCTS.find((p) => p.id === data.productId) || INITIAL_PRODUCTS[0];
-    const newId = `app-${Date.now().toString().slice(-4)}`;
-    const refNumber = `APP-2026-${Math.floor(1000 + Math.random() * 9000)}`;
-
-    const newDocs = data.uploadedDocs.map((doc, idx) => ({
-      id: `doc-${newId}-${idx + 1}`,
-      applicationId: newId,
-      documentType: doc.title,
-      originalFilename: doc.filename,
-      mimeType: doc.filename.endsWith('.png') ? 'image/png' : 'application/pdf',
-      fileSizeBytes: doc.size,
-      verificationStatus: 'PENDING' as const,
-      uploadedAt: new Date().toISOString(),
-    }));
-
-    const newApp: LoanApplication = {
-      id: newId,
-      referenceNumber: refNumber,
-      applicantId: currentUser.id,
-      productId: selectedProd.id,
-      product: selectedProd,
-      assignedOfficerId: 'usr-officer-1',
-      assignedOfficerName: 'David Vance',
-      status: 'SUBMITTED',
-      requestedAmount: data.requestedAmount,
-      requestedTenorMonths: data.requestedTenorMonths,
-      purpose: data.purpose,
-      personal: {
-        fullName: data.personal.fullName,
-        email: data.personal.email,
-        phone: data.personal.phone,
-        dateOfBirth: data.personal.dateOfBirth,
-        residentialAddress: data.personal.residentialAddress,
-        taxIdMasked: `***-**-${data.personal.taxId ? data.personal.taxId.slice(-4) : '7721'}`,
-      },
-      financial: {
-        employmentType: data.financial.employmentType,
-        employerName: data.financial.employerName,
-        jobTitle: data.financial.jobTitle,
-        yearsEmployed: Number(data.financial.yearsEmployed) || 2.0,
-        grossMonthlyIncome: Number(data.financial.grossMonthlyIncome) || 5000,
-        existingMonthlyDebt: Number(data.financial.existingMonthlyDebt) || 500,
-        housingExpense: Number(data.financial.housingExpense) || 1200,
-        creditScoreDeclared: Number(data.financial.creditScoreDeclared) || 720,
-      },
-      documents: newDocs,
-      submittedAt: new Date().toISOString(),
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-
-    setApplications((prev) => [newApp, ...prev]);
-    setActiveApplicationId(newId);
-
-    addAuditLog({
-      applicationId: newId,
-      eventType: 'APPLICATION_SUBMITTED',
-      afterState: 'SUBMITTED',
-      notes: `New application submitted by ${data.personal.fullName} for ₹${data.requestedAmount.toLocaleString('en-IN')} (${selectedProd.name})`,
-    });
-
-    addToast({
-      type: 'success',
-      title: 'Application Submitted',
-      message: `Docket ${refNumber} created for ₹${data.requestedAmount.toLocaleString('en-IN')}.`,
-    });
-
-    if (isBackendConnected) {
-      const backendProdId = isUUID(selectedProd.id)
-        ? selectedProd.id
-        : products.find((p) => isUUID(p.id))?.id;
-
-      if (backendProdId) {
-        applicationsApi
-          .createDraft({
-            product_id: backendProdId,
-            requested_amount: data.requestedAmount,
-            requested_tenor_months: data.requestedTenorMonths,
-            purpose: data.purpose,
-          })
-          .then((draft) => {
-            return applicationsApi
-              .updateDraft(draft.id, {
-                applicant_personal_snapshot: data.personal,
-                applicant_financial_snapshot: data.financial,
-              })
-              .then(() => applicationsApi.submit(draft.id))
-              .then((submitted) => {
-                const liveId = String(submitted.id || draft.id);
-                const liveRef = submitted.reference_number || refNumber;
-                setApplications((prev) =>
-                  prev.map((a) =>
-                    a.id === newId
-                      ? {
-                          ...a,
-                          id: liveId,
-                          referenceNumber: liveRef,
-                        }
-                      : a
-                  )
-                );
-                setActiveApplicationId(liveId);
-              });
-          })
-          .catch((err) => {
-            console.warn('Backend application submit sync failed (local state preserved):', err);
-          });
-      }
-    }
-
-    return newId;
+  const submitNewApplication = async (draftId: string): Promise<string> => {
+    if (!isAuthenticated || currentRole !== 'APPLICANT' || demoRef.current) throw new Error('Please sign in with a borrower account to submit an application.');
+    const version = sessionVersion.current;
+    const submitted = await applicationsApi.submit(draftId);
+    if (version !== sessionVersion.current) throw new Error('Session changed. Please sign in to view your application.');
+    await refreshFromBackend();
+    return String(submitted.id);
   };
 
   const addLoanProduct = (newProductData: Omit<LoanProduct, 'id'>) => {

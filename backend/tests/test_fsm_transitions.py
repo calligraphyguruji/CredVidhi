@@ -1,3 +1,4 @@
+from tests.wizard_helpers import complete_draft
 """Comprehensive Verification Suite for Loan Lifecycle FSM and Queue Segregation."""
 
 import uuid
@@ -97,6 +98,8 @@ async def test_full_happy_path_fsm_lifecycle(
     app_id = app_data["id"]
     assert app_data["status"] == "DRAFT"
     assert app_data["reference_number"].startswith("DRAFT-")
+
+    await complete_draft(async_client, app_id, app_headers, product.required_documents)
 
     # 3. Applicant submits application -> SUBMITTED
     submit_res = await async_client.post(
@@ -246,6 +249,7 @@ async def test_role_authorization_barriers(
     app_id = create_res.json()["data"]["id"]
 
     # Submit
+    await complete_draft(async_client, app_id, app_headers, product.required_documents)
     await async_client.post(f"/api/v1/applications/{app_id}/submit", headers=app_headers)
 
     # Loan officer moves to UNDER_REVIEW
@@ -348,6 +352,7 @@ async def test_rejection_requires_mandatory_reason(
         headers=app_headers,
     )
     app_id = create_res.json()["data"]["id"]
+    await complete_draft(async_client, app_id, app_headers, product.required_documents)
     await async_client.post(f"/api/v1/applications/{app_id}/submit", headers=app_headers)
 
     # Officer attempts to reject WITHOUT a reason
@@ -400,6 +405,7 @@ async def test_applicant_can_cancel_active_applications(
         headers=app_headers,
     )
     app1_id = res1.json()["data"]["id"]
+    await complete_draft(async_client, app1_id, app_headers, product.required_documents)
     await async_client.post(f"/api/v1/applications/{app1_id}/submit", headers=app_headers)
 
     cancel1 = await async_client.post(
@@ -421,6 +427,7 @@ async def test_applicant_can_cancel_active_applications(
         headers=app_headers,
     )
     app2_id = res2.json()["data"]["id"]
+    await complete_draft(async_client, app2_id, app_headers, product.required_documents)
     await async_client.post(f"/api/v1/applications/{app2_id}/submit", headers=app_headers)
     await async_client.post(
         f"/api/v1/applications/{app2_id}/transition",

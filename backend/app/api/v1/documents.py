@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import List
 
 from fastapi import APIRouter, Depends, File, Form, Request, UploadFile, status
-from fastapi.responses import JSONResponse
+from fastapi.responses import FileResponse, JSONResponse, RedirectResponse, Response
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -23,6 +23,11 @@ from app.schemas.document import (
     DocumentPresignResponse,
     DocumentResponse,
     DocumentVerifyRequest,
+)
+from app.services.application_validation import (
+    WITHDRAWN_REMARK,
+    document_requirements,
+    is_withdrawn,
 )
 from app.services.audit_service import record_audit_event
 from app.services.fsm_service import IllegalStateTransitionError, execute_transition
@@ -43,7 +48,9 @@ async def generate_document_upload_url(
     current_user: User = Depends(get_current_user),
 ) -> JSONResponse:
     """Issue presigned upload URL for direct storage transfer."""
-    result = await db.execute(select(LoanApplication).where(LoanApplication.id == app_id))
+    result = await db.execute(
+        select(LoanApplication).where(LoanApplication.id == app_id).with_for_update()
+    )
     application = result.scalar_one_or_none()
     if not application:
         return error_response(
@@ -108,7 +115,9 @@ async def confirm_document_upload(
     current_user: User = Depends(get_current_user),
 ) -> JSONResponse:
     """Record verified document entity in database."""
-    result = await db.execute(select(LoanApplication).where(LoanApplication.id == app_id))
+    result = await db.execute(
+        select(LoanApplication).where(LoanApplication.id == app_id).with_for_update()
+    )
     application = result.scalar_one_or_none()
     if not application:
         return error_response(
@@ -163,7 +172,51 @@ async def confirm_document_upload(
             status_code=status.HTTP_400_BAD_REQUEST,
         )
 
-    sanitized_filename = Path(payload.original_filename.strip()).name
+    valid, error = await storage_service.validate_stored_document(
+        payload.storage_path, payload.mime_type, payload.file_size_bytes, payload.file_hash
+    )
+    if not valid:
+        return error_response(
+            code="INVALID_STORED_DOCUMENT",
+            message=error or "Invalid stored document.",
+            status_code=422,
+        )
+    sanitized_filename = Path(payload.original_filename.strip().replace("\\", "/")).name
+    expected_extension = {
+        ".pdf": "application/pdf",
+        ".png": "image/png",
+        ".jpg": "image/jpeg",
+        ".jpeg": "image/jpeg",
+    }
+    if (
+        len(sanitized_filename) > 255
+        or any(ord(c) < 32 for c in sanitized_filename)
+        or expected_extension.get(Path(sanitized_filename).suffix.lower()) != payload.mime_type
+    ):
+        return error_response(
+            code="INVALID_FILE_TYPE",
+            message="Choose a PDF, PNG or JPEG with a matching extension and content type.",
+            status_code=422,
+        )
+    duplicate = (
+        (
+            await db.execute(
+                select(ApplicationDocument).where(
+                    ApplicationDocument.application_id == app_id,
+                    ApplicationDocument.storage_path == payload.storage_path,
+                    ApplicationDocument.document_type == payload.document_type,
+                )
+            )
+        )
+        .scalars()
+        .all()
+    )
+    for existing in duplicate:
+        if existing.verification_status in (
+            DocumentVerificationStatus.PENDING,
+            DocumentVerificationStatus.VERIFIED,
+        ):
+            return success_response(data=DocumentResponse.model_validate(existing).model_dump())
 
     new_doc = ApplicationDocument(
         id=uuid.uuid4(),
@@ -214,11 +267,14 @@ async def upload_document_multipart(
     request: Request,
     document_type: DocumentType = Form(...),
     file: UploadFile = File(...),
+    replace_document_id: uuid.UUID | None = Form(None),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ) -> JSONResponse:
     """Upload document directly via multipart form."""
-    result = await db.execute(select(LoanApplication).where(LoanApplication.id == app_id))
+    result = await db.execute(
+        select(LoanApplication).where(LoanApplication.id == app_id).with_for_update()
+    )
     application = result.scalar_one_or_none()
     if not application:
         return error_response(
@@ -239,6 +295,40 @@ async def upload_document_multipart(
             code="ILLEGAL_MUTATION",
             message=f"Cannot add documents to application in '{application.status.value}' status.",
             status_code=status.HTTP_400_BAD_REQUEST,
+        )
+
+    previous_document = None
+    if replace_document_id:
+        previous_document = await db.get(ApplicationDocument, replace_document_id)
+        if (
+            application.status != ApplicationStatus.DRAFT
+            or not previous_document
+            or previous_document.application_id != application.id
+            or is_withdrawn(previous_document)
+        ):
+            return error_response(
+                code="INVALID_REPLACEMENT",
+                message="Only a current document on your draft can be replaced.",
+                status_code=400,
+            )
+    safe_filename = Path((file.filename or "").replace("\\", "/")).name
+    extension = Path(safe_filename).suffix.lower()
+    expected_mime = {
+        ".pdf": "application/pdf",
+        ".png": "image/png",
+        ".jpg": "image/jpeg",
+        ".jpeg": "image/jpeg",
+    }.get(extension)
+    if (
+        len(safe_filename) > 255
+        or not expected_mime
+        or file.content_type != expected_mime
+        or any(ord(c) < 32 for c in safe_filename)
+    ):
+        return error_response(
+            code="INVALID_FILE_TYPE",
+            message="Upload a PDF, PNG or JPEG with a matching file extension and content type.",
+            status_code=422,
         )
 
     # CRIT-02 Fix: Stream file reading in bounded chunks to prevent memory exhaustion DoS
@@ -284,12 +374,34 @@ async def upload_document_multipart(
         application_id=application.id, mime_type=declared_mime
     )
 
+    # An identical retry reuses the already stored document rather than adding metadata twice.
+    duplicate = (
+        (
+            await db.execute(
+                select(ApplicationDocument).where(
+                    ApplicationDocument.application_id == application.id,
+                    ApplicationDocument.document_type == document_type,
+                    ApplicationDocument.file_hash == file_hash,
+                )
+            )
+        )
+        .scalars()
+        .all()
+    )
+    if not replace_document_id:
+        for existing in duplicate:
+            if existing.verification_status in (
+                DocumentVerificationStatus.PENDING,
+                DocumentVerificationStatus.VERIFIED,
+            ):
+                return success_response(data=DocumentResponse.model_validate(existing).model_dump())
+
     # Stream to MinIO / S3
     await storage_service.upload_file_bytes(
         storage_key=storage_key, file_bytes=content, mime_type=declared_mime
     )
 
-    sanitized_filename = Path(file.filename or f"doc_{uuid.uuid4().hex[:6]}.bin").name
+    sanitized_filename = safe_filename
 
     new_doc = ApplicationDocument(
         id=uuid.uuid4(),
@@ -303,6 +415,18 @@ async def upload_document_multipart(
         verification_status=DocumentVerificationStatus.PENDING,
     )
     db.add(new_doc)
+    if previous_document:
+        previous_document.verification_status = DocumentVerificationStatus.REJECTED
+        previous_document.verification_remarks = WITHDRAWN_REMARK
+        await record_audit_event(
+            session=db,
+            event_type="DRAFT_DOCUMENT_REPLACED",
+            entity_name="application_documents",
+            entity_id=previous_document.id,
+            actor_id=current_user.id,
+            actor_role=current_user.role.value,
+            metadata_snapshot={"replacement_document_id": str(new_doc.id)},
+        )
 
     await record_audit_event(
         session=db,
@@ -369,7 +493,7 @@ async def list_application_documents(
         .where(ApplicationDocument.application_id == app_id)
         .order_by(ApplicationDocument.uploaded_at.desc())
     )
-    documents = doc_result.scalars().all()
+    documents = [doc for doc in doc_result.scalars().all() if not is_withdrawn(doc)]
 
     # MED-02 Fix: Concurrently generate download URLs
     download_urls = await asyncio.gather(
@@ -421,14 +545,16 @@ async def get_document_checklist(
         select(LoanProduct).where(LoanProduct.id == application.product_id)
     )
     product = prod_result.scalar_one_or_none()
-    required_docs: List[str] = product.required_documents if product else []
+    required_docs: List[str] = (
+        [r["code"] for r in document_requirements(product) if r["mandatory"]] if product else []
+    )
 
     doc_result = await db.execute(
         select(ApplicationDocument)
         .where(ApplicationDocument.application_id == app_id)
         .order_by(ApplicationDocument.uploaded_at.desc())
     )
-    documents = doc_result.scalars().all()
+    documents = [doc for doc in doc_result.scalars().all() if not is_withdrawn(doc)]
 
     verified_types = {
         d.document_type.value
@@ -436,7 +562,7 @@ async def get_document_checklist(
         if d.verification_status == DocumentVerificationStatus.VERIFIED
     }
     missing_docs = [req for req in required_docs if req not in verified_types]
-    all_verified = len(missing_docs) == 0 and len(required_docs) > 0
+    all_verified = len(missing_docs) == 0
 
     download_urls = await asyncio.gather(
         *[storage_service.generate_presigned_download_url(doc.storage_path) for doc in documents]
@@ -478,6 +604,11 @@ async def verify_document(
             code="DOCUMENT_NOT_FOUND",
             message="Document does not exist.",
             status_code=status.HTTP_404_NOT_FOUND,
+        )
+
+    if is_withdrawn(document):
+        return error_response(
+            code="DOCUMENT_NOT_FOUND", message="Document has been withdrawn.", status_code=404
         )
 
     # Enforce non-empty justification for DEFICIENT or REJECTED outcomes
@@ -592,7 +723,7 @@ async def verify_document(
                 # Add currently verified document type
                 verified_types.add(document.document_type.value)
 
-                required_set = set(product.required_documents)
+                required_set = {r["code"] for r in document_requirements(product) if r["mandatory"]}
                 if required_set.issubset(verified_types):
                     # All mandatory checklist documents are verified!
                     if application.status == ApplicationStatus.DOCUMENTS_PENDING:
@@ -634,3 +765,101 @@ async def verify_document(
     dto = DocumentResponse.model_validate(document).model_dump()
     dto["download_url"] = download_url
     return success_response(data=dto)
+
+
+@router.post(
+    "/applications/{app_id}/documents/{document_id}/withdraw",
+    summary="Remove a document from a draft",
+)
+async def withdraw_draft_document(
+    app_id: uuid.UUID,
+    document_id: uuid.UUID,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(require_roles([UserRole.APPLICANT, UserRole.ADMIN])),
+) -> JSONResponse:
+    application = (
+        await db.execute(
+            select(LoanApplication).where(LoanApplication.id == app_id).with_for_update()
+        )
+    ).scalar_one_or_none()
+    if not application:
+        return error_response(
+            code="APPLICATION_NOT_FOUND", message="Application does not exist.", status_code=404
+        )
+    if application.applicant_id != current_user.id and current_user.role != UserRole.ADMIN:
+        return error_response(
+            code="ACCESS_FORBIDDEN",
+            message="You can only change your own draft documents.",
+            status_code=403,
+        )
+    document = await db.get(ApplicationDocument, document_id)
+    if not document or document.application_id != app_id:
+        return error_response(
+            code="DOCUMENT_NOT_FOUND",
+            message="Document does not exist on this draft.",
+            status_code=404,
+        )
+    if application.status != ApplicationStatus.DRAFT:
+        return error_response(
+            code="ILLEGAL_MUTATION", message="Only draft documents can be removed.", status_code=400
+        )
+    if not is_withdrawn(document):
+        document.verification_status = DocumentVerificationStatus.REJECTED
+        document.verification_remarks = WITHDRAWN_REMARK
+        await record_audit_event(
+            session=db,
+            event_type="DRAFT_DOCUMENT_WITHDRAWN",
+            entity_name="application_documents",
+            entity_id=document.id,
+            actor_id=current_user.id,
+            actor_role=current_user.role.value,
+        )
+        await db.commit()
+    return success_response(data={"id": str(document.id), "withdrawn": True})
+
+
+@router.get("/documents/{document_id}/download", summary="Download an owned application document")
+async def download_document(
+    document_id: uuid.UUID,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(
+        require_roles(
+            [
+                UserRole.APPLICANT,
+                UserRole.LOAN_OFFICER,
+                UserRole.RISK_ANALYST,
+                UserRole.OPERATIONS,
+                UserRole.ADMIN,
+            ]
+        )
+    ),
+) -> Response:
+    document = await db.get(ApplicationDocument, document_id)
+    if not document or is_withdrawn(document):
+        return error_response(
+            code="DOCUMENT_NOT_FOUND", message="Document does not exist.", status_code=404
+        )
+    application = await db.get(LoanApplication, document.application_id)
+    if not application or (
+        current_user.role == UserRole.APPLICANT and application.applicant_id != current_user.id
+    ):
+        return error_response(
+            code="ACCESS_FORBIDDEN", message="You cannot access this document.", status_code=403
+        )
+    if storage_service.local_root is not None:
+        path = storage_service.local_path(document.storage_path)
+        if not path.is_file():
+            return error_response(
+                code="DOCUMENT_NOT_FOUND", message="Stored file is unavailable.", status_code=404
+            )
+        return FileResponse(
+            path,
+            media_type=document.mime_type,
+            filename=document.original_filename,
+            headers={"Cache-Control": "no-store", "X-Content-Type-Options": "nosniff"},
+        )
+    return RedirectResponse(
+        await storage_service.generate_presigned_download_url(document.storage_path),
+        status_code=307,
+        headers={"Cache-Control": "no-store"},
+    )

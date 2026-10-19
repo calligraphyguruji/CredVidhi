@@ -99,6 +99,7 @@ def mock_document_storage(monkeypatch):
     from unittest.mock import AsyncMock
     from app.services.storage_service import storage_service
 
+    monkeypatch.setattr(storage_service, "validate_stored_document", AsyncMock(return_value=(True, None)))
     monkeypatch.setattr(storage_service, "upload_file_bytes", AsyncMock(return_value=None))
     monkeypatch.setattr(storage_service, "check_object_exists", AsyncMock(return_value=True))
     monkeypatch.setattr(storage_service, "generate_presigned_upload_url", AsyncMock(return_value="https://storage.example.test/upload"))

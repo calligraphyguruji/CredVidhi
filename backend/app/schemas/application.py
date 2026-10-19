@@ -14,6 +14,7 @@ from app.models.application import ApplicationStatus
 class ApplicationCreateRequest(BaseModel):
     """Initial loan application draft creation schema."""
 
+    draft_id: Optional[uuid.UUID] = None
     product_id: uuid.UUID
     requested_amount: Decimal = Field(..., gt=0, description="Principal amount requested in INR")
     requested_tenor_months: int = Field(..., gt=0, description="Repayment duration in months")
@@ -23,6 +24,7 @@ class ApplicationCreateRequest(BaseModel):
 class ApplicationUpdateDraftRequest(BaseModel):
     """Draft application update schema before submission."""
 
+    product_id: Optional[uuid.UUID] = None
     requested_amount: Optional[Decimal] = Field(None, gt=0)
     requested_tenor_months: Optional[int] = Field(None, gt=0)
     purpose: Optional[str] = Field(None, max_length=500)

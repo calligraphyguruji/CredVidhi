@@ -26,6 +26,8 @@ class Settings(BaseSettings):
     )
     REDIS_URL: str = "redis://localhost:6379/0"
 
+    LOCAL_DOCUMENT_STORAGE_PATH: str = ""
+
     # MinIO / S3 Storage Configuration
     MINIO_ENDPOINT: str = "localhost:9000"
     MINIO_ACCESS_KEY: str = "credvidhi_minio"
@@ -120,6 +122,9 @@ class Settings(BaseSettings):
         if "?" in self.DATABASE_URL and "sslmode=" in self.DATABASE_URL:
             base_url, query_params = self.DATABASE_URL.split("?", 1)
             self.DATABASE_URL = f"{base_url}?{query_params.replace('sslmode=', 'ssl=')}"
+
+        if self.LOCAL_DOCUMENT_STORAGE_PATH and self.ENVIRONMENT.lower() not in ("development", "test"):
+            raise ValueError("Local document storage is allowed only in development and tests.")
 
         if self.ENVIRONMENT.lower() in ("production", "staging"):
             if "development" in self.JWT_SECRET.lower():

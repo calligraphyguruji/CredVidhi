@@ -73,3 +73,14 @@ test('an old logout response cannot erase a later login', async () => {
   await pending;
   assert.equal(values.get(AUTH_TOKEN_KEY), 'b-token');
 });
+
+test('product document aliases merge into one requirement without weakening mandatory status', () => {
+  const product = mapBackendProduct({ id: 'p', required_documents: [
+    'GOV_ID', { code: 'PAN_CARD', mandatory: false, description: 'Proof of identity' },
+    { code: 'BANK_STMT', mandatory: false }, { code: 'BANK_STATEMENT', mandatory: true, title: 'Bank statements' },
+  ] });
+  assert.deepEqual(product.requiredDocuments, [
+    { code: 'PAN_CARD', title: 'PAN CARD', description: 'Proof of identity', mandatory: true },
+    { code: 'BANK_STATEMENT', title: 'Bank statements', description: '', mandatory: true },
+  ]);
+});

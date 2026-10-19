@@ -201,6 +201,7 @@ export const productsApi = {
 // ==========================================
 export const applicationsApi = {
   createDraft: (payload: {
+    draft_id?: string;
     product_id: string;
     requested_amount: number;
     requested_tenor_months: number;
@@ -216,6 +217,7 @@ export const applicationsApi = {
   updateDraft: (
     id: string,
     payload: {
+      product_id?: string;
       requested_amount?: number;
       requested_tenor_months?: number;
       purpose?: string;
@@ -267,15 +269,35 @@ export const queuesApi = {
 // 6. Documents & KYC Verification
 // ==========================================
 export const documentsApi = {
-  uploadMultipart: (appId: string, file: File, documentType: string) => {
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('document_type', documentType);
-    return request<any>(`/applications/${appId}/documents/upload`, {
-      method: 'POST',
-      body: formData,
+  uploadMultipart: (appId: string, file: File, documentType: string, onProgress?: (percent: number) => void, replaceDocumentId?: string): Promise<any> => {
+    const token = localStorage.getItem(AUTH_TOKEN_KEY);
+    return new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', `${API_BASE_URL}/applications/${appId}/documents/upload`);
+      xhr.timeout = 120000;
+      if (token) xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+      xhr.upload.onprogress = e => { if (e.lengthComputable) onProgress?.(Math.round(e.loaded / e.total * 100)); };
+      xhr.onerror = () => reject(new ApiError('NETWORK_ERROR', 'Upload failed. Check your connection and retry.', 0));
+      xhr.ontimeout = () => reject(new ApiError('UPLOAD_TIMEOUT', 'Upload timed out. Please retry.', 0));
+      xhr.onload = () => {
+        if (token !== localStorage.getItem(AUTH_TOKEN_KEY)) { reject(new ApiError('SESSION_CHANGED', 'Your session changed. Please sign in.', 401)); return; }
+        let body: any;
+        try { body = JSON.parse(xhr.responseText); } catch { body = null; }
+        if (xhr.status === 401) window.dispatchEvent(new Event('credvidhi:session-expired'));
+        if (xhr.status < 200 || xhr.status >= 300 || body?.success === false) {
+          reject(new ApiError(body?.error?.code || 'UPLOAD_FAILED', body?.error?.message || 'Upload failed. Please retry.', xhr.status, body?.error?.details));
+        } else if (!body?.data?.id) {
+          reject(new ApiError('INVALID_RESPONSE', 'Upload was not confirmed. Please retry.', xhr.status));
+        } else { resolve(body.data); }
+      };
+      const form = new FormData();
+      form.append('file', file);
+      form.append('document_type', documentType);
+      if (replaceDocumentId) form.append('replace_document_id', replaceDocumentId);
+      xhr.send(form);
     });
   },
+  withdraw: (appId: string, docId: string) => request(`/applications/${appId}/documents/${docId}/withdraw`, { method: 'POST' }),
 
   list: (appId: string) => request<any[]>(`/applications/${appId}/documents`),
 
@@ -382,6 +404,14 @@ export const chatApi = {
 // 9. Domain Model Adapters
 // ==========================================
 export function mapBackendProduct(p: any): LoanProduct {
+  const requirements = new Map<string, LoanProduct['requiredDocuments'][number]>();
+  for (const entry of Array.isArray(p.required_documents) ? p.required_documents : []) {
+    const item = typeof entry === 'string' ? { code: entry } : entry;
+    const rawCode = String(item.code || '').toUpperCase();
+    const code = ({ GOV_ID: 'PAN_CARD', W2_INCOME: 'SALARY_SLIP', PAYSLIP: 'SALARY_SLIP', BANK_STMT: 'BANK_STATEMENT' } as Record<string, string>)[rawCode] || rawCode;
+    const previous = requirements.get(code);
+    requirements.set(code, { code, title: item.title || previous?.title || code.replaceAll('_', ' '), description: item.description || previous?.description || '', mandatory: item.mandatory !== false || previous?.mandatory === true });
+  }
   return {
     id: String(p.id),
     code: p.code,
@@ -393,8 +423,7 @@ export function mapBackendProduct(p: any): LoanProduct {
     maxTenorMonths: Number(p.max_tenor_months),
     baseApr: Number(p.base_apr),
     maxDtiRatio: Number(p.max_dti_ratio),
-    requiredDocuments: Array.isArray(p.required_documents) ? p.required_documents.map((d: any) =>
-      typeof d === 'string' ? { code: d, title: d.replaceAll('_', ' '), description: '', mandatory: true } : d) : [],
+    requiredDocuments: [...requirements.values()],
     isActive: Boolean(p.is_active ?? true),
   };
 }
