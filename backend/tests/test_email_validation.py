@@ -28,8 +28,14 @@ class TestDisposableEmailBlocking:
         with pytest.raises(ValueError, match="disposable"):
             validate_email_not_disposable("test@yopmail.com")
 
-    def test_rejects_throwaway(self):
+    def test_rejects_throwaway(self, monkeypatch):
         """throwaway.email is caught by DNS MX layer if not in disposable list."""
+        from email_validator import EmailNotValidError
+
+        def reject_domain(*args, **kwargs):
+            raise EmailNotValidError("Domain does not accept mail")
+
+        monkeypatch.setattr("app.core.email_validation.validate_email", reject_domain)
         with pytest.raises(ValueError):
             validate_email_not_disposable("test@throwaway.email")
 

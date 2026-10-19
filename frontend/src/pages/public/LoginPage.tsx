@@ -14,11 +14,8 @@ import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { Modal } from '../../components/ui/Modal';
 import { ForgotRegistrationModal } from '../../components/auth/ForgotRegistrationModal';
-import { INITIAL_USERS } from '../../services/mockData';
-import type { UserRole } from '../../types';
 import { scaleInVariants, formErrorVariants } from '../../utils/motion';
 
-import { canRoleAccessView, getDefaultViewForRole } from '../../utils/rbac';
 
 interface LoginPageProps {
   initialTab?: 'staff' | 'borrower' | 'register';
@@ -29,9 +26,6 @@ export const LoginPage: React.FC<LoginPageProps> = ({ initialTab = 'staff' }) =>
     setActiveView,
     registerApplicant,
     login,
-    pendingRedirectView,
-    applications,
-    setActiveApplicationId,
   } = useApp();
   const shouldReduceMotion = useReducedMotion();
 
@@ -42,8 +36,6 @@ export const LoginPage: React.FC<LoginPageProps> = ({ initialTab = 'staff' }) =>
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
-  const [applicantRef, setApplicantRef] = useState('');
-  const [applicantPhone, setApplicantPhone] = useState('');
   const [forgotRegistrationOpen, setForgotRegistrationOpen] = useState(false);
 
   // Registration form states
@@ -60,23 +52,6 @@ export const LoginPage: React.FC<LoginPageProps> = ({ initialTab = 'staff' }) =>
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [forgotModalOpen, setForgotModalOpen] = useState(false);
-
-  const triggerLogin = (role: UserRole, userEmail: string) => {
-    setIsLoading(true);
-    setErrorMessage(null);
-
-    setTimeout(() => {
-      setIsLoading(false);
-      console.info(`[CredVidhi Gateway] Authenticated ${userEmail} as ${role}`);
-
-      let targetView = getDefaultViewForRole(role);
-      if (pendingRedirectView && canRoleAccessView(role, pendingRedirectView)) {
-        targetView = pendingRedirectView;
-      }
-
-      login(role, userEmail, targetView);
-    }, 500);
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -124,52 +99,13 @@ export const LoginPage: React.FC<LoginPageProps> = ({ initialTab = 'staff' }) =>
       return;
     }
 
-    if (activeTab === 'staff') {
-      if (!email || !email.includes('@')) {
-        setErrorMessage('Please enter a valid institutional bank email address.');
-        return;
-      }
+    if (isLoading) return;
+    setIsLoading(true);
+    setErrorMessage(null);
+    try { await login(email.trim(), password); }
+    catch (err: any) { setErrorMessage(err.message || 'Sign in failed. Please retry.'); }
+    finally { setIsLoading(false); }
 
-      // Check known staff roles
-      const matchedUser = INITIAL_USERS.find(
-        (u) => u.email.toLowerCase() === email.toLowerCase() && u.role !== 'APPLICANT'
-      );
-
-      if (matchedUser && matchedUser.password && password !== matchedUser.password) {
-        setErrorMessage('Invalid password. Please check your credentials and try again.');
-        return;
-      }
-
-      const targetRole: UserRole = matchedUser ? matchedUser.role : 'LOAN_OFFICER';
-      triggerLogin(targetRole, email);
-    } else {
-      const cleanRef = applicantRef.trim();
-      const cleanPhone = applicantPhone.trim();
-
-      if (!cleanRef || !cleanPhone) {
-        setErrorMessage('Please enter both your Application Reference Number and Registered Mobile Number.');
-        return;
-      }
-
-      // Check credentials against active borrower applications
-      const cleanInputDigits = cleanPhone.replace(/\D/g, '').slice(-10);
-      const matchedApp = applications.find((a) => {
-        const refMatch = a.referenceNumber.trim().toUpperCase() === cleanRef.toUpperCase();
-        const appPhoneDigits = (a.personal.phone || '').replace(/\D/g, '').slice(-10);
-        const phoneMatch = appPhoneDigits.length >= 8 && appPhoneDigits === cleanInputDigits;
-        return refMatch && phoneMatch;
-      });
-
-      if (!matchedApp) {
-        setErrorMessage(
-          'Invalid Application Reference Number or Mobile Number. Please check your information or use Forgot Registration Number.'
-        );
-        return;
-      }
-
-      setActiveApplicationId(matchedApp.id);
-      triggerLogin('APPLICANT', matchedApp.personal.email || matchedApp.referenceNumber);
-    }
   };
 
   return (
@@ -258,6 +194,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ initialTab = 'staff' }) =>
                   <span className="text-emerald-400 text-[9px]">● STREAMING</span>
                 </div>
                 <div className="bg-black/60 rounded p-3 font-mono text-[10px] text-slate-400 space-y-1.5 border border-slate-800/80">
+                  <p className="text-orange-300">Demo Mode — Simulated Data</p>
                   <div className="truncate">
                     <span className="text-orange-400">[03:14:02]</span> AUTH_SUCCESS: d.vance@credvidhi.com
                   </div>
@@ -453,31 +390,33 @@ export const LoginPage: React.FC<LoginPageProps> = ({ initialTab = 'staff' }) =>
                       isLoading={isLoading}
                       icon={<ArrowRight className="w-4 h-4" />}
                     >
-                      Authenticate with Bank SSO
+                      Sign In
                     </Button>
                   </>
                 ) : activeTab === 'borrower' ? (
                   <>
                     <Input
-                      label="Application Reference Number"
-                      value={applicantRef}
+                      label="Email Address"
+                      type="email"
+                      value={email}
                       onChange={(e) => {
-                        setApplicantRef(e.target.value);
+                        setEmail(e.target.value);
                         if (errorMessage) setErrorMessage(null);
                       }}
-                      placeholder="Enter application reference number"
+                      placeholder="Enter your registered email"
                       isMono
                       required
                     />
 
                     <Input
-                      label="Registered Mobile Number"
-                      value={applicantPhone}
+                      label="Password"
+                      type="password"
+                      value={password}
                       onChange={(e) => {
-                        setApplicantPhone(e.target.value);
+                        setPassword(e.target.value);
                         if (errorMessage) setErrorMessage(null);
                       }}
-                      placeholder="Enter registered mobile number"
+                      placeholder="Enter your password"
                       isMono
                       required
                     />
@@ -485,7 +424,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ initialTab = 'staff' }) =>
                     <div className="p-3 bg-orange-50/70 border border-orange-200 rounded text-xs text-orange-950">
                       <div className="font-semibold mb-0.5">Quick Self-Service Access:</div>
                       <p className="text-[11px] text-orange-700 leading-normal">
-                        No permanent password needed. Real-time application tracker is secured via reference and mobile matching.
+                        Sign in securely using the email and password you registered with.
                       </p>
                     </div>
 
@@ -657,7 +596,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ initialTab = 'staff' }) =>
                       isLoading={isLoading}
                       icon={<ArrowRight className="w-4 h-4" />}
                     >
-                      Complete Registration & Open Application
+                      Complete Registration
                     </Button>
 
                     <div className="text-center pt-2">

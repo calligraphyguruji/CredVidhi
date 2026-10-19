@@ -32,24 +32,16 @@ from app.services.fsm_service import execute_transition
 SUPERVISOR_APPROVAL_THRESHOLD = Decimal("5000000.00")  # 50 Lakhs INR
 
 
-def _safe_decimal(val: Any, default: str) -> Decimal:
-    """Safely convert value to Decimal, falling back to default if None, empty, or invalid."""
-    if val is None or val == "":
-        return Decimal(default)
+def _required_decimal(data: Dict[str, Any], *keys: str) -> Decimal:
+    """Read supplied financial values without inventing missing underwriting inputs."""
+    value = next((data[key] for key in keys if data.get(key) is not None), None)
     try:
-        return Decimal(str(val))
-    except Exception:
-        return Decimal(default)
-
-
-def _safe_int(val: Any, default: int) -> int:
-    """Safely convert value to int, falling back to default if None, empty, or invalid."""
-    if val is None or val == "":
-        return default
-    try:
-        return int(val)
-    except Exception:
-        return default
+        result = Decimal(str(value))
+    except Exception as exc:
+        raise ValueError(f"A valid {keys[0]} is required for evaluation.") from exc
+    if not result.is_finite() or result < 0:
+        raise ValueError(f"A non-negative {keys[0]} is required for evaluation.")
+    return result
 
 
 def evaluate_financial_metrics(
@@ -60,21 +52,18 @@ def evaluate_financial_metrics(
     financial_data = application.applicant_financial_snapshot or {}
     personal_data = application.applicant_personal_snapshot or {}
 
-    gross_monthly_income = _safe_decimal(financial_data.get("gross_monthly_income"), "75000.00")
-    existing_debts = _safe_decimal(
-        financial_data.get("existing_monthly_debts") or financial_data.get("existing_debts"),
-        "0.00",
-    )
-    housing_expenses = _safe_decimal(
-        financial_data.get("housing_expenses") or financial_data.get("monthly_rent"),
-        "0.00",
-    )
-    employment_type = str(personal_data.get("employment_type") or "SALARIED").upper()
-    experience_years = _safe_int(personal_data.get("experience_years"), 3)
-    bureau_score = _safe_int(
-        financial_data.get("bureau_score") or financial_data.get("cibil_score"),
-        720,
-    )
+    gross_monthly_income = _required_decimal(financial_data, "gross_monthly_income", "grossMonthlyIncome")
+    if gross_monthly_income <= 0:
+        raise ValueError("Positive gross_monthly_income is required for evaluation.")
+    existing_debts = _required_decimal(financial_data, "existing_monthly_debts", "existing_monthly_debt", "existing_debts", "existingMonthlyDebt")
+    housing_expenses = _required_decimal(financial_data, "housing_expenses", "housing_expense", "monthly_rent", "housingExpense")
+    employment_type = str(financial_data.get("employment_type") or financial_data.get("employmentType") or personal_data.get("employment_type") or "").upper()
+    if employment_type not in ("SALARIED", "SELF_EMPLOYED"):
+        raise ValueError("Employment type is required for evaluation.")
+    experience_years = _required_decimal({**personal_data, **financial_data}, "experience_years", "years_employed", "yearsEmployed")
+    bureau_score = _required_decimal(financial_data, "bureau_score", "cibil_score", "credit_score_declared", "creditScoreDeclared", "declared_cibil_score")
+    if bureau_score != bureau_score.to_integral_value() or not 300 <= bureau_score <= 900:
+        raise ValueError("A supplied credit score between 300 and 900 is required for evaluation.")
 
     # Calculate financial core metrics
     emi = calculate_emi(
@@ -196,9 +185,9 @@ def evaluate_financial_metrics(
         "recommendation": recommendation,
         "score_factors_breakdown": {
             "factors": score_factors,
-            "bureau_score": bureau_score,
+            "bureau_score": int(bureau_score),
             "employment_type": employment_type,
-            "experience_years": experience_years,
+            "experience_years": str(experience_years),
             "leverage_ratio": str(round(leverage, 2)),
             "policy_max_dti": str(product.max_dti_ratio),
         },

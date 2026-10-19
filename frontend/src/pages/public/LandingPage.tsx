@@ -11,10 +11,9 @@ import { SecurityTrustSection } from '../../components/landing/SecurityTrustSect
 import { FAQSection } from '../../components/landing/FAQSection';
 import { Footer } from '../../components/landing/Footer';
 import { Button } from '../../components/ui/Button';
-import { canRoleAccessView } from '../../utils/rbac';
 
 export const LandingPage: React.FC = () => {
-  const { setActiveView, currentRole, isAuthenticated, addToast } = useApp();
+  const { setActiveView, beginDemo } = useApp();
 
   return (
     <div className="min-h-screen bg-white text-slate-900 flex flex-col font-sans selection:bg-orange-100 selection:text-orange-900">
@@ -67,21 +66,7 @@ export const LandingPage: React.FC = () => {
               <Button
                 variant="primary"
                 size="lg"
-                onClick={() => {
-                  if (!isAuthenticated) {
-                    setActiveView('register', 'officer-queue');
-                    return;
-                  }
-                  if (canRoleAccessView(currentRole, 'officer-queue')) {
-                    setActiveView('officer-queue');
-                  } else {
-                    addToast({
-                      type: 'error',
-                      title: 'Access Restricted (RBAC)',
-                      message: `Your account role (${currentRole}) is not authorized to access the officer queue.`,
-                    });
-                  }
-                }}
+                onClick={beginDemo}
                 icon={<ArrowRight className="w-4 h-4" />}
                 className="shadow-md font-bold"
               >

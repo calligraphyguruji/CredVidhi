@@ -5,10 +5,9 @@ import { useApp } from '../../context/AppContext';
 import { Button } from '../ui/Button';
 import { calculateEmi, calculateDti, formatCurrency } from '../../utils/financial';
 import { fadeUpVariants, scaleInVariants } from '../../utils/motion';
-import { canRoleAccessView } from '../../utils/rbac';
 
 export const HeroSection: React.FC = () => {
-  const { setActiveView, currentRole, products, isAuthenticated, addToast } = useApp();
+  const { setActiveView, products, beginDemo } = useApp();
   const shouldReduceMotion = useReducedMotion();
 
   // Dynamic loan calculator state in Hero
@@ -116,9 +115,7 @@ export const HeroSection: React.FC = () => {
               <Button
                 variant="primary"
                 size="lg"
-                onClick={() => {
-                  setActiveView('register');
-                }}
+                onClick={() => setActiveView('register', 'borrower-portal')}
                 icon={<ArrowRight className="w-4 h-4" />}
                 className="shadow-sm"
               >
@@ -128,21 +125,7 @@ export const HeroSection: React.FC = () => {
               <Button
                 variant="outline"
                 size="lg"
-                onClick={() => {
-                  if (!isAuthenticated) {
-                    setActiveView('register', 'officer-queue');
-                    return;
-                  }
-                  if (canRoleAccessView(currentRole, 'officer-queue')) {
-                    setActiveView('officer-queue');
-                  } else {
-                    addToast({
-                      type: 'error',
-                      title: 'Access Restricted (RBAC)',
-                      message: `Your account role (${currentRole}) is not authorized to access the officer queue.`,
-                    });
-                  }
-                }}
+                onClick={beginDemo}
                 icon={<Activity className="w-4 h-4 text-orange-600" />}
               >
                 Launch Staff Workbench Demo
@@ -281,6 +264,7 @@ export const HeroSection: React.FC = () => {
                 </div>
               </div>
 
+              <p className="text-xs text-slate-600">Illustrative estimates only, not an approved offer or an existing loan liability. DTI uses example income and debts.</p>
               {/* Direct Action Link */}
               <div className="pt-4">
                 <Button
@@ -291,7 +275,7 @@ export const HeroSection: React.FC = () => {
                   }}
                   icon={<ArrowRight className="w-4 h-4" />}
                 >
-                  Apply at this Rate ({apr}% APR)
+                  Apply for a Loan
                 </Button>
               </div>
             </div>

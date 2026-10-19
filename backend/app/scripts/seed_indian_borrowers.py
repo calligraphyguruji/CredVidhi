@@ -14,6 +14,7 @@ from typing import Any, Dict, List, Optional
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.config import get_settings
 from app.core.logging import logger
 from app.core.security import get_password_hash
 from app.database import async_session_factory
@@ -889,6 +890,12 @@ INDIAN_BORROWERS: List[Dict[str, Any]] = [
 async def seed_indian_borrowers_data(session: Optional[AsyncSession] = None) -> None:
     """Populates 45 diverse Indian applicants with comprehensive applications and artifacts."""
 
+    settings = get_settings()
+    if settings.ENVIRONMENT.lower() not in ("development", "test") or (
+        settings.ENVIRONMENT.lower() != "test" and not settings.ENABLE_DEMO_SEED
+    ):
+        raise RuntimeError("Demo seeding is allowed only in an explicitly enabled development database or tests.")
+
     async def _populate(s: AsyncSession) -> None:
         logger.info("Checking institutional products and officers...")
         # Get or create Loan Officer
@@ -1026,6 +1033,10 @@ async def seed_indian_borrowers_data(session: Optional[AsyncSession] = None) -> 
                         "residential_address": b["address"],
                     },
                     applicant_financial_snapshot={
+                        # Explicit simulation values, never supplied to production accounts.
+                        "employment_type": "SALARIED",
+                        "years_employed": 3,
+                        "housing_expense": b.get("housing_expense", 25000),
                         "employer_name": b["employer"],
                         "job_title": b["title"],
                         "gross_monthly_income": b["income"],
@@ -1079,7 +1090,7 @@ async def seed_indian_borrowers_data(session: Optional[AsyncSession] = None) -> 
                         mime_type=mime,
                         file_size_bytes=1024 * 350,
                         verification_status=doc_status,
-                        verification_remarks=f"Verified against NSDL/UIDAI/Bank e-verify by Officer {officer.first_name}"
+                        verification_remarks=f"Demo simulated verification by Officer {officer.first_name}"
                         if doc_status == DocumentVerificationStatus.VERIFIED
                         else None,
                         verified_by=officer.id

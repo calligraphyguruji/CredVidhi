@@ -12,18 +12,10 @@ echo "=== CredVidhi Production Boot Sequence ==="
 echo "Applying Alembic database migrations..."
 alembic upgrade head || echo "Alembic notice: migrations skipped or database connection pending."
 
-# 2. Idempotently seed default institutional accounts and products (non-blocking safeguard)
-echo "Seeding initial institutional accounts and loan products..."
-python -m app.scripts.seed_db &
-SEED_PID=$!
-
-# Wait up to 5 seconds for seeding to complete; if still executing, allow it to finish in background
-for i in {1..5}; do
-  if ! kill -0 "$SEED_PID" 2>/dev/null; then
-    break
-  fi
-  sleep 1
-done
+# Demo records must never be inserted by production startup.
+if [ "${ENVIRONMENT:-production}" = "development" ] && [ "${ENABLE_DEMO_SEED:-false}" = "true" ]; then
+  python -m app.scripts.seed_db
+fi
 
 # 3. Launch production Uvicorn ASGI server bound to Render's dynamic PORT
 PORT="${PORT:-8000}"

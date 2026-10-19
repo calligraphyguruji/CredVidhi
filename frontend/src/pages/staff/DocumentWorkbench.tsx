@@ -20,6 +20,7 @@ import { formatCurrency } from '../../utils/financial';
 export const DocumentWorkbench: React.FC = () => {
   const {
     applications,
+    isDemoMode,
     activeApplicationId,
     setActiveView,
     selectedDocId,
@@ -30,16 +31,7 @@ export const DocumentWorkbench: React.FC = () => {
 
   const application = applications.find((a) => a.id === activeApplicationId) || applications[0];
 
-  const activeDoc =
-    application.documents.find((d) => d.id === selectedDocId) ||
-    application.documents[0] || {
-      id: 'mock-doc',
-      documentType: 'W-2 / Tax Return (2025)',
-      originalFilename: 'W2_ApexIndustrial_2025.pdf',
-      verificationStatus: 'VERIFIED',
-      verificationRemarks: 'Income matches declared gross.',
-      uploadedAt: new Date().toISOString(),
-    };
+  const activeDoc = application?.documents.find((d) => d.id === selectedDocId) || application?.documents[0];
 
   const [zoomLevel, setZoomLevel] = useState(100);
   const [rotation, setRotation] = useState(0);
@@ -47,6 +39,8 @@ export const DocumentWorkbench: React.FC = () => {
   const [clarificationReason, setClarificationReason] = useState('BLURRY_SCAN');
   const [clarificationNotes, setClarificationNotes] = useState('');
   const [activeOfficerNotes, setActiveOfficerNotes] = useState('');
+
+  if (!application || !activeDoc) return <div><p>No documents uploaded yet.</p><Button onClick={() => setActiveView('officer-queue')}>Back to queue</Button></div>;
 
   const handleVerifyCurrentDoc = () => {
     verifyDocument(
@@ -228,6 +222,9 @@ export const DocumentWorkbench: React.FC = () => {
               </div>
             </div>
 
+            {!isDemoMode ? <div className="p-4">
+              {activeDoc.downloadUrl ? <iframe title="Uploaded document" src={activeDoc.downloadUrl} className="w-full min-h-[460px]" /> : <p>Document preview unavailable. Refresh to retry.</p>}
+            </div> : <>
             {/* High-Fidelity Scanned Document Canvas */}
             <div className="flex-1 p-6 flex items-center justify-center overflow-auto bg-slate-950/50">
               <div
@@ -337,6 +334,7 @@ export const DocumentWorkbench: React.FC = () => {
                 <span>Auto-match: 98.4% Confidence</span>
               </div>
             </div>
+            </>}
           </div>
         </div>
 

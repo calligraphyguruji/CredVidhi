@@ -7,17 +7,18 @@ import {
   Check,
   ExternalLink,
 } from 'lucide-react';
+import { INITIAL_APPLICATIONS } from '../../services/mockData';
 import { useApp } from '../../context/AppContext';
 import { Badge } from '../ui/Badge';
 import { formatCurrency } from '../../utils/financial';
 import { canRoleAccessView } from '../../utils/rbac';
 
 export const ProductPreview: React.FC = () => {
-  const { setActiveView, currentRole, applications, isAuthenticated, addToast } = useApp();
+  const { setActiveView, currentRole, isAuthenticated, addToast } = useApp();
   const [previewTab, setPreviewTab] = useState<'workbench' | 'underwriting' | 'borrower'>('workbench');
   const shouldReduceMotion = useReducedMotion();
 
-  const app = applications[0]; // Reference app-001 (Alex Taylor)
+  const app = INITIAL_APPLICATIONS[0]; // Public illustrative preview, never authenticated borrower state.
 
   return (
     <section className="py-16 md:py-24 bg-white border-b border-slate-200 overflow-hidden">
@@ -33,7 +34,7 @@ export const ProductPreview: React.FC = () => {
         >
           <div>
             <div className="inline-flex items-center gap-2 text-xs font-mono font-semibold uppercase text-orange-700 bg-orange-50 px-2.5 py-1 rounded border border-orange-200 mb-3">
-              <span>UNIFIED OPERATIONAL WORKSPACES</span>
+              <span>Demo Mode — Simulated Data</span>
             </div>
             <h2 className="text-2xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
               A high-density operational cockpit.

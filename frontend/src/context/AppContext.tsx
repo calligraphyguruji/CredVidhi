@@ -20,8 +20,10 @@ import { ToastContainer, type ToastMessage } from '../components/ui/Toast';
 import { applyRouteSEO, resolveViewFromUrl, isPublicRoute } from '../utils/seo';
 import { canRoleAccessView, getDefaultViewForRole, isValidAppView } from '../utils/rbac';
 import {
-  healthApi,
   authApi,
+  clearAuthTokens,
+  auditApi,
+  mapBackendAuditLog,
   AUTH_TOKEN_KEY,
   REFRESH_TOKEN_KEY,
   productsApi,
@@ -29,10 +31,8 @@ import {
   queuesApi,
   documentsApi,
   underwritingApi,
-  auditApi,
   mapBackendProduct,
   mapBackendApplication,
-  mapBackendAuditLog,
 } from '../services/api';
 
 interface AppContextType {
@@ -52,7 +52,10 @@ interface AppContextType {
   setSelectedDocId: (id: string | null) => void;
   // Authentication & Session
   isAuthenticated: boolean;
-  login: (role: UserRole, userEmail?: string, redirectView?: string) => void;
+  login: (email: string, password: string) => Promise<void>;
+  beginDemo: () => void;
+  isDemoMode: boolean;
+  dataError: string | null;
   logout: (redirectView?: string) => Promise<void>;
   // Backend Live Connectivity
   isBackendConnected: boolean;
@@ -75,7 +78,7 @@ interface AppContextType {
     personal: any;
     financial: any;
     uploadedDocs: Array<{ title: string; filename: string; size: number }>;
-  }) => string;
+  }) => Promise<string>;
   verifyDocument: (
     applicationId: string,
     documentId: string,
@@ -99,7 +102,7 @@ interface AppContextType {
       rejectionReasonCode?: string;
       underwriterNotes: string;
     }
-  ) => void;
+  ) => Promise<void>;
   users: User[];
   addLoanProduct: (product: Omit<LoanProduct, 'id'>) => void;
   updateLoanProduct: (id: string, updates: Partial<LoanProduct>) => void;
@@ -113,7 +116,6 @@ interface AppContextType {
     phone?: string;
     pan?: string;
   }) => Promise<{ success: boolean; error?: string }>;
-  provisionInitialApplication: (user: User, phone: string, dob?: string) => LoanApplication;
   resetAllData: () => void;
 }
 
@@ -154,66 +156,42 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'));
   };
 
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
-    const hasToken = typeof window !== 'undefined' && !!localStorage.getItem(AUTH_TOKEN_KEY);
-    const hasAuth = typeof window !== 'undefined' && localStorage.getItem(STORAGE_KEYS.IS_AUTHENTICATED) === 'true';
-    return hasToken || hasAuth;
-  });
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isDemoMode, setIsDemoMode] = useState(false);
+  const demoRef = useRef(false);
+  const sessionVersion = useRef(0);
+  const refreshingSession = useRef<number | null>(null);
+  const [currentRole, setCurrentRole] = useState<UserRole>('APPLICANT');
+  const [users, setUsers] = useState<User[]>([]);
+  const [identity, setIdentity] = useState<User | null>(null);
+  const [products, setProducts] = useState<LoanProduct[]>(INITIAL_PRODUCTS);
+  const currentUser: User = identity || { id: '', email: '', fullName: '', role: 'APPLICANT', isActive: false };
+  const [applications, setApplications] = useState<LoanApplication[]>([]);
+  const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
+  const [dataError, setDataError] = useState<string | null>(null);
 
-  const [currentRole, setCurrentRole] = useState<UserRole>(() => {
-    const saved = localStorage.getItem(STORAGE_KEYS.CURRENT_ROLE);
-    return (saved as UserRole) || 'LOAN_OFFICER';
-  });
+  const clearPrivateData = () => {
+    sessionVersion.current += 1;
+    setApplications([]);
+    setAuditLogs([]);
+    setUsers([]);
+    setIdentity(null);
+    setActiveApplicationId('');
+    setSelectedDocId(null);
+    setToasts([]);
+    for (const key of [STORAGE_KEYS.APPLICATIONS, STORAGE_KEYS.AUDIT_LOGS, STORAGE_KEYS.USERS,
+      STORAGE_KEYS.IS_AUTHENTICATED, STORAGE_KEYS.CURRENT_ROLE, STORAGE_KEYS.PRODUCTS]) localStorage.removeItem(key);
+  };
 
-  const [users, setUsers] = useState<User[]>(() => {
-    const saved = localStorage.getItem(STORAGE_KEYS.USERS);
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch (e) {
-        console.error('Failed to parse cached users', e);
-      }
-    }
-    return INITIAL_USERS;
-  });
-
-  const [products, setProducts] = useState<LoanProduct[]>(() => {
-    const saved = localStorage.getItem(STORAGE_KEYS.PRODUCTS);
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch (e) {
-        console.error('Failed to parse cached products', e);
-      }
-    }
-    return INITIAL_PRODUCTS;
-  });
-
-  const currentUser = users.find((u) => u.role === currentRole) || users[0];
-
-  const [applications, setApplications] = useState<LoanApplication[]>(() => {
-    const saved = localStorage.getItem(STORAGE_KEYS.APPLICATIONS);
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch (e) {
-        console.error('Failed to parse cached applications', e);
-      }
-    }
-    return INITIAL_APPLICATIONS;
-  });
-
-  const [auditLogs, setAuditLogs] = useState<AuditLog[]>(() => {
-    const saved = localStorage.getItem(STORAGE_KEYS.AUDIT_LOGS);
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch (e) {
-        console.error('Failed to parse cached audit logs', e);
-      }
-    }
-    return INITIAL_AUDIT_LOGS;
-  });
+  const applyProfile = (profile: any): User => {
+    const user: User = { id: String(profile.id), email: profile.email, fullName: profile.full_name,
+      role: profile.role, phone: profile.phone_number, isActive: profile.is_active };
+    setIdentity(user);
+    setUsers([user]);
+    setCurrentRole(user.role);
+    setIsAuthenticated(true);
+    return user;
+  };
 
   const [pendingRedirectView, setPendingRedirectViewState] = useState<string | null>(() => {
     if (typeof window === 'undefined') return null;
@@ -235,13 +213,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
-  const [activeApplicationId, setActiveApplicationId] = useState<string>('app-001');
-  const [selectedDocId, setSelectedDocId] = useState<string | null>('doc-002');
+  const [activeApplicationId, setActiveApplicationId] = useState<string>('');
+  const [selectedDocId, setSelectedDocId] = useState<string | null>(null);
   const [activeView, setActiveViewState] = useState<string>(() => {
     const initialView = resolveViewFromUrl();
     const hasToken = typeof window !== 'undefined' && !!localStorage.getItem(AUTH_TOKEN_KEY);
-    const hasAuth = typeof window !== 'undefined' && localStorage.getItem(STORAGE_KEYS.IS_AUTHENTICATED) === 'true';
-    const isAuth = hasToken || hasAuth;
+    const isAuth = hasToken;
     if (!isPublicRoute(initialView) && !isAuth) {
       if (typeof window !== 'undefined') {
         localStorage.setItem(STORAGE_KEYS.PENDING_REDIRECT, initialView);
@@ -268,11 +245,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const setActiveView = (view: string, redirectTarget?: string) => {
-    const isAuthed =
-      isAuthenticated ||
-      (typeof window !== 'undefined' &&
-        (!!localStorage.getItem(AUTH_TOKEN_KEY) ||
-          localStorage.getItem(STORAGE_KEYS.IS_AUTHENTICATED) === 'true'));
+    const isAuthed = isAuthenticated;
 
     if (!isPublicRoute(view) && !isAuthed) {
       const target = redirectTarget || view;
@@ -303,137 +276,154 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setActiveViewState(view);
   };
 
-  const login = (role: UserRole, userEmail?: string, redirectView?: string) => {
-    setIsAuthenticated(true);
-    localStorage.setItem(STORAGE_KEYS.IS_AUTHENTICATED, 'true');
-    setCurrentRole(role);
-    if (userEmail) {
-      const matched = users.find((u) => u.email.toLowerCase() === userEmail.toLowerCase());
-      if (matched) {
-        // user recognized
-      }
-    }
-
-    const target = redirectView || pendingRedirectView;
+  const login = async (email: string, password: string) => {
+    clearPrivateData();
+    demoRef.current = false;
+    setIsDemoMode(false);
+    setIsAuthenticated(false);
+    setDataError(null);
+    const version = sessionVersion.current;
+    await authApi.login(email, password);
+    if (version !== sessionVersion.current) return;
+    const profile = await authApi.getMe();
+    if (version !== sessionVersion.current) return;
+    setIsSyncing(true);
+    const user = applyProfile(profile);
+    const target = pendingRedirectView;
     setPendingRedirectView(null);
-
-    if (target && !isPublicRoute(target)) {
-      if (canRoleAccessView(role, target)) {
-        setActiveViewState(target);
-        return;
-      }
-      // Role not permitted to target view: route to role default and toast warning
-      const fallbackView = getDefaultViewForRole(role);
-      setActiveViewState(fallbackView);
-      addToast({
-        type: 'error',
-        title: 'Access Restricted (RBAC)',
-        message: `Your account (${role}) does not have permission for the requested view. Navigated to your primary workspace.`,
-      });
-      return;
-    }
-
-    if (redirectView) {
-      setActiveViewState(redirectView);
-    } else {
-      setActiveViewState(getDefaultViewForRole(role));
-    }
+    setActiveViewState(target && canRoleAccessView(user.role, target) ? target : getDefaultViewForRole(user.role));
   };
 
   const logout = async (redirectView = 'landing') => {
-    try {
-      if (isBackendConnected) {
-        await authApi.logout();
-      }
-    } catch (err) {
-      console.warn('Backend logout failed:', err);
-    } finally {
-      setIsAuthenticated(false);
-      localStorage.removeItem(STORAGE_KEYS.IS_AUTHENTICATED);
-      localStorage.removeItem(AUTH_TOKEN_KEY);
-      localStorage.removeItem(REFRESH_TOKEN_KEY);
-      localStorage.removeItem(STORAGE_KEYS.PENDING_REDIRECT);
-      setPendingRedirectViewState(null);
-      const safeRedirect = isPublicRoute(redirectView) ? redirectView : 'landing';
-      setActiveViewState(safeRedirect);
-    }
+    const request = demoRef.current ? Promise.resolve() : authApi.logout();
+    clearPrivateData();
+    demoRef.current = false;
+    setIsDemoMode(false);
+    setIsAuthenticated(false);
+    setDataError(null);
+    clearAuthTokens();
+    setPendingRedirectView(null);
+    setActiveViewState(isPublicRoute(redirectView) ? redirectView : 'landing');
+    await request.catch(() => undefined);
   };
 
-  const [isBackendConnected, setIsBackendConnected] = useState<boolean>(false);
+  const beginDemo = () => {
+    clearPrivateData();
+    clearAuthTokens();
+    demoRef.current = true;
+    setIsDemoMode(true);
+    setIsBackendConnected(false);
+    setIsSyncing(false);
+    setDataError(null);
+    setUsers(structuredClone(INITIAL_USERS));
+    setIdentity(INITIAL_USERS.find(u => u.role === 'LOAN_OFFICER')!);
+    setCurrentRole('LOAN_OFFICER');
+    setApplications(structuredClone(INITIAL_APPLICATIONS));
+    setProducts(structuredClone(INITIAL_PRODUCTS));
+    setAuditLogs(structuredClone(INITIAL_AUDIT_LOGS));
+    setActiveApplicationId(INITIAL_APPLICATIONS[0]?.id || '');
+    setIsAuthenticated(true);
+    setActiveViewState('officer-queue');
+  };
+
+  const [isBackendConnected, setIsBackendConnected] = useState(false);
   const [backendHealth, setBackendHealth] = useState<{ database: boolean; redis: boolean } | null>(null);
-  const [isSyncing, setIsSyncing] = useState<boolean>(false);
+  const [isSyncing, setIsSyncing] = useState(true);
 
   const refreshFromBackend = async () => {
+    if (demoRef.current) { setIsSyncing(false); return; }
+    const version = sessionVersion.current;
+    const token = localStorage.getItem(AUTH_TOKEN_KEY);
+    const isCurrent = () => version === sessionVersion.current && token === localStorage.getItem(AUTH_TOKEN_KEY) && !demoRef.current;
+    if (!token) { setIsSyncing(false); return; }
+    refreshingSession.current = version;
+    setIsSyncing(true);
+    setDataError(null);
     try {
-      setIsSyncing(true);
-      const ready = await healthApi.checkReady();
-      setIsBackendConnected(ready.status === 'READY');
+      const profile: any = await authApi.getMe();
+      if (!isCurrent()) return;
+      applyProfile(profile);
+      const catalog = (await productsApi.list()).map(mapBackendProduct);
+      if (!isCurrent()) return;
+      const summaries: any[] = [];
+      for (let offset = 0; ; offset += 100) {
+        const page = profile.role === 'APPLICANT' ? await queuesApi.getApplicantQueue(100, offset)
+          : profile.role === 'RISK_ANALYST' ? await queuesApi.getUnderwriterQueue(100, offset)
+          : await queuesApi.getOfficerQueue(100, offset);
+        if (!isCurrent()) return;
+        summaries.push(...page);
+        if (page.length < 100) break;
+      }
+      const loadRecord = async (summary: any): Promise<LoanApplication> => {
+        const app = await applicationsApi.getById(summary.id);
+        if (!isCurrent()) throw new Error('Session changed.');
+        if (profile.role === 'APPLICANT' && String(app.applicant_id) !== String(profile.id)) throw new Error('Unexpected application ownership.');
+        app.documents = await documentsApi.list(app.id);
+        if (!isCurrent()) throw new Error('Session changed.');
+        for (const [key, fetcher, missing] of [
+          ['risk_assessment', underwritingApi.getAssessment, 'ASSESSMENT_NOT_FOUND'],
+          ['decision', underwritingApi.getDecision, 'DECISION_NOT_FOUND'],
+        ] as const) {
+          if (!isCurrent()) throw new Error('Session changed.');
+          try { app[key] = await fetcher(app.id); }
+          catch (err: any) { if (err.code !== missing) throw err; }
+        }
+        const product = catalog.find(p => p.id === String(app.product_id));
+        if (!product) throw new Error('Loan product information is unavailable.');
+        return mapBackendApplication(app, product);
+      };
+      const records: LoanApplication[] = [];
+      for (let offset = 0; offset < summaries.length; offset += 4) {
+        if (!isCurrent()) return;
+        records.push(...await Promise.all(summaries.slice(offset, offset + 4).map(loadRecord)));
+      }
+      if (!isCurrent()) return;
+      if (profile.role === 'ADMIN') {
+        const logs = await auditApi.getLogs({ limit: 100 });
+        if (!isCurrent()) return;
+        setAuditLogs(logs.items.map(mapBackendAuditLog));
+      }
+      setProducts(catalog);
+      setApplications(records);
+      setIsBackendConnected(true);
       setBackendHealth({ database: true, redis: false });
-
-      // Optionally inspect detailed dependencies without failing on degraded Redis
-      healthApi.checkDetailed().then((detailed) => {
-        const isDbUp = detailed?.dependencies?.database === 'UP';
-        const isRedisUp = detailed?.dependencies?.redis === 'UP';
-        setBackendHealth({ database: isDbUp, redis: isRedisUp });
-      }).catch(() => {
-        // Redis degraded or offline, database operational
-      });
-
-      // Synchronize catalog products from live backend
-      try {
-        const liveProducts = await productsApi.list();
-        if (Array.isArray(liveProducts) && liveProducts.length > 0) {
-          setProducts(liveProducts.map(mapBackendProduct));
-        }
-      } catch (err) {
-        console.warn('Backend products fetch failed, using local products catalog', err);
-      }
-
-      // Synchronize queue applications from live backend (non-destructively merge)
-      try {
-        const liveApps = await queuesApi.getOfficerQueue();
-        if (Array.isArray(liveApps) && liveApps.length > 0) {
-          setApplications((prev) => {
-            const liveMap = new Map(liveApps.map((a: any) => [String(a.id), a]));
-            const updated = prev.map((app) => {
-              const live = liveMap.get(app.id);
-              if (!live) return app;
-              liveMap.delete(app.id);
-              return { ...app, status: live.status, requestedAmount: Number(live.requested_amount) };
-            });
-            for (const [, newApp] of liveMap) {
-              updated.push(mapBackendApplication(newApp));
-            }
-            return updated;
-          });
-        }
-      } catch (err) {
-        console.warn('Backend officer queue fetch failed, using local applications', err);
-      }
-
-      // Synchronize immutable audit logs from live backend
-      try {
-        const liveLogs = await auditApi.getLogs({ limit: 50 });
-        if (liveLogs && Array.isArray(liveLogs.items) && liveLogs.items.length > 0) {
-          setAuditLogs(liveLogs.items.map(mapBackendAuditLog));
-        }
-      } catch (err) {
-        console.warn('Backend audit logs fetch failed, using local audit ledger', err);
-      }
-    } catch {
-      // Backend is offline or unreachable - gracefully operate in autonomous local mode
+    } catch (err: any) {
+      if (!isCurrent()) return;
+      setApplications([]);
+      setAuditLogs([]);
       setIsBackendConnected(false);
-      setBackendHealth(null);
+      setDataError(err.message || 'Unable to load your account. Please retry.');
+      if (err.statusCode === 401 || err.statusCode === 403) {
+        clearPrivateData();
+        localStorage.removeItem(AUTH_TOKEN_KEY);
+        localStorage.removeItem(REFRESH_TOKEN_KEY);
+        setIsAuthenticated(false);
+        setActiveViewState('login-borrower');
+      }
     } finally {
-      setIsSyncing(false);
+      if (refreshingSession.current === version) refreshingSession.current = null;
+      if (isCurrent()) setIsSyncing(false);
     }
   };
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      void refreshFromBackend();
-    }, 0);
+    for (const key of [STORAGE_KEYS.APPLICATIONS, STORAGE_KEYS.AUDIT_LOGS, STORAGE_KEYS.USERS, STORAGE_KEYS.IS_AUTHENTICATED]) localStorage.removeItem(key);
+    const timer = setTimeout(() => { if (refreshingSession.current !== sessionVersion.current) void refreshFromBackend(); }, 0);
     return () => clearTimeout(timer);
+  }, [isAuthenticated]);
+
+  useEffect(() => {
+    const onStorage = (event: StorageEvent) => {
+      if (event.key === AUTH_TOKEN_KEY) {
+        clearPrivateData();
+        setIsAuthenticated(false);
+        setActiveViewState('login');
+      }
+    };
+    const expire = () => { void logout('login-borrower'); };
+    window.addEventListener('storage', onStorage);
+    window.addEventListener('credvidhi:session-expired', expire);
+    return () => { window.removeEventListener('storage', onStorage); window.removeEventListener('credvidhi:session-expired', expire); };
   }, []);
 
   // Dynamic Route SEO and Meta Tag Synchronization
@@ -448,11 +438,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   useEffect(() => {
     const handlePopState = (event: PopStateEvent) => {
       const targetView = (event.state && event.state.view) || resolveViewFromUrl();
-      const isAuthed =
-        isAuthenticated ||
-        (typeof window !== 'undefined' &&
-          (!!localStorage.getItem(AUTH_TOKEN_KEY) ||
-            localStorage.getItem(STORAGE_KEYS.IS_AUTHENTICATED) === 'true'));
+      const isAuthed = isAuthenticated;
       if (!isPublicRoute(targetView) && !isAuthed) {
         setActiveViewState('register');
       } else if (isAuthed && !isPublicRoute(targetView) && !canRoleAccessView(currentRole, targetView)) {
@@ -470,27 +456,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return () => window.removeEventListener('popstate', handlePopState);
   }, [isAuthenticated, currentRole]);
 
-  // Sync to localStorage
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEYS.APPLICATIONS, JSON.stringify(applications));
-  }, [applications]);
-
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEYS.AUDIT_LOGS, JSON.stringify(auditLogs));
-  }, [auditLogs]);
-
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEYS.CURRENT_ROLE, currentRole);
-  }, [currentRole]);
-
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(products));
-  }, [products]);
-
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(users));
-  }, [users]);
-
   const addAuditLog = (entry: Omit<AuditLog, 'id' | 'timestamp' | 'actorId' | 'actorName' | 'actorRole'>) => {
     const newLog: AuditLog = {
       id: `log-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
@@ -504,30 +469,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const switchRole = (role: UserRole, targetView?: string) => {
-    const isAuthed =
-      isAuthenticated ||
-      (typeof window !== 'undefined' &&
-        (!!localStorage.getItem(AUTH_TOKEN_KEY) ||
-          localStorage.getItem(STORAGE_KEYS.IS_AUTHENTICATED) === 'true'));
-    if (!isAuthed) {
-      setActiveViewState('register');
-      return;
-    }
+    if (!demoRef.current) return;
     setCurrentRole(role);
-    if (targetView) {
-      if (canRoleAccessView(role, targetView)) {
-        setActiveViewState(targetView);
-      } else {
-        setActiveViewState(getDefaultViewForRole(role));
-        addToast({
-          type: 'error',
-          title: 'Access Restricted (RBAC)',
-          message: `Role ${role} is not permitted to access ${targetView}. Navigated to default view.`,
-        });
-      }
-      return;
-    }
-    setActiveViewState(getDefaultViewForRole(role));
+    setIdentity(INITIAL_USERS.find(u => u.role === role)!);
+    setActiveViewState(targetView && canRoleAccessView(role, targetView) ? targetView : getDefaultViewForRole(role));
   };
 
   const transitionApplicationStatus = (
@@ -535,6 +480,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     nextStatus: ApplicationStatus,
     notes: string
   ) => {
+    if (!demoRef.current) {
+      const version = sessionVersion.current;
+      void applicationsApi.transition(applicationId, nextStatus, notes).then(() => { if (version === sessionVersion.current) return refreshFromBackend(); })
+        .catch((err: any) => { if (version === sessionVersion.current) addToast({ type: 'error', title: 'Request failed', message: err.message || 'Please retry.' }); });
+      return;
+    }
     setApplications((prev) =>
       prev.map((app) => {
         if (app.id !== applicationId) return app;
@@ -567,6 +518,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     status: 'VERIFIED' | 'DEFICIENT',
     remarks: string
   ) => {
+    if (!demoRef.current) {
+      const version = sessionVersion.current;
+      void documentsApi.verify(documentId, status, remarks).then(() => { if (version === sessionVersion.current) return refreshFromBackend(); })
+        .catch((err: any) => { if (version === sessionVersion.current) addToast({ type: 'error', title: 'Request failed', message: err.message || 'Please retry.' }); });
+      return;
+    }
     setApplications((prev) =>
       prev.map((app) => {
         if (app.id !== applicationId) return app;
@@ -638,6 +595,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const runRiskAssessment = (applicationId: string) => {
+    if (!demoRef.current) {
+      const version = sessionVersion.current;
+      void underwritingApi.evaluate(applicationId).then(() => { if (version === sessionVersion.current) return refreshFromBackend(); })
+        .catch((err: any) => { if (version === sessionVersion.current) addToast({ type: 'error', title: 'Request failed', message: err.message || 'Please retry.' }); });
+      return;
+    }
     setApplications((prev) =>
       prev.map((app) => {
         if (app.id !== applicationId) return app;
@@ -658,9 +621,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         // Deterministic Score Calculation (0 - 1000)
         let score = 500;
         // Credit score contribution
-        if (app.financial.creditScoreDeclared >= 750) score += 250;
-        else if (app.financial.creditScoreDeclared >= 680) score += 180;
-        else if (app.financial.creditScoreDeclared >= 620) score += 80;
+        if ((app.financial.creditScoreDeclared ?? 0) >= 750) score += 250;
+        else if ((app.financial.creditScoreDeclared ?? 0) >= 680) score += 180;
+        else if ((app.financial.creditScoreDeclared ?? 0) >= 620) score += 80;
 
         // DTI contribution
         if (dti <= 30) score += 150;
@@ -697,7 +660,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             name: 'Credit Score',
             evaluated: `${app.financial.creditScoreDeclared}`,
             threshold: '>= 650',
-            status: app.financial.creditScoreDeclared >= 650 ? 'PASS' : 'FAIL',
+            status: (app.financial.creditScoreDeclared ?? 0) >= 650 ? 'PASS' : 'FAIL',
           },
           {
             name: 'Employment Tenure',
@@ -756,7 +719,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
-  const recordUnderwritingDecision = (
+  const recordUnderwritingDecision = async (
     applicationId: string,
     decision: 'APPROVED' | 'REJECTED' | 'CONDITIONAL',
     payload: {
@@ -768,6 +731,20 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       underwriterNotes: string;
     }
   ) => {
+    if (!demoRef.current) {
+      const version = sessionVersion.current;
+      try {
+        await underwritingApi.recordDecision(applicationId, { decision, approved_amount: payload.approvedAmount,
+          approved_apr: payload.approvedApr, approved_tenor_months: payload.approvedTenorMonths,
+          conditions: payload.conditions, rejection_reason_code: payload.rejectionReasonCode, underwriter_notes: payload.underwriterNotes });
+        if (version !== sessionVersion.current) throw new Error('Session changed. Please sign in again.');
+        await refreshFromBackend();
+      } catch (err: any) {
+        if (version === sessionVersion.current) addToast({ type: 'error', title: 'Request failed', message: err.message || 'Please retry.' });
+        throw err;
+      }
+      return;
+    }
     setApplications((prev) =>
       prev.map((app) => {
         if (app.id !== applicationId) return app;
@@ -835,7 +812,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
-  const submitNewApplication = (data: {
+  const submitNewApplication = async (data: {
     productId: string;
     requestedAmount: number;
     requestedTenorMonths: number;
@@ -844,6 +821,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     financial: any;
     uploadedDocs: Array<{ title: string; filename: string; size: number }>;
   }) => {
+    if (!demoRef.current) {
+      if (!isAuthenticated || currentRole !== 'APPLICANT') throw new Error('Please sign in as a borrower.');
+      const version = sessionVersion.current;
+      const draft = await applicationsApi.createDraft({ product_id: data.productId,
+        requested_amount: data.requestedAmount, requested_tenor_months: data.requestedTenorMonths, purpose: data.purpose });
+      await applicationsApi.updateDraft(draft.id, { applicant_personal_snapshot: data.personal,
+        applicant_financial_snapshot: data.financial });
+      const submitted = await applicationsApi.submit(draft.id);
+      if (version !== sessionVersion.current) throw new Error('Session changed. Sign in to view your application.');
+      await refreshFromBackend();
+      return String(submitted.id);
+    }
     const selectedProd = INITIAL_PRODUCTS.find((p) => p.id === data.productId) || INITIAL_PRODUCTS[0];
     const newId = `app-${Date.now().toString().slice(-4)}`;
     const refNumber = `APP-2026-${Math.floor(1000 + Math.random() * 9000)}`;
@@ -958,6 +947,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const addLoanProduct = (newProductData: Omit<LoanProduct, 'id'>) => {
+    if (!demoRef.current) {
+      const version = sessionVersion.current;
+      void productsApi.create({ code: newProductData.code, name: newProductData.name,
+        description: newProductData.description, min_amount: newProductData.minAmount,
+        max_amount: newProductData.maxAmount, min_tenor_months: newProductData.minTenorMonths,
+        max_tenor_months: newProductData.maxTenorMonths, base_apr: newProductData.baseApr,
+        max_dti_ratio: newProductData.maxDtiRatio, required_documents: newProductData.requiredDocuments })
+        .then(() => { if (version === sessionVersion.current) return refreshFromBackend(); })
+        .catch((err: any) => { if (version === sessionVersion.current) addToast({ type: 'error', title: 'Product creation failed', message: err.message || 'Please retry.' }); });
+      return;
+    }
     const newProduct: LoanProduct = {
       ...newProductData,
       id: `prod-${Date.now().toString().slice(-4)}`,
@@ -994,6 +994,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const updateLoanProduct = (id: string, updates: Partial<LoanProduct>) => {
+    if (!demoRef.current) {
+      addToast({ type: 'error', title: 'Action unavailable', message: 'This action is supported only in the Staff Workbench Demo. No records have been changed.' });
+      return;
+    }
     setProducts((prev) =>
       prev.map((p) => {
         if (p.id !== id) return p;
@@ -1013,6 +1017,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const addUser = (userData: Omit<User, 'id'>) => {
+    if (!demoRef.current) {
+      addToast({ type: 'error', title: 'Action unavailable', message: 'This action is supported only in the Staff Workbench Demo. No records have been changed.' });
+      return;
+    }
     const newUser: User = {
       ...userData,
       id: `usr-${Date.now().toString().slice(-4)}`,
@@ -1030,6 +1038,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const updateUser = (id: string, updates: Partial<User>) => {
+    if (!demoRef.current) {
+      addToast({ type: 'error', title: 'Action unavailable', message: 'This action is supported only in the Staff Workbench Demo. No records have been changed.' });
+      return;
+    }
     setUsers((prev) =>
       prev.map((u) => {
         if (u.id !== id) return u;
@@ -1048,153 +1060,30 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     });
   };
 
-  const provisionInitialApplication = (
-    user: User,
-    phone: string,
-    dob?: string
-  ): LoanApplication => {
-    const existing = applications.find(
-      (a) => a.applicantId === user.id || a.personal.email.toLowerCase() === user.email.toLowerCase()
-    );
-    if (existing) return existing;
-
-    const selectedProd = products[0] || INITIAL_PRODUCTS[0];
-    const newRef = `APP-2026-${Math.floor(1000 + Math.random() * 9000)}`;
-    const newApp: LoanApplication = {
-      id: `app-reg-${Date.now().toString().slice(-6)}`,
-      referenceNumber: newRef,
-      applicantId: user.id,
-      productId: selectedProd.id,
-      product: selectedProd,
-      assignedOfficerId: 'usr-officer-1',
-      assignedOfficerName: 'David Vance',
-      status: 'SUBMITTED',
-      requestedAmount: 250000,
-      requestedTenorMonths: 24,
-      purpose: 'Personal Loan Self-Registration',
-      personal: {
-        fullName: user.fullName,
-        email: user.email,
-        phone: phone || user.phone || '',
-        dateOfBirth: dob || '',
-        residentialAddress: 'Primary Residential Address',
-        taxIdMasked: '******1234F',
-      },
-      financial: {
-        employmentType: 'SALARIED',
-        employerName: 'Declared Employer',
-        jobTitle: 'Professional',
-        yearsEmployed: 3.0,
-        grossMonthlyIncome: 85000,
-        existingMonthlyDebt: 10000,
-        housingExpense: 18000,
-        creditScoreDeclared: 750,
-      },
-      documents: [],
-      submittedAt: new Date().toISOString(),
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-
-    setApplications((prev) => {
-      const nextApps = [newApp, ...prev.filter((a) => a.applicantId !== user.id && a.personal.email.toLowerCase() !== user.email.toLowerCase())];
-      localStorage.setItem(STORAGE_KEYS.APPLICATIONS, JSON.stringify(nextApps));
-      return nextApps;
-    });
-    return newApp;
-  };
-
   const registerApplicant = async (payload: {
-    email: string;
-    password: string;
-    firstName: string;
-    lastName: string;
-    phone?: string;
-    pan?: string;
+    email: string; password: string; firstName: string; lastName: string; phone?: string; pan?: string;
   }): Promise<{ success: boolean; error?: string }> => {
+    clearPrivateData();
+    demoRef.current = false;
+    setIsDemoMode(false);
+    setIsAuthenticated(false);
+    setDataError(null);
+    clearAuthTokens();
+    const version = sessionVersion.current;
     try {
-      let backendUserId: string | undefined;
-      if (isBackendConnected) {
-        const res = await authApi.register({
-          email: payload.email,
-          password: payload.password,
-          first_name: payload.firstName,
-          last_name: payload.lastName,
-          phone_number: payload.phone,
-          pan_number: payload.pan,
-        });
-        if (res && (res as any).access_token) {
-          localStorage.setItem(AUTH_TOKEN_KEY, (res as any).access_token);
-          if ((res as any).refresh_token) {
-            localStorage.setItem(REFRESH_TOKEN_KEY, (res as any).refresh_token);
-          }
-        }
-        if (res && (res as any).id) {
-          backendUserId = String((res as any).id);
-        }
-      }
-
-      const fullName = `${payload.firstName} ${payload.lastName}`.trim();
-      const existingUser = users.find((u) => u.email.toLowerCase() === payload.email.toLowerCase());
-      if (existingUser && !isBackendConnected) {
-        return { success: false, error: 'An account with this email address already exists.' };
-      }
-
-      const newUser: User = {
-        id: backendUserId || `usr-${Date.now().toString().slice(-4)}`,
-        email: payload.email,
-        fullName,
-        role: 'APPLICANT',
-        phone: payload.phone,
-        isActive: true,
-      };
-
-      // Prepend so newUser becomes the active user for APPLICANT role
-      setUsers((prev) => {
-        const nextUsers = [newUser, ...prev.filter((u) => u.email.toLowerCase() !== newUser.email.toLowerCase())];
-        localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(nextUsers));
-        return nextUsers;
-      });
-
-      // Automatically provision initial loan application with reference number for this borrower
-      const initialApp = provisionInitialApplication(
-        newUser,
-        payload.phone || '',
-        (payload as any).dateOfBirth || ''
-      );
-      setActiveApplicationId(initialApp.id);
-
-      setCurrentRole('APPLICANT');
-      setIsAuthenticated(true);
-      localStorage.setItem(STORAGE_KEYS.IS_AUTHENTICATED, 'true');
-      addAuditLog({
-        eventType: 'USER_REGISTERED',
-        notes: `Borrower self-registration: '${fullName}' (${payload.email}) registered with Docket ${initialApp.referenceNumber}.`,
-      });
-      // Determine target redirect after registration
-      const target = pendingRedirectView;
+      const res: any = await authApi.register({ email: payload.email, password: payload.password,
+        first_name: payload.firstName, last_name: payload.lastName, phone_number: payload.phone, pan_number: payload.pan });
+      if (version !== sessionVersion.current) return { success: false, error: 'Session changed. Please sign in.' };
+      localStorage.setItem(AUTH_TOKEN_KEY, res.access_token);
+      localStorage.setItem(REFRESH_TOKEN_KEY, res.refresh_token);
+      const profile = await authApi.getMe();
+      if (version !== sessionVersion.current) return { success: false, error: 'Session changed. Please sign in.' };
+      setIsSyncing(true);
+      applyProfile(profile);
       setPendingRedirectView(null);
-
-      if (target && !isPublicRoute(target)) {
-        if (canRoleAccessView('APPLICANT', target)) {
-          setActiveViewState(target);
-        } else {
-          setActiveViewState('borrower-portal');
-          addToast({
-            type: 'error',
-            title: 'Access Restricted (RBAC)',
-            message: 'Your applicant account is not authorized for that staff workspace. Navigated to borrower portal.',
-          });
-        }
-      } else {
-        setActiveViewState('borrower-portal');
-      }
-
+      setActiveViewState('borrower-portal');
       return { success: true };
-    } catch (err: any) {
-      const msg = err?.message || 'Registration failed. Please check your details.';
-      return { success: false, error: msg };
-    }
+    } catch (err: any) { return { success: false, error: err.message || 'Registration failed. Please retry.' }; }
   };
 
   const resetAllData = () => {
@@ -1205,14 +1094,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     localStorage.removeItem(STORAGE_KEYS.USERS);
     localStorage.removeItem(STORAGE_KEYS.IS_AUTHENTICATED);
     localStorage.removeItem(STORAGE_KEYS.PENDING_REDIRECT);
-    localStorage.removeItem(AUTH_TOKEN_KEY);
-    localStorage.removeItem(REFRESH_TOKEN_KEY);
+    clearAuthTokens();
     setPendingRedirectViewState(null);
     setIsAuthenticated(false);
-    setApplications(INITIAL_APPLICATIONS);
-    setAuditLogs(INITIAL_AUDIT_LOGS);
+    clearPrivateData();
+    demoRef.current = false;
+    setIsDemoMode(false);
+    setApplications([]);
+    setAuditLogs([]);
     setProducts(INITIAL_PRODUCTS);
-    setUsers(INITIAL_USERS);
+    setUsers([]);
     setCurrentRole('LOAN_OFFICER');
     setActiveApplicationId('app-001');
     setActiveViewState('landing');
@@ -1263,10 +1154,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         addUser,
         updateUser,
         registerApplicant,
-        provisionInitialApplication,
+        beginDemo,
+        isDemoMode,
+        dataError,
         resetAllData,
       }}
     >
+      {isDemoMode && <div role="status" className="bg-orange-100 text-orange-950 px-4 py-2 text-center text-sm">Demo Mode — Simulated Data</div>}
       {children}
       <ToastContainer toasts={toasts} onDismiss={dismissToast} />
     </AppContext.Provider>

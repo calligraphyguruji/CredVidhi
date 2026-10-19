@@ -12,6 +12,7 @@ from typing import Optional
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession
 
+from app.config import get_settings
 from app.core.logging import logger
 from app.core.security import get_password_hash
 from app.database import async_session_factory, engine
@@ -119,6 +120,12 @@ async def seed_data(
     engine_to_use: Optional[AsyncEngine] = None,
 ) -> None:
     """Seed initial records into database."""
+
+    settings = get_settings()
+    if settings.ENVIRONMENT.lower() not in ("development", "test") or (
+        settings.ENVIRONMENT.lower() != "test" and not settings.ENABLE_DEMO_SEED
+    ):
+        raise RuntimeError("Demo seeding is allowed only in an explicitly enabled development database or tests.")
 
     async def _do_seed(s: AsyncSession) -> None:
         # Fast idempotency check: if admin and benchmark applications exist, exit immediately

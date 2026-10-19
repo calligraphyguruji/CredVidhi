@@ -11,6 +11,9 @@ from sqlalchemy.pool import StaticPool
 # Set testing environment variable before app import
 os.environ["ENVIRONMENT"] = "test"
 os.environ["DEBUG"] = "true"
+os.environ["DATABASE_URL"] = "sqlite+aiosqlite:///:memory:"
+os.environ["REDIS_URL"] = "redis://127.0.0.1:1/0"
+os.environ["MINIO_ENDPOINT"] = "127.0.0.1:1"
 
 from app.database import get_db
 from app.main import app
@@ -88,3 +91,15 @@ async def async_client() -> AsyncGenerator[AsyncClient, None]:
     async with AsyncClient(transport=transport, base_url="http://testserver") as client:
         yield client
     app.dependency_overrides.clear()
+
+
+@pytest.fixture(autouse=True)
+def mock_document_storage(monkeypatch):
+    """Explicit test-only object storage; production never falls back to fake uploads."""
+    from unittest.mock import AsyncMock
+    from app.services.storage_service import storage_service
+
+    monkeypatch.setattr(storage_service, "upload_file_bytes", AsyncMock(return_value=None))
+    monkeypatch.setattr(storage_service, "check_object_exists", AsyncMock(return_value=True))
+    monkeypatch.setattr(storage_service, "generate_presigned_upload_url", AsyncMock(return_value="https://storage.example.test/upload"))
+    monkeypatch.setattr(storage_service, "generate_presigned_download_url", AsyncMock(return_value="https://storage.example.test/download"))

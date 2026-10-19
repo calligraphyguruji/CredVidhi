@@ -7,6 +7,7 @@ import type { UserRole } from '../../types';
 export const Header: React.FC = () => {
   const {
     currentUser,
+    isDemoMode,
     currentRole,
     switchRole,
     applications,
@@ -24,8 +25,8 @@ export const Header: React.FC = () => {
   const [showNotifications, setShowNotifications] = useState(false);
 
   const activeApp = applications.find((a) => a.id === activeApplicationId) || applications[0] || {
-    referenceNumber: 'CV-STANDBY',
-    status: 'DRAFT',
+    referenceNumber: 'No application selected',
+    status: '—',
   };
 
   const roles: { role: UserRole; label: string }[] = [
@@ -36,9 +37,9 @@ export const Header: React.FC = () => {
   ];
 
   return (
-    <header className="fixed top-0 left-64 right-0 z-20 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 h-14 flex items-center justify-between px-6 select-none transition-colors">
+    <header className="fixed top-0 left-0 md:left-64 right-0 z-20 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 h-14 flex items-center justify-between px-6 select-none transition-colors">
       {/* Left: Active File Breadcrumb & Status */}
-      <div className="flex items-center gap-3">
+      <div className="hidden sm:flex items-center gap-3">
         <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-950/70 px-2.5 py-1 rounded border border-slate-200 dark:border-slate-800">
           <span className="font-mono text-xs font-semibold text-slate-800 dark:text-slate-200 uppercase">
             {activeApp.referenceNumber}
@@ -50,7 +51,7 @@ export const Header: React.FC = () => {
           aria-label={
             isBackendConnected
               ? 'Connected to FastAPI backend. Click to re-sync.'
-              : 'Operating in Local Mode. Click to probe backend.'
+              : 'Account data unavailable. Click to retry.'
           }
           onClick={() => {
             if (!isSyncing) void refreshFromBackend();
@@ -58,7 +59,7 @@ export const Header: React.FC = () => {
           title={
             isBackendConnected
               ? 'Connected to FastAPI REST Backend (:8000). Click to re-sync.'
-              : 'Operating in Local Autonomous Engine Mode. Click to probe backend.'
+              : 'Account data unavailable. Click to retry.'
           }
           className={`flex items-center gap-1.5 text-xs font-mono px-2 py-0.5 rounded transition-colors ${
             isSyncing ? 'cursor-not-allowed opacity-75' : 'cursor-pointer'
@@ -77,7 +78,7 @@ export const Header: React.FC = () => {
                 : 'bg-slate-400'
             }`}
           />
-          <span>{isBackendConnected ? (isSyncing ? 'Syncing...' : 'Live API') : 'Local Mode'}</span>
+          <span>{isBackendConnected ? (isSyncing ? 'Syncing...' : 'Live API') : (isDemoMode ? 'Demo Mode — Simulated Data' : 'Unavailable')}</span>
         </button>
       </div>
 
@@ -86,7 +87,7 @@ export const Header: React.FC = () => {
         <span className="text-[10px] font-mono uppercase text-slate-600 dark:text-slate-400 px-2 font-semibold">
           Role Persona:
         </span>
-        {roles.map((r) => {
+        {(isDemoMode ? roles : roles.filter(r => r.role === currentRole)).map((r) => {
           const isCurrent = currentRole === r.role;
           return (
             <button
@@ -139,7 +140,7 @@ export const Header: React.FC = () => {
             className="relative p-1.5 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 rounded hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
           >
             <Bell className="w-4 h-4" />
-            <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-orange-600 ring-2 ring-white dark:ring-slate-900"></span>
+            {auditLogs.length > 0 && <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-orange-600 ring-2 ring-white dark:ring-slate-900"></span>}
           </motion.button>
 
           <AnimatePresence>
@@ -160,7 +161,7 @@ export const Header: React.FC = () => {
                 </div>
                 <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
                   {auditLogs.length === 0 ? (
-                    <p className="text-xs text-slate-400 py-3 text-center">No recent audit activity.</p>
+                    <p className="text-xs text-slate-400 py-3 text-center">No recent activity.</p>
                   ) : (
                     auditLogs.slice(0, 4).map((log) => (
                       <div key={log.id} className="text-left p-2 rounded bg-slate-50 dark:bg-slate-950/60 hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-colors">

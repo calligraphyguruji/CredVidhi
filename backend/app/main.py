@@ -57,6 +57,13 @@ def create_application() -> FastAPI:
         allow_headers=["*"],
     )
 
+    # Storage failures must never be presented as successful document uploads.
+    from app.services.storage_service import StorageUnavailableError
+
+    @app.exception_handler(StorageUnavailableError)
+    async def storage_exception_handler(request: Request, exc: StorageUnavailableError) -> JSONResponse:
+        return error_response(code="STORAGE_UNAVAILABLE", message=str(exc), status_code=503)
+
     # Exception Handlers
     @app.exception_handler(StarletteHTTPException)
     async def http_exception_handler(request: Request, exc: StarletteHTTPException) -> JSONResponse:

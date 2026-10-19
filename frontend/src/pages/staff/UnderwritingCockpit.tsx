@@ -45,7 +45,7 @@ export const UnderwritingCockpit: React.FC = () => {
   );
   const [underwriterNotes, setUnderwriterNotes] = useState<string>(
     application.decision?.underwriterNotes ||
-      'Applicant satisfies risk criteria with low DTI, verified income, and prime credit history.'
+      ''
   );
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -55,19 +55,21 @@ export const UnderwritingCockpit: React.FC = () => {
     runRiskAssessment(application.id);
   };
 
-  const handleCommitDecision = () => {
+  const handleCommitDecision = async () => {
+    if (isSubmitting) return;
     setIsSubmitting(true);
-    setTimeout(() => {
-      recordUnderwritingDecision(application.id, selectedDecision, {
+    setShowSuccessBanner(false);
+    try {
+      await recordUnderwritingDecision(application.id, selectedDecision, {
         approvedAmount: selectedDecision !== 'REJECTED' ? approvedAmount : undefined,
         approvedApr: selectedDecision !== 'REJECTED' ? approvedApr : undefined,
         approvedTenorMonths: selectedDecision !== 'REJECTED' ? approvedTenor : undefined,
         rejectionReasonCode: selectedDecision === 'REJECTED' ? rejectionCode : undefined,
         underwriterNotes,
       });
-      setIsSubmitting(false);
       setShowSuccessBanner(true);
-    }, 400);
+    } catch { /* The context displays the server error; no success is shown. */ }
+    finally { setIsSubmitting(false); }
   };
 
   const isHighValue = approvedAmount > 500000;
@@ -146,12 +148,12 @@ export const UnderwritingCockpit: React.FC = () => {
             Credit Score
           </div>
           <div className="text-2xl font-bold font-mono text-slate-900 dark:text-slate-100 mt-1">
-            <AnimatedCounter value={application.financial.creditScoreDeclared} duration={0.6} />
+            {application.financial.creditScoreDeclared == null ? 'Not Available' : <AnimatedCounter value={application.financial.creditScoreDeclared} duration={0.6} />}
           </div>
           <div className="mt-1">
-            <Badge status={application.financial.creditScoreDeclared >= 750 ? 'LOW' : 'MEDIUM'} size="sm">
-              {application.financial.creditScoreDeclared >= 750 ? 'PRIME (750+)' : 'STANDARD'}
-            </Badge>
+            {application.financial.creditScoreDeclared != null && <Badge status={(application.financial.creditScoreDeclared ?? 0) >= 750 ? 'LOW' : 'MEDIUM'} size="sm">
+              {(application.financial.creditScoreDeclared ?? 0) >= 750 ? 'PRIME (750+)' : 'STANDARD'}
+            </Badge>}
           </div>
         </motion.div>
 

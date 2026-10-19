@@ -104,6 +104,9 @@ async def evaluate_application_risk(
             message=e.message,
             status_code=status.HTTP_400_BAD_REQUEST,
         )
+    except ValueError as exc:
+        await db.rollback()
+        return error_response(code="INCOMPLETE_FINANCIAL_DATA", message=str(exc), status_code=422)
     except Exception as e:
         await db.rollback()
         logger.error(f"Error evaluating risk for application {app_id}: {e}", exc_info=True)

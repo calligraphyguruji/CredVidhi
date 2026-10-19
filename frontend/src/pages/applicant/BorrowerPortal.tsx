@@ -20,10 +20,13 @@ import {
   formatCurrency,
   formatDateTime,
 } from '../../utils/financial';
+import { documentsApi } from '../../services/api';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 
 export const BorrowerPortal: React.FC = () => {
-  const { applications, products, submitNewApplication } = useApp();
+  const { applications: allApplications, products, currentUser, isSyncing, dataError,
+    refreshFromBackend, submitNewApplication } = useApp();
+  const applications = allApplications.filter(a => a.applicantId === currentUser.id);
   const shouldReduceMotion = useReducedMotion();
 
   // Find applicant's current active application
@@ -35,43 +38,71 @@ export const BorrowerPortal: React.FC = () => {
   const [step, setStep] = useState(1);
 
   // Wizard Form State
-  const [selectedProductId, setSelectedProductId] = useState(products[0].id);
+  const [selectedProductId, setSelectedProductId] = useState(products[0]?.id || '');
   const selectedProduct = products.find((p) => p.id === selectedProductId) || products[0];
   const [loanAmount, setLoanAmount] = useState(30000);
   const [tenorMonths, setTenorMonths] = useState(36);
-  const [loanPurpose, setLoanPurpose] = useState('Debt Consolidation');
+  const [loanPurpose, setLoanPurpose] = useState('');
 
   const [personalForm, setPersonalForm] = useState({
-    fullName: 'Jordan Miller',
-    email: 'jordan.miller@example.com',
-    phone: '+1 (555) 621-8899',
-    dateOfBirth: '1992-08-25',
-    residentialAddress: '342 Maple Street, Portland, OR 97201',
-    taxId: '8832',
+    fullName: currentUser.fullName,
+    email: currentUser.email,
+    phone: currentUser.phone || '',
+    dateOfBirth: '',
+    residentialAddress: '',
+    taxId: '',
   });
 
   const [financialForm, setFinancialForm] = useState({
     employmentType: 'SALARIED' as 'SALARIED' | 'SELF_EMPLOYED',
-    employerName: 'Cascade Software Group',
-    jobTitle: 'Frontend Engineer',
-    yearsEmployed: 3.5,
-    grossMonthlyIncome: 8200,
-    existingMonthlyDebt: 1200,
-    housingExpense: 1750,
-    creditScoreDeclared: 745,
+    employerName: '',
+    jobTitle: '',
+    yearsEmployed: 0,
+    grossMonthlyIncome: 0,
+    existingMonthlyDebt: 0,
+    housingExpense: 0,
+    creditScoreDeclared: null as number | null,
   });
 
-  const [uploadedFiles] = useState<
-    Array<{ title: string; filename: string; size: number }>
-  >([
-    { title: 'Government Photo ID', filename: 'Passport_JordanMiller.pdf', size: 1850000 },
-    { title: 'W-2 / Tax Return (2025)', filename: 'W2_CascadeSoftware_2025.pdf', size: 2100000 },
-  ]);
+  const [uploadedFiles] = useState<Array<{ title: string; filename: string; size: number }>>([]);
+  const [declarationConsent, setDeclarationConsent] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [documentType, setDocumentType] = useState('');
+  const declaredScore = financialForm.creditScoreDeclared;
+  const invalidDeclaredScore = declaredScore !== null && (!Number.isInteger(declaredScore) || declaredScore < 300 || declaredScore > 900);
+  const activeDocumentType = activeApp?.product.requiredDocuments.some(d => d.code === documentType) ? documentType : activeApp?.product.requiredDocuments[0]?.code || '';
+  const handleUpload = async (file?: File) => {
+    if (!file || !activeApp || isUploading) return;
+    setUploadError(null);
+    setIsUploading(true);
+    try {
+      const type = activeDocumentType;
+      if (!type) throw new Error('Select a document category.');
+      await documentsApi.uploadMultipart(activeApp.id, file, type);
+      await refreshFromBackend();
+    } catch (err: any) { setUploadError(err.message || 'Document upload failed. Please retry.'); }
+    finally { setIsUploading(false); }
+  };
 
-  const [declarationConsent, setDeclarationConsent] = useState(true);
+  const openWizard = () => {
+    if (isSyncing || dataError || !selectedProduct) return;
+    setPersonalForm(previous => ({ ...previous,
+      fullName: previous.fullName || currentUser.fullName,
+      email: previous.email || currentUser.email,
+      phone: previous.phone || currentUser.phone || '',
+    }));
+    setSelectedProductId(selectedProduct.id);
+    setLoanAmount(selectedProduct.minAmount);
+    setTenorMonths(Math.max(12, selectedProduct.minTenorMonths));
+    setSubmitError(null);
+    setIsWizardOpen(true);
+  };
 
   // Live Calculations for Wizard
-  const liveEmi = calculateEmi(loanAmount, selectedProduct.baseApr, tenorMonths);
+  const liveEmi = calculateEmi(loanAmount, (selectedProduct?.baseApr || 0), tenorMonths);
   const liveDti = calculateDti(
     financialForm.grossMonthlyIncome,
     financialForm.existingMonthlyDebt,
@@ -84,19 +115,19 @@ export const BorrowerPortal: React.FC = () => {
     liveEmi
   );
 
-  const handleFinishWizard = () => {
-    const newId = submitNewApplication({
-      productId: selectedProductId,
-      requestedAmount: loanAmount,
-      requestedTenorMonths: tenorMonths,
-      purpose: loanPurpose,
-      personal: personalForm,
-      financial: financialForm,
-      uploadedDocs: uploadedFiles,
-    });
-    setSelectedAppId(newId);
-    setIsWizardOpen(false);
-    setStep(1);
+  const handleFinishWizard = async () => {
+    if (isSubmitting) return;
+    setIsSubmitting(true);
+    setSubmitError(null);
+    try {
+      const newId = await submitNewApplication({ productId: selectedProduct?.id,
+        requestedAmount: loanAmount, requestedTenorMonths: tenorMonths, purpose: loanPurpose,
+        personal: personalForm, financial: financialForm, uploadedDocs: [] });
+      setSelectedAppId(newId);
+      setIsWizardOpen(false);
+      setStep(1);
+    } catch (err: any) { setSubmitError(err.message || 'Unable to submit application. Please retry.'); }
+    finally { setIsSubmitting(false); }
   };
 
   // Milestone Progress Definition
@@ -105,37 +136,37 @@ export const BorrowerPortal: React.FC = () => {
       id: 'sub',
       title: 'Application Submitted',
       description: 'Docket received and locked for triage',
-      isComplete: ['SUBMITTED', 'UNDER_REVIEW', 'DOCUMENTS_PENDING', 'DOCUMENTS_VERIFIED', 'RISK_ASSESSED', 'APPROVED', 'DISBURSED'].includes(activeApp.status),
-      isActive: activeApp.status === 'SUBMITTED',
+      isComplete: ['SUBMITTED', 'UNDER_REVIEW', 'DOCUMENTS_PENDING', 'DOCUMENTS_VERIFIED', 'RISK_ASSESSED', 'APPROVED', 'DISBURSED'].includes(activeApp?.status || ''),
+      isActive: activeApp?.status === 'SUBMITTED',
     },
     {
       id: 'ver',
       title: 'Document & KYC Verification',
-      description: activeApp.status === 'DOCUMENTS_PENDING' ? 'Action Required: Deficiency flagged' : 'Checklist certified by Loan Officer',
-      isComplete: ['DOCUMENTS_VERIFIED', 'RISK_ASSESSED', 'APPROVED', 'DISBURSED'].includes(activeApp.status),
-      isActive: ['UNDER_REVIEW', 'DOCUMENTS_PENDING'].includes(activeApp.status),
-      isWarning: activeApp.status === 'DOCUMENTS_PENDING',
+      description: activeApp?.status === 'DOCUMENTS_PENDING' ? 'Action Required: Deficiency flagged' : 'Checklist certified by Loan Officer',
+      isComplete: ['DOCUMENTS_VERIFIED', 'RISK_ASSESSED', 'APPROVED', 'DISBURSED'].includes(activeApp?.status || ''),
+      isActive: ['UNDER_REVIEW', 'DOCUMENTS_PENDING'].includes(activeApp?.status || ''),
+      isWarning: activeApp?.status === 'DOCUMENTS_PENDING',
     },
     {
       id: 'risk',
       title: 'Credit Risk Underwriting',
       description: 'Deterministic DTI and credit policy assessment',
-      isComplete: ['RISK_ASSESSED', 'APPROVED', 'DISBURSED'].includes(activeApp.status),
-      isActive: activeApp.status === 'DOCUMENTS_VERIFIED',
+      isComplete: ['RISK_ASSESSED', 'APPROVED', 'DISBURSED'].includes(activeApp?.status || ''),
+      isActive: activeApp?.status === 'DOCUMENTS_VERIFIED',
     },
     {
       id: 'dec',
       title: 'Underwriting Sanction',
-      description: activeApp.status === 'REJECTED' ? 'Application rejected under policy criteria' : 'Formal loan sanction issued',
-      isComplete: ['APPROVED', 'DISBURSED', 'REJECTED'].includes(activeApp.status),
-      isActive: activeApp.status === 'RISK_ASSESSED',
+      description: activeApp?.status === 'REJECTED' ? 'Application rejected under policy criteria' : 'Formal loan sanction issued',
+      isComplete: ['APPROVED', 'DISBURSED', 'REJECTED'].includes(activeApp?.status || ''),
+      isActive: activeApp?.status === 'RISK_ASSESSED',
     },
     {
       id: 'disb',
       title: 'Disbursement',
       description: 'Operational disbursement completed',
-      isComplete: activeApp.status === 'DISBURSED',
-      isActive: activeApp.status === 'APPROVED',
+      isComplete: activeApp?.status === 'DISBURSED',
+      isActive: activeApp?.status === 'APPROVED',
     },
   ];
 
@@ -148,7 +179,7 @@ export const BorrowerPortal: React.FC = () => {
             Applicant Self-Service Portal
           </span>
           <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100 mt-0.5">
-            Welcome back, Alex Taylor
+            Welcome, {currentUser.fullName}
           </h1>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
             Track real-time status, manage uploaded documents, and access formal approval letters.
@@ -157,13 +188,39 @@ export const BorrowerPortal: React.FC = () => {
 
         <Button
           variant="primary"
-          onClick={() => setIsWizardOpen(true)}
+          onClick={openWizard}
+          disabled={isSyncing || !!dataError || products.length === 0}
           icon={<PlusCircle className="w-4 h-4" />}
         >
           New Loan Application
         </Button>
       </div>
 
+      {isSyncing ? <p role="status">Loading your account…</p> : dataError ? (
+        <div role="alert"><p>{dataError}</p><Button onClick={() => void refreshFromBackend()}>Retry</Button></div>
+      ) : <>
+      {applications.length > 1 && <label className="block text-sm">Application
+        <select value={activeApp?.id || ''} onChange={e => setSelectedAppId(e.target.value)} className="p-2 border rounded bg-white dark:bg-slate-900">
+          {applications.map(a => <option key={a.id} value={a.id}>{a.referenceNumber} — {a.status}</option>)}
+        </select>
+      </label>}
+      {products.length === 0 && <p>No loan products are currently available. Please try again later.</p>}
+      <dl className="flex flex-wrap gap-6 text-sm">
+        {[
+          ['Total Applications', applications.length],
+          ['Active Loans', applications.filter(a => a.status === 'DISBURSED').length],
+          ['Approved Loans', applications.filter(a => a.status === 'APPROVED').length],
+          ['Pending Applications', applications.filter(a => ['SUBMITTED', 'UNDER_REVIEW', 'DOCUMENTS_PENDING', 'DOCUMENTS_VERIFIED', 'RISK_ASSESSED'].includes(a.status)).length],
+          ['Outstanding Balance', applications.some(a => a.status === 'DISBURSED') ? 'Not Available' : '₹0'],
+          ['Documents Uploaded', applications.reduce((n, a) => n + a.documents.length, 0)],
+        ].map(([label, value]) => <div key={label}><dt>{label}</dt><dd className="font-mono font-semibold">{value}</dd></div>)}
+      </dl>
+      <Card title={activeApp?.riskAssessment ? 'Internal Risk Assessment' : 'Credit Score Not Available'}>
+        {activeApp?.riskAssessment ? <p>{activeApp.riskAssessment.internalRiskScore} / 1000 — Internal assessment; not a bureau credit score.</p> : <p>Your credit assessment will appear here once the required evaluation is completed.</p>}
+      </Card>
+      <Card title="Repayment History"><p>No repayment history available.</p><p className="text-xs">Repayment servicing records are not available in this portal.</p></Card>
+      <Card title="Recent Activity">{applications.length ? applications.map(a => <p key={a.id}>{a.referenceNumber}: {a.status}</p>) : <p>No recent activity.</p>}</Card>
+      {!activeApp ? <Card title="No loan applications yet."><p>Start your first loan application to begin your borrowing journey.</p><Button onClick={openWizard}>Apply for a Loan</Button><p>No documents uploaded yet.</p><Button onClick={openWizard}>Upload Documents</Button></Card> : <>
       {/* Main Content Area */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
         {/* Left Column: Active Milestone Status Tracker (7 Cols) */}
@@ -171,10 +228,10 @@ export const BorrowerPortal: React.FC = () => {
           <Card
             title={`Application Tracker — ${activeApp.referenceNumber}`}
             subtitle={`${activeApp.product.name} • Submitted ${formatDateTime(activeApp.submittedAt || activeApp.createdAt)}`}
-            headerAction={<Badge status={activeApp.status} />}
+            headerAction={<Badge status={activeApp?.status} />}
           >
             {/* Sanction Letter Banner if Approved */}
-            {activeApp.status === 'APPROVED' && activeApp.decision && (
+            {activeApp?.status === 'APPROVED' && activeApp.decision && (
               <div className="mb-6 p-4 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-300 dark:border-emerald-800/80 rounded-md">
                 <div className="flex items-start gap-3">
                   <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
@@ -196,7 +253,7 @@ export const BorrowerPortal: React.FC = () => {
             )}
 
             {/* Deficiency Warning Banner if Documents Pending */}
-            {activeApp.status === 'DOCUMENTS_PENDING' && (
+            {activeApp?.status === 'DOCUMENTS_PENDING' && (
               <div className="mb-6 p-4 bg-amber-50 dark:bg-amber-950/60 border border-amber-300 dark:border-amber-800/80 rounded-md flex items-start gap-3">
                 <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
                 <div>
@@ -305,9 +362,20 @@ export const BorrowerPortal: React.FC = () => {
           </Card>
 
           <Card title="Uploaded Verification Documents">
+            <label className="block text-sm">Document category
+              <select value={activeDocumentType} onChange={e => setDocumentType(e.target.value)} className="block p-2 border rounded bg-white dark:bg-slate-900">
+                {activeApp.product.requiredDocuments.map(d => <option key={d.code} value={d.code}>{d.title}</option>)}
+              </select>
+            </label>
+            <label className="block text-sm my-3">Upload Documents
+              <input type="file" accept=".pdf,.png,.jpg,.jpeg" disabled={isUploading || ['REJECTED', 'DISBURSED'].includes(activeApp.status)} onChange={e => { void handleUpload(e.target.files?.[0]); e.target.value = ''; }} />
+            </label>
+            {isUploading && <p role="status">Uploading document…</p>}
+            {uploadError && <p role="alert">{uploadError}</p>}
+
             <div className="space-y-2.5 text-xs">
               {activeApp.documents.length === 0 ? (
-                <p className="text-slate-400 dark:text-slate-500 italic py-2">No documents attached.</p>
+                <p className="text-slate-400 dark:text-slate-500 italic py-2">No documents uploaded yet.</p>
               ) : (
                 activeApp.documents.map((doc) => (
                   <div
@@ -336,9 +404,11 @@ export const BorrowerPortal: React.FC = () => {
         </div>
       </div>
 
+      </>}
+      </>}
       {/* Multi-Step New Loan Application Wizard Modal */}
       <Modal
-        isOpen={isWizardOpen}
+        isOpen={isWizardOpen && !!selectedProduct}
         onClose={() => setIsWizardOpen(false)}
         maxWidth="xl"
         title="Multi-Step Loan Application Wizard"
@@ -370,7 +440,7 @@ export const BorrowerPortal: React.FC = () => {
               <Button
                 variant="success"
                 size="sm"
-                disabled={!declarationConsent}
+                disabled={!declarationConsent || isSubmitting || invalidDeclaredScore}
                 onClick={handleFinishWizard}
               >
                 Submit Application to CredVidhi
@@ -379,7 +449,8 @@ export const BorrowerPortal: React.FC = () => {
           </div>
         }
       >
-        <div className="space-y-5 text-xs">
+        {selectedProduct && <div className="space-y-5 text-xs">
+          {submitError && <p role="alert">{submitError}</p>}
           {/* Stepper Progress Bar with animated track */}
           <div className="space-y-1.5">
             <div className="grid grid-cols-4 gap-2 text-center select-none">
@@ -430,8 +501,8 @@ export const BorrowerPortal: React.FC = () => {
                     Loan Product Selection
                   </label>
                   <select
-                    value={selectedProductId}
-                    onChange={(e) => setSelectedProductId(e.target.value)}
+                    value={selectedProduct?.id || selectedProductId}
+                    onChange={(e) => { setSelectedProductId(e.target.value); const product = products.find(p => p.id === e.target.value); if (product) { setLoanAmount(product.minAmount); setTenorMonths(product.minTenorMonths); } }}
                     className="w-full text-xs p-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 rounded font-medium focus:outline-hidden focus:ring-1 focus:ring-orange-500"
                   >
                     {products.map((p) => (
@@ -500,13 +571,13 @@ export const BorrowerPortal: React.FC = () => {
               <div className="bg-slate-50 dark:bg-slate-950/70 p-4 rounded-md border border-slate-200 dark:border-slate-800 flex flex-col justify-between">
                 <div>
                   <div className="text-[10px] font-mono text-slate-500 dark:text-slate-400 uppercase">
-                    Live Calculation Preview
+                    Illustrative Repayment Estimate
                   </div>
                   <div className="text-2xl font-bold font-mono text-orange-600 dark:text-orange-400 mt-1">
                     {formatCurrency(liveEmi)} / mo
                   </div>
                   <div className="text-[11px] text-slate-500 dark:text-slate-400 font-mono mt-0.5">
-                    Fixed rate: {selectedProduct.baseApr}% APR
+                    Fixed rate: {(selectedProduct?.baseApr || 0)}% APR
                   </div>
 
                   <div className="mt-4 pt-3 border-t border-slate-200 dark:border-slate-800 space-y-2 text-[11px]">
@@ -532,7 +603,7 @@ export const BorrowerPortal: React.FC = () => {
                 </div>
 
                 <div className="text-[10px] text-slate-400 dark:text-slate-400 bg-white dark:bg-slate-900 p-2 rounded border border-slate-200 dark:border-slate-800 mt-3">
-                  *Calculations use fixed-point arithmetic adhering to PRD compound amortization rules.
+                  *Illustrative estimate only. This is not an approved offer or an actual liability.
                 </div>
               </div>
             </div>
@@ -663,6 +734,8 @@ export const BorrowerPortal: React.FC = () => {
                 isMono
               />
 
+              <Input label="Monthly Housing Expenses" type="number" value={financialForm.housingExpense} onChange={e => setFinancialForm({ ...financialForm, housingExpense: Number(e.target.value) })} prefixText="₹" />
+              <Input label="Declared Credit Score (optional)" error={invalidDeclaredScore ? 'Enter a whole-number score from 300 to 900, or leave it blank.' : undefined} type="number" min="300" max="900" value={financialForm.creditScoreDeclared ?? ''} onChange={e => setFinancialForm({ ...financialForm, creditScoreDeclared: e.target.value === '' ? null : Number(e.target.value) })} />
               <Input
                 label="Existing Monthly Debt Commitments"
                 type="number"
@@ -685,10 +758,10 @@ export const BorrowerPortal: React.FC = () => {
               <div className="border-2 border-dashed border-slate-300 dark:border-slate-700 p-4 rounded-md text-center bg-slate-50 dark:bg-slate-950/50">
                 <Upload className="w-6 h-6 text-slate-400 mx-auto mb-2" />
                 <div className="font-semibold text-slate-800 dark:text-slate-100">
-                  Drag & Drop mandatory KYC files (PDF, PNG, JPEG up to 10MB)
+                  Upload supporting documents after creating your application
                 </div>
                 <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
-                  Required: Government Photo ID and 2025 W-2 / Tax Return
+                  Document requirements are determined by your selected loan product.
                 </div>
               </div>
 
@@ -729,7 +802,7 @@ export const BorrowerPortal: React.FC = () => {
           )}
           </motion.div>
         </AnimatePresence>
-        </div>
+        </div>}
       </Modal>
     </div>
   );

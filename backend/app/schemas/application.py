@@ -3,10 +3,11 @@
 import uuid
 from datetime import datetime
 from decimal import Decimal
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, cast
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_serializer
 
+from app.core.sanitizer import sanitize_pii_dict
 from app.models.application import ApplicationStatus
 
 
@@ -55,6 +56,11 @@ class ApplicationDetailResponse(BaseModel):
     submitted_at: Optional[datetime] = None
     created_at: datetime
     updated_at: datetime
+
+    @field_serializer("applicant_personal_snapshot")
+    def mask_personal_identifiers(self, value: Optional[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
+        """Return masked identity snapshots without altering historical stored records."""
+        return cast(Optional[Dict[str, Any]], sanitize_pii_dict(value))
 
     model_config = ConfigDict(from_attributes=True)
 

@@ -83,6 +83,7 @@ async def test_full_origination_lifecycle_e2e(
                 "housing_expense": "20000.00",
                 "credit_score_declared": 780,
                 "years_employed": 5,
+                "employment_type": "SALARIED",
             },
         },
     )

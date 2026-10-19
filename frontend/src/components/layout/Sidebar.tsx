@@ -14,10 +14,11 @@ import {
   Users,
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
+import { canRoleAccessView } from '../../utils/rbac';
 import { formatCurrency } from '../../utils/financial';
 
 export const Sidebar: React.FC = () => {
-  const { activeView, setActiveView, applications, activeApplicationId, resetAllData, logout } = useApp();
+  const { activeView, setActiveView, applications, activeApplicationId, resetAllData, logout, currentRole, isDemoMode } = useApp();
   const shouldReduceMotion = useReducedMotion();
 
   const activeApp = applications.find((a) => a.id === activeApplicationId) || applications[0];
@@ -50,7 +51,7 @@ export const Sidebar: React.FC = () => {
   ];
 
   return (
-    <aside className="w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 shrink-0 flex flex-col h-screen fixed left-0 top-0 z-30 select-none transition-colors">
+    <aside className="w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 shrink-0 hidden md:flex flex-col h-screen fixed left-0 top-0 z-30 select-none transition-colors">
       {/* Brand Header */}
       <div className="h-14 px-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
         <div className="flex items-center gap-2.5">
@@ -72,17 +73,17 @@ export const Sidebar: React.FC = () => {
           <span>Active Docket</span>
           <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-medium">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-            ACTIVE
+            {activeApp ? 'ACTIVE' : 'EMPTY'}
           </span>
         </div>
         <div className="font-mono text-xs font-bold text-orange-600 dark:text-orange-400 mt-1 truncate">
-          {activeApp.referenceNumber}
+          {activeApp?.referenceNumber || 'No applications'}
         </div>
         <div className="text-xs text-slate-600 dark:text-slate-300 truncate mt-0.5 font-medium">
-          {activeApp.personal.fullName}
+          {activeApp?.personal.fullName || ''}
         </div>
         <div className="text-[11px] text-slate-500 dark:text-slate-400 font-mono mt-0.5">
-          {formatCurrency(activeApp.requestedAmount)} • {activeApp.product.name}
+          {activeApp ? `${formatCurrency(activeApp.requestedAmount)} • ${activeApp.product.name}` : 'Apply for a Loan to get started.'}
         </div>
       </div>
 
@@ -94,7 +95,7 @@ export const Sidebar: React.FC = () => {
               {group.group}
             </div>
             <div className="space-y-0.5 relative">
-              {group.items.map((item) => {
+              {group.items.filter(item => canRoleAccessView(currentRole, item.id)).map((item) => {
                 const Icon = item.icon;
                 const isActive = activeView === item.id;
                 return (
@@ -132,16 +133,17 @@ export const Sidebar: React.FC = () => {
 
       {/* Regulatory & Reset Footer */}
       <div className="p-3 border-t border-slate-200 dark:border-slate-800/80 bg-slate-50/80 dark:bg-slate-950/80 space-y-2">
-        <div className="flex items-center justify-between text-[10px] font-mono text-slate-500 dark:text-slate-400">
+        {isDemoMode && <div className="flex items-center justify-between text-[10px] font-mono text-slate-500 dark:text-slate-400">
           <span className="tracking-wider">TIER 1 CAPITAL ADQ</span>
           <span className="text-emerald-700 dark:text-emerald-400 font-semibold flex items-center gap-1">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block animate-pulse"></span>
-            PASS (14.2%)
+            PASS (14.2%) — Simulated
           </span>
-        </div>
+        </div>}
         <motion.button
           whileHover={!shouldReduceMotion ? { scale: 1.01 } : undefined}
           whileTap={!shouldReduceMotion ? { scale: 0.98 } : undefined}
+          disabled={!isDemoMode}
           onClick={resetAllData}
           className="w-full flex items-center justify-center gap-1.5 px-2 py-1.5 text-[11px] text-slate-600 dark:text-orange-400 hover:text-orange-600 dark:hover:text-orange-300 bg-white/50 dark:bg-orange-950/20 hover:bg-slate-100 dark:hover:bg-orange-950/40 rounded border border-slate-200 dark:border-orange-500/30 transition-all cursor-pointer font-medium"
           title="Reset to original mock database state"

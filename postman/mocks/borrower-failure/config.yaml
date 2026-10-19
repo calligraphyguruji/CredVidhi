@@ -1,0 +1,9 @@
+version: 1
+protocol: http
+name: borrower-failure
+port: 4901
+interceptRequests: true
+scenarios:
+  - name: default
+    default: true
+    path: default.js

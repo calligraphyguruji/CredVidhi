@@ -15,15 +15,7 @@ import { Modal } from '../ui/Modal';
 import { Input } from '../ui/Input';
 import { Button } from '../ui/Button';
 import { authApi, ApiError } from '../../services/api';
-import { useApp } from '../../context/AppContext';
-import {
-  parseDateParts,
-  isDobMatching,
-  normalizePhoneDigits,
-  isPhoneMatching,
-  isNameMatching,
-  isEmailMatching,
-} from '../../utils/identityVerification';
+import { parseDateParts } from '../../utils/identityVerification';
 
 interface ForgotRegistrationModalProps {
   isOpen: boolean;
@@ -38,7 +30,6 @@ export const ForgotRegistrationModal: React.FC<ForgotRegistrationModalProps> = (
   onClose,
   onReturnToSignIn,
 }) => {
-  const { isBackendConnected, applications, users, provisionInitialApplication } = useApp();
 
   const [step, setStep] = useState<RecoveryStep>('IDENTIFY');
   const [fullName, setFullName] = useState('');
@@ -137,76 +128,11 @@ export const ForgotRegistrationModal: React.FC<ForgotRegistrationModalProps> = (
     setIsLoading(true);
 
     try {
-      if (isBackendConnected) {
-        try {
-          // Live backend verification
-          const res = await authApi.forgotRegistration({
-            fullName: cleanName,
-            mobile: cleanMobile,
-            dateOfBirth: cleanDob,
-            email: email.trim() || undefined,
-          });
-
-          setVerificationToken(res.verification_token);
-          setMaskedContact(res.masked_destination);
-          setDemoCode(res.demo_code || null);
-          setResendCooldown(30);
-          setStep('OTP');
-          return;
-        } catch (apiErr) {
-          // If backend returned client validation failure or rate limit, rethrow so user sees exact message
-          if (
-            apiErr instanceof ApiError &&
-            (apiErr.statusCode === 400 || apiErr.statusCode === 422 || apiErr.statusCode === 429)
-          ) {
-            throw apiErr;
-          }
-          // Network or server connection issue: fall through to client-side verification
-          console.warn('Backend recovery endpoint unavailable, using deterministic verification:', apiErr);
-        }
-      }
-
-      // Client-side deterministic verification
-      // 1. Search active applications
-      let matchedApp = applications.find((app) => {
-        const phoneOk = isPhoneMatching(cleanMobile, app.personal.phone);
-        const nameOk = isNameMatching(cleanName, app.personal.fullName);
-        const dobOk = isDobMatching(cleanDob, app.personal.dateOfBirth);
-        const emailOk = isEmailMatching(email, app.personal.email);
-        return phoneOk && nameOk && dobOk && emailOk;
-      });
-
-      // 2. If not found in applications, also search registered users
-      if (!matchedApp) {
-        const matchedUser = users.find((u) => {
-          const phoneOk = isPhoneMatching(cleanMobile, u.phone);
-          const nameOk = isNameMatching(cleanName, u.fullName);
-          const emailOk = isEmailMatching(email, u.email);
-          return phoneOk && nameOk && emailOk;
-        });
-
-        if (matchedUser) {
-          // Retrieve or auto-provision application docket for this registered borrower
-          matchedApp = provisionInitialApplication(matchedUser, cleanMobile, cleanDob);
-        }
-      }
-
-      if (!matchedApp) {
-        throw new Error('We could not verify your details. Please check your information and try again.');
-      }
-
-      const cleanPhoneDigits = normalizePhoneDigits(cleanMobile);
-      const maskedPhone =
-        cleanPhoneDigits.length >= 4
-          ? `+91 ******${cleanPhoneDigits.slice(-4)}`
-          : '+91 ******3210';
-      const simulatedToken = `demo_token_${Date.now()}`;
-      const simulatedOtp = '849201';
-
-      setVerificationToken(simulatedToken);
-      setMaskedContact(maskedPhone);
-      setDemoCode(simulatedOtp);
-      setRecoveredRefNumber(matchedApp.referenceNumber);
+      const res = await authApi.forgotRegistration({ fullName: cleanName, mobile: cleanMobile,
+        dateOfBirth: cleanDob, email: email.trim() || undefined });
+      setVerificationToken(res.verification_token);
+      setMaskedContact(res.masked_destination);
+      setDemoCode(res.demo_code || null);
       setResendCooldown(30);
       setStep('OTP');
     } catch (err: any) {
@@ -233,21 +159,10 @@ export const ForgotRegistrationModal: React.FC<ForgotRegistrationModalProps> = (
     setIsLoading(true);
 
     try {
-      if (isBackendConnected && !verificationToken.startsWith('demo_token_')) {
-        const res = await authApi.verifyRegistrationOtp({
-          verificationToken,
-          otp: cleanOtp,
-        });
-        setRecoveredRefNumber(res.reference_number);
-        setMaskedContact(res.masked_contact);
-        setStep('SUCCESS');
-      } else {
-        // Offline demo validation
-        if (cleanOtp !== '849201' && (!demoCode || cleanOtp !== demoCode)) {
-          throw new Error('Invalid verification code. Please check the code and try again.');
-        }
-        setStep('SUCCESS');
-      }
+      const res = await authApi.verifyRegistrationOtp({ verificationToken, otp: cleanOtp });
+      setRecoveredRefNumber(res.reference_number);
+      setMaskedContact(res.masked_contact);
+      setStep('SUCCESS');
     } catch (err: any) {
       const msg =
         err instanceof ApiError
@@ -264,7 +179,7 @@ export const ForgotRegistrationModal: React.FC<ForgotRegistrationModalProps> = (
     setErrorMessage(null);
     setIsLoading(true);
     try {
-      if (isBackendConnected) {
+      {
         const res = await authApi.forgotRegistration({
           fullName: fullName.trim(),
           mobile: mobile.trim(),

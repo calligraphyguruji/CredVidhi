@@ -1,0 +1,4 @@
+[run]
+# SQLAlchemy async sessions switch through greenlets; trace their resumed code.
+concurrency = greenlet
+source = app

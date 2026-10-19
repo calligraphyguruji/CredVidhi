@@ -17,6 +17,7 @@ class Settings(BaseSettings):
     APP_NAME: str = "CredVidhi API"
     ENVIRONMENT: str = "development"
     DEBUG: bool = False
+    ENABLE_DEMO_SEED: bool = False
     API_V1_PREFIX: str = "/api/v1"
 
     # Database & Storage

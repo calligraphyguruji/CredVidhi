@@ -77,7 +77,7 @@ export const ChatbotWidget: React.FC<UIProps> = ({ initialOpen = false }) => {
       if (response && response.reply) {
         setMessages((prev) => [
           ...prev,
-          { role: 'assistant', content: response.reply },
+          { role: 'assistant', content: response.provider === 'fallback' ? '**General guidance — illustrative information only. Check your portal for actual account records.**\n\n' + response.reply : response.reply },
         ]);
         if (response.suggested_questions && response.suggested_questions.length > 0) {
           setSuggestions(response.suggested_questions);
@@ -93,7 +93,7 @@ export const ChatbotWidget: React.FC<UIProps> = ({ initialOpen = false }) => {
       const fallback = getLocalOfflineResponse(query);
       setMessages((prev) => [
         ...prev,
-        { role: 'assistant', content: fallback.reply },
+        { role: 'assistant', content: '**Offline guide — illustrative information only. Account data is unavailable. Please retry or check your portal.**\n\n' + fallback.reply },
       ]);
       if (fallback.suggestions && fallback.suggestions.length > 0) {
         setSuggestions(fallback.suggestions);
@@ -411,7 +411,7 @@ function getLocalOfflineResponse(query: string): OfflineResponse {
         '2. **Create Account:** Provide your full name, email, phone number, and a secure password.\n' +
         '3. **Select Loan Product:** Choose from Home Prime, Auto Express, SME Growth, Personal Flexi, or Education Ascent.\n' +
         '4. **Upload KYC Documents:** Submit your PAN Card, Aadhaar, and income proof.\n' +
-        '5. **Instant Underwriting:** Our automated engine calculates your DTI and generates a decision.\n\n' +
+        '5. **Instant Underwriting:** Our automated engine calculates your DTI and supports an authorized staff review.\n\n' +
         'Click **"Apply for Loan"** at the top right to start your registration immediately!',
       suggestions: [
         'What documents do I need to prepare?',
@@ -427,7 +427,7 @@ function getLocalOfflineResponse(query: string): OfflineResponse {
     return {
       reply:
         '### 🔐 CredVidhi Portal Sign In\n\n' +
-        '- **Borrowers & Applicants:** Click **"Track Application"** in the navigation header to sign in with your Application Reference Number or credentials.\n' +
+        '- **Borrowers & Applicants:** Click **"Track Application"** in the navigation header to sign in with your registered email and password.\n' +
         '- **Staff & Loan Officers:** Click **"Staff SSO"** to access the staff verification cockpit and risk triage queue.\n\n' +
         'If you do not have an account yet, click **"Apply for Loan"** to create a new profile.',
       suggestions: [

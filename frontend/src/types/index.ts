@@ -51,7 +51,8 @@ export interface ApplicationDocument {
   originalFilename: string;
   mimeType: string;
   fileSizeBytes: number;
-  verificationStatus: 'PENDING' | 'VERIFIED' | 'DEFICIENT';
+  verificationStatus: 'PENDING' | 'VERIFIED' | 'DEFICIENT' | 'REJECTED';
+  downloadUrl?: string;
   verificationRemarks?: string;
   uploadedAt: string;
   verifiedAt?: string;
@@ -109,7 +110,7 @@ export interface ApplicantFinancialData {
   grossMonthlyIncome: number;
   existingMonthlyDebt: number;
   housingExpense: number;
-  creditScoreDeclared: number;
+  creditScoreDeclared: number | null;
 }
 
 export interface LoanApplication {

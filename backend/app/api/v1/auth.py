@@ -102,41 +102,6 @@ async def register(
             status_code=status.HTTP_409_CONFLICT,
         )
 
-    # Automatically provision initial application record with reference number for this borrower
-    from decimal import Decimal
-
-    from app.api.v1.applications import generate_reference_number
-    from app.models.application import ApplicationStatus
-    from app.models.loan_product import LoanProduct
-
-    prod_stmt = select(LoanProduct).where(LoanProduct.is_active).limit(1)
-    prod_res = await db.execute(prod_stmt)
-    default_prod = prod_res.scalar_one_or_none()
-
-    if default_prod:
-        init_app = LoanApplication(
-            id=uuid.uuid4(),
-            reference_number=generate_reference_number(),
-            applicant_id=new_user.id,
-            product_id=default_prod.id,
-            status=ApplicationStatus.SUBMITTED,
-            requested_amount=Decimal("250000.00"),
-            requested_tenor_months=24,
-            purpose="Personal Loan Self-Registration",
-            applicant_personal_snapshot={
-                "fullName": new_user.full_name,
-                "email": new_user.email,
-                "phone": new_user.phone_number,
-                "pan": new_user.pan_number,
-            },
-            submitted_at=datetime.utcnow(),
-        )
-        db.add(init_app)
-        try:
-            await db.commit()
-        except Exception:
-            await db.rollback()
-
     user_dto = UserProfileResponse(
         id=new_user.id,
         email=new_user.email,
@@ -402,6 +367,13 @@ async def forgot_registration(
     db: AsyncSession = Depends(get_db),
 ) -> JSONResponse:
     """Verify borrower identity against database and issue one-time recovery challenge."""
+    # No SMS/email delivery provider is implemented; never claim a code was sent in production.
+    if settings.ENVIRONMENT.lower() not in ("development", "dev", "test", "demo", "local"):
+        return error_response(
+            code="RECOVERY_DELIVERY_UNAVAILABLE",
+            message="Reference recovery is unavailable. Sign in with your email and password to view your applications.",
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+        )
     client_ip = request.client.host if request.client else "unknown"
     clean_mobile = _normalize_phone(payload.mobile)
 
@@ -483,45 +455,6 @@ async def forgot_registration(
         app_res = await db.execute(app_stmt)
         apps = app_res.scalars().all()
 
-        if not apps:
-            # User registered without application row yet: provision initial application reference
-            from decimal import Decimal
-
-            from app.api.v1.applications import generate_reference_number
-            from app.models.application import ApplicationStatus
-            from app.models.loan_product import LoanProduct
-
-            prod_stmt = select(LoanProduct).where(LoanProduct.is_active).limit(1)
-            prod_res = await db.execute(prod_stmt)
-            default_prod = prod_res.scalar_one_or_none()
-
-            if default_prod:
-                init_app = LoanApplication(
-                    id=uuid.uuid4(),
-                    reference_number=generate_reference_number(),
-                    applicant_id=user.id,
-                    product_id=default_prod.id,
-                    status=ApplicationStatus.SUBMITTED,
-                    requested_amount=Decimal("250000.00"),
-                    requested_tenor_months=24,
-                    purpose="Personal Loan Self-Registration",
-                    applicant_personal_snapshot={
-                        "fullName": user.full_name,
-                        "email": user.email,
-                        "phone": user.phone_number,
-                        "dateOfBirth": payload.date_of_birth,
-                    },
-                    submitted_at=datetime.utcnow(),
-                )
-                db.add(init_app)
-                try:
-                    await db.commit()
-                    matched_user = user
-                    matched_app = init_app
-                    break
-                except Exception:
-                    await db.rollback()
-
         for app in apps:
             snapshot = app.applicant_personal_snapshot or {}
             dob_val = (
@@ -571,7 +504,7 @@ async def forgot_registration(
         "step": "OTP_REQUIRED",
         "verification_token": verification_token,
         "masked_destination": masked_contact,
-        "message": f"Identity verified. A one-time verification code has been dispatched to {masked_contact}.",
+        "message": "Demo Mode — Simulated Data: use the displayed verification code. No message was dispatched.",
     }
 
     # In development, testing, or demo mode, supply demo_code for self-service verification

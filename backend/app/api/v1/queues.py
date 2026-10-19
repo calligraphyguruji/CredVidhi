@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.responses import success_response
 from app.database import get_db
-from app.dependencies import get_current_user, require_roles
+from app.dependencies import require_roles
 from app.models.application import ApplicationStatus, LoanApplication
 from app.models.user import User, UserRole
 from app.schemas.application import ApplicationSummaryResponse
@@ -24,7 +24,7 @@ async def get_applicant_queue(
     limit: int = Query(50, ge=1, le=100, description="Page size limit"),
     offset: int = Query(0, ge=0, description="Page offset"),
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_roles([UserRole.APPLICANT])),
 ) -> JSONResponse:
     """Retrieve applicant's personal application queue."""
     result = await db.execute(

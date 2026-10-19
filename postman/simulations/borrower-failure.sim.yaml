@@ -1,0 +1,5 @@
+simulation: borrower-failure
+routing: path
+mocks:
+  - routeKey: credvidhi
+    path: ../mocks/borrower-failure/config.yaml

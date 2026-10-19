@@ -19,7 +19,7 @@ import { ProtectedRoute } from './components/auth/ProtectedRoute';
 
 const MainContent: React.FC = () => {
 
-  const { activeView } = useApp();
+  const { activeView, currentUser, isDemoMode, applications, isSyncing, dataError, refreshFromBackend } = useApp();
   const shouldReduceMotion = useReducedMotion();
 
   const activePageVariants = shouldReduceMotion
@@ -75,7 +75,7 @@ const MainContent: React.FC = () => {
             <Sidebar />
 
             {/* Main App Container */}
-            <div className="flex-1 flex flex-col pl-64 min-w-0">
+            <div className="flex-1 flex flex-col pl-0 md:pl-64 min-w-0">
               <Header />
 
               {/* Dynamic Viewport Container with Page Transition */}
@@ -89,13 +89,14 @@ const MainContent: React.FC = () => {
                     exit="exit"
                     className="w-full"
                   >
+                    {currentUser.role !== 'APPLICANT' && !isDemoMode && (isSyncing ? <p role="status">Loading account data…</p> : dataError ? <div role="alert"><p>{dataError}</p><button onClick={() => void refreshFromBackend()}>Retry</button></div> : applications.length === 0 ? <p>No applications available.</p> : null)}
                     {activeView === 'officer-queue' && <OfficerQueue />}
-                    {activeView === 'document-workbench' && <DocumentWorkbench />}
-                    {activeView === 'underwriting-cockpit' && <UnderwritingCockpit />}
+                    {activeView === 'document-workbench' && applications.length > 0 && <DocumentWorkbench />}
+                    {activeView === 'underwriting-cockpit' && applications.length > 0 && <UnderwritingCockpit />}
                     {activeView === 'borrower-portal' && <BorrowerPortal />}
                     {activeView === 'compliance-audit' && <ComplianceAudit />}
                     {activeView === 'loan-products' && <LoanProducts />}
-                    {activeView === 'user-admin' && <UserAdministration />}
+                    {activeView === 'user-admin' && (isDemoMode ? <UserAdministration /> : <p>User administration is currently available in the Staff Workbench Demo only.</p>)}
                   </motion.div>
                 </AnimatePresence>
               </main>
@@ -107,11 +108,16 @@ const MainContent: React.FC = () => {
   );
 };
 
+const SessionChat: React.FC = () => {
+  const { currentUser, isDemoMode } = useApp();
+  return <ChatbotWidget key={`${isDemoMode}-${currentUser.id}`} />;
+};
+
 export const App: React.FC = () => {
   return (
     <AppProvider>
       <MainContent />
-      <ChatbotWidget />
+      <SessionChat />
       <Analytics />
     </AppProvider>
   );

@@ -11,7 +11,6 @@ from aiobotocore.session import get_session
 from botocore.exceptions import ClientError
 
 from app.config import get_settings
-from app.core.logging import logger
 
 settings = get_settings()
 
@@ -30,6 +29,10 @@ MAGIC_BYTE_SIGNATURES = {
 }
 
 MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024  # 10 MB
+
+
+class StorageUnavailableError(RuntimeError):
+    """Object storage could not complete a requested operation."""
 
 
 class StorageService:
@@ -136,14 +139,8 @@ class StorageService:
                 )
                 return str(url)
         except Exception as exc:
-            logger.warning(
-                f"Failed to generate live presigned upload URL from S3/MinIO: {exc}. "
-                f"Falling back to synthetic institutional URL."
-            )
-            return (
-                f"{self.endpoint_url}/{self.bucket_name}/{storage_key}"
-                f"?signature=DEV_MOCK_SIGNATURE&expires={expires_in}"
-            )
+            raise StorageUnavailableError("Document storage is temporarily unavailable. Please retry.") from exc
+
 
     async def generate_presigned_download_url(
         self,
@@ -169,14 +166,8 @@ class StorageService:
                 )
                 return str(url)
         except Exception as exc:
-            logger.warning(
-                f"Failed to generate live presigned download URL from S3/MinIO: {exc}. "
-                f"Falling back to synthetic institutional URL."
-            )
-            return (
-                f"{self.endpoint_url}/{self.bucket_name}/{storage_key}"
-                f"?signature=DEV_MOCK_SIGNATURE&expires={expires_in}"
-            )
+            raise StorageUnavailableError("Document storage is temporarily unavailable. Please retry.") from exc
+
 
     async def upload_file_bytes(
         self,
@@ -206,10 +197,7 @@ class StorageService:
                     ContentType=mime_type,
                 )
         except Exception as exc:
-            logger.warning(
-                f"Direct S3 upload to {self.bucket_name}/{storage_key} encountered error: {exc}. "
-                f"Recorded document metadata for mock/offline testing mode."
-            )
+            raise StorageUnavailableError("Document upload failed. Please retry.") from exc
 
     async def check_object_exists(self, storage_key: str) -> bool:
         """Verify whether an object exists in S3 / MinIO storage."""
@@ -227,12 +215,9 @@ class StorageService:
             error_code = exc.response.get("Error", {}).get("Code")
             if error_code in ("404", "NoSuchKey", "NotFound"):
                 return False
-            logger.warning(f"S3 head_object returned unexpected client error: {exc}")
-            return False
+            raise StorageUnavailableError("Document storage is temporarily unavailable. Please retry.") from exc
         except Exception as exc:
-            # Fallback for local offline development / test mocking
-            logger.warning(f"S3 head_object error (offline or uninitialized): {exc}")
-            return True
+            raise StorageUnavailableError("Document storage is temporarily unavailable. Please retry.") from exc
 
 
 # Global storage service instance

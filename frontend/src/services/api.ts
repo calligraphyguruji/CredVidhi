@@ -8,10 +8,16 @@
 import type { LoanApplication, LoanProduct, AuditLog } from '../types';
 
 const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1';
+  import.meta.env?.VITE_API_BASE_URL || 'http://localhost:8000/api/v1';
 
 export const AUTH_TOKEN_KEY = 'credvidhi_access_token';
 export const REFRESH_TOKEN_KEY = 'credvidhi_refresh_token';
+let authGeneration = 0;
+export function clearAuthTokens() {
+  authGeneration += 1;
+  localStorage.removeItem(AUTH_TOKEN_KEY);
+  localStorage.removeItem(REFRESH_TOKEN_KEY);
+}
 
 export interface ApiErrorPayload {
   code: string;
@@ -40,7 +46,7 @@ async function request<T>(
   endpoint: string,
   options: RequestInit = {}
 ): Promise<T> {
-  const token = localStorage.getItem(AUTH_TOKEN_KEY);
+  const token = endpoint === '/auth/login' || endpoint === '/auth/register' ? null : localStorage.getItem(AUTH_TOKEN_KEY);
   const headers = new Headers(options.headers || {});
 
   if (!headers.has('Authorization') && token) {
@@ -56,7 +62,13 @@ async function request<T>(
   const response = await fetch(url, {
     ...options,
     headers,
+    cache: 'no-store',
+    signal: options.signal || AbortSignal.timeout(30000),
   });
+  if (token && token !== localStorage.getItem(AUTH_TOKEN_KEY)) {
+    throw new ApiError('SESSION_CHANGED', 'Your session changed. Please retry.', 401);
+  }
+  if (token && response.status === 401) window.dispatchEvent(new Event('credvidhi:session-expired'));
 
   const body = await response.json().catch(() => null);
 
@@ -83,6 +95,8 @@ export const healthApi = {
 // ==========================================
 export const authApi = {
   login: async (email: string, password: string) => {
+    clearAuthTokens();
+    const generation = authGeneration;
     const data = await request<{
       access_token: string;
       refresh_token: string;
@@ -92,6 +106,7 @@ export const authApi = {
       method: 'POST',
       body: JSON.stringify({ email, password }),
     });
+    if (generation !== authGeneration) throw new ApiError('SESSION_CHANGED', 'Session changed. Please sign in again.', 401);
     if (data.access_token) {
       localStorage.setItem(AUTH_TOKEN_KEY, data.access_token);
       localStorage.setItem(REFRESH_TOKEN_KEY, data.refresh_token);
@@ -114,16 +129,12 @@ export const authApi = {
 
   logout: async () => {
     const refreshToken = localStorage.getItem(REFRESH_TOKEN_KEY);
-    try {
-      if (refreshToken) {
-        await request('/auth/logout', {
-          method: 'POST',
-          body: JSON.stringify({ refresh_token: refreshToken }),
-        });
-      }
-    } finally {
-      localStorage.removeItem(AUTH_TOKEN_KEY);
-      localStorage.removeItem(REFRESH_TOKEN_KEY);
+    const accessToken = localStorage.getItem(AUTH_TOKEN_KEY);
+    clearAuthTokens();
+    if (refreshToken || accessToken) {
+      await request('/auth/logout', { method: 'POST',
+        headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {},
+        body: JSON.stringify({ refresh_token: refreshToken }) });
     }
   },
 
@@ -382,28 +393,17 @@ export function mapBackendProduct(p: any): LoanProduct {
     maxTenorMonths: Number(p.max_tenor_months),
     baseApr: Number(p.base_apr),
     maxDtiRatio: Number(p.max_dti_ratio),
-    requiredDocuments: Array.isArray(p.required_documents) ? p.required_documents : [],
+    requiredDocuments: Array.isArray(p.required_documents) ? p.required_documents.map((d: any) =>
+      typeof d === 'string' ? { code: d, title: d.replaceAll('_', ' '), description: '', mandatory: true } : d) : [],
     isActive: Boolean(p.is_active ?? true),
   };
 }
 
 export function mapBackendApplication(app: any, fallbackProduct?: LoanProduct): LoanApplication {
-  const product: LoanProduct = app.product
+  const product = app.product
     ? mapBackendProduct(app.product)
-    : fallbackProduct || {
-        id: String(app.product_id || 'prod-001'),
-        code: 'DEFAULT',
-        name: 'Standard Loan',
-        description: '',
-        minAmount: 50000,
-        maxAmount: 5000000,
-        minTenorMonths: 6,
-        maxTenorMonths: 60,
-        baseApr: 10.5,
-        maxDtiRatio: 45,
-        requiredDocuments: [],
-        isActive: true,
-      };
+    : fallbackProduct;
+  if (!product) throw new Error('Loan product information is unavailable.');
 
   const personal = app.applicant_personal_snapshot || {};
   const financial = app.applicant_financial_snapshot || {};
@@ -422,21 +422,21 @@ export function mapBackendApplication(app: any, fallbackProduct?: LoanProduct): 
     purpose: app.purpose || '',
     personal: {
       fullName: personal.fullName || personal.full_name || 'Applicant',
-      email: personal.email || 'applicant@credvidhi.in',
+      email: personal.email || '',
       phone: personal.phone || personal.phone_number || '',
-      dateOfBirth: personal.dateOfBirth || personal.date_of_birth || '1990-01-01',
+      dateOfBirth: personal.dateOfBirth || personal.date_of_birth || '',
       residentialAddress: personal.residentialAddress || personal.residential_address || '',
-      taxIdMasked: personal.taxIdMasked || personal.tax_id_masked || '***-**-7721',
+      taxIdMasked: personal.taxIdMasked || personal.tax_id_masked || personal.taxId || personal.masked_pan || personal.pan || '',
     },
     financial: {
       employmentType: financial.employmentType || financial.employment_type || 'SALARIED',
       employerName: financial.employerName || financial.employer_name || '',
       jobTitle: financial.jobTitle || financial.job_title || '',
-      yearsEmployed: Number(financial.yearsEmployed ?? financial.years_employed ?? 2.0),
-      grossMonthlyIncome: Number(financial.grossMonthlyIncome ?? financial.gross_monthly_income ?? 50000),
-      existingMonthlyDebt: Number(financial.existingMonthlyDebt ?? financial.existing_monthly_debt ?? 0),
-      housingExpense: Number(financial.housingExpense ?? financial.housing_expense ?? 0),
-      creditScoreDeclared: Number(financial.creditScoreDeclared ?? financial.credit_score_declared ?? 750),
+      yearsEmployed: Number(financial.yearsEmployed ?? financial.years_employed ?? 0),
+      grossMonthlyIncome: Number(financial.grossMonthlyIncome ?? financial.gross_monthly_income ?? 0),
+      existingMonthlyDebt: Number(financial.existingMonthlyDebt ?? financial.existing_monthly_debt ?? financial.existing_monthly_debts ?? financial.existing_debts ?? 0),
+      housingExpense: Number(financial.housingExpense ?? financial.housing_expense ?? financial.housing_expenses ?? 0),
+      creditScoreDeclared: financial.creditScoreDeclared ?? financial.credit_score_declared ?? financial.bureau_score ?? financial.cibil_score ?? financial.declared_cibil_score ?? null,
     },
     documents: Array.isArray(app.documents)
       ? app.documents.map((d: any) => ({
@@ -447,6 +447,7 @@ export function mapBackendApplication(app: any, fallbackProduct?: LoanProduct): 
           mimeType: d.mime_type || d.mimeType || 'application/pdf',
           fileSizeBytes: Number(d.file_size_bytes ?? d.fileSizeBytes ?? 0),
           verificationStatus: d.verification_status || d.verificationStatus || 'PENDING',
+          downloadUrl: d.download_url,
           verificationRemarks: d.verification_remarks || d.verificationRemarks,
           uploadedAt: d.uploaded_at || d.uploadedAt || new Date().toISOString(),
           verifiedAt: d.verified_at || d.verifiedAt,
@@ -463,7 +464,7 @@ export function mapBackendApplication(app: any, fallbackProduct?: LoanProduct): 
           internalRiskScore: Number(app.risk_assessment.internal_risk_score),
           riskTier: app.risk_assessment.risk_tier,
           recommendation: app.risk_assessment.recommendation,
-          scoreFactors: app.risk_assessment.score_factors || [],
+          scoreFactors: Array.isArray(app.risk_assessment.score_factors) ? app.risk_assessment.score_factors : [],
           evaluatedAt: app.risk_assessment.evaluated_at || new Date().toISOString(),
         }
       : undefined,
